@@ -42,7 +42,6 @@ catkin_init_workspace src
 
 cd src
 git clone <THIS REPO>
-git clone https://github.com/ros-drivers/flir_camera_driver.git
 git clone -b melodic-devel https://github.com/dingo-cpr/dingo.git
 git clone https://github.com/dingo-cpr/dingo_simulator.git
 git clone https://github.com/dingo-cpr/dingo_desktop.git
@@ -71,7 +70,7 @@ roslaunch dingo_gazebo empty_world.launch x:=1. y:=0. yaw:=0.
 
 #### Corresponding RVIZ:
 ```
-
+roslaunch dingo_viz view_robot.launch
 ```
 
 #### To send simple velocity commands to the robot you can use rqt_ez_publisher:
