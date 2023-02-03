@@ -10,7 +10,10 @@ https://github.com/dingo-cpr
 | ---                     | ---           | ---                      | ---           | ---       | ---          | ---     |
 | Pendant Tablet          | tablet        | tablet20                 | 192.168.1.99  | 1234      | Ubuntu 20.04 | Noetic  |
 | Main Computer           | razer         | razer-18                 | 192.168.1.100 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 1 (Color)         | oarbot_silver | oarbot-silver-P15        | 192.168.1.101 | 1234      | Ubuntu 18.04 | Melodic |
+| Robot 1 (Color)         | dingo01       | dingo01-18               | 192.168.1.101 | 1234      | Ubuntu 18.04 | Melodic |
+| Robot 2 (Color)         | dingo02       | dingo02-18               | 192.168.1.102 | 1234      | Ubuntu 18.04 | Melodic |
+| Robot 3 (Color)         | dingo03       | dingo03-18               | 192.168.1.103 | 1234      | Ubuntu 18.04 | Melodic |
+| Robot 4 (Color)         | dingo04       | dingo04-18               | 192.168.1.104 | 1234      | Ubuntu 18.04 | Melodic |
 
 # Setting up the system
 
@@ -19,8 +22,12 @@ Simply run
 ./TODO
 ```
 
-## Steps for Gazebo Simulation of (Single) Dingo-O robot
+## Steps for Gazebo Simulation of Single Dingo-O robot
+<details> 
+    <summary>Click to expand</summary>
+
 (Reference: http://www.clearpathrobotics.com/assets/guides/melodic/dingo/simulation.html)
+
 ### Install some dependencies of Dingo Gazebo Simulation
 ```
 sudo apt-get install ros-melodic-lms1xx # ROS driver for the SICK LMS1xx line of LIDARs.
@@ -29,6 +36,7 @@ sudo apt-get install ros-melodic-hector-gazebo-plugins
 sudo apt-get install ros-melodic-ridgeback-gazebo-plugins
 sudo apt-get install ros-melodic-interactive-marker-twist-server
 sudo apt-get install ros-melodic-ridgeback-control
+sudo apt-get install ros-melodic-rqt-ez-publisher
 ```
 
 ### Default Gazebo Simulation Building Steps
@@ -41,14 +49,24 @@ mkdir src
 catkin_init_workspace src
 
 cd src
-git clone <THIS REPO>
-git clone -b melodic-devel https://github.com/dingo-cpr/dingo.git
-git clone https://github.com/dingo-cpr/dingo_simulator.git
-git clone https://github.com/dingo-cpr/dingo_desktop.git
+git clone https://github.com/burakaksoy/Swarm-Robotics-2.git
+git clone -b melodic-devel https://github.com/burakaksoy/dingo.git
+git clone https://github.com/burakaksoy/dingo_simulator.git
+git clone https://github.com/burakaksoy/dingo_desktop.git
+git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git
+
 
 cd ..
 catkin_make
 source devel/setup.bash
+```
+
+#### In your `~/.bashrc` file, add these:
+```
+source ~/catkin_ws_swarm2/devel/setup.bash
+
+export GAZEBO_MODEL_PATH=~/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/lab_gazebo/models
+export GAZEBO_RESOURCE_PATH=~/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/lab_gazebo/worlds
 ```
 
 ### Running the simulation
@@ -78,3 +96,66 @@ roslaunch dingo_viz view_robot.launch
 rosrun rqt_ez_publisher rqt_ez_publisher
 ```
 and send messages to `\cmd_vel` topic.
+
+</details> 
+
+## Steps for Gazebo Simulation of Multiple Dingo-O robots
+
+<details>
+    <summary>Click to expand</summary>
+
+Assuming that you already did the dependancy installations and building in [**Steps for Gazebo Simulation of (Single) Dingo-O robot**](#steps-for-gazebo-simulation-of-single-dingo-o-robot) section.
+
+### Running the simulation in Empty World
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
+```
+roslaunch dingo_gazebo empty_world_multi.launch
+```
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
+<!-- TODO: ADD image here -->
+![View in empty world](./imgs/empty_world_multi.png)
+
+### Running the simulation in CII 8th Floor Lab
+This is an example lab environment to visualize the scales of Dingo robots.
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together in CII 8th floor lab.
+```
+roslaunch dingo_gazebo empty_lab_multi.launch
+```
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but more realistic.
+<!-- TODO: ADD image here -->
+![View in CII 8th Floor Lab](./imgs/empty_lab_multi.png)
+
+### Running the simulation in Empty World with ground truth
+This command launches the simulation with ground truth reported TF frames to RVIZ. Again, launching the corresponding RVIZ and the rqt_ez_publisher is embedded all together. 
+```
+roslaunch dingo_gazebo empty_world_multi_ground_truth.launch
+```
+Note that RVIZ TF frames are reported by `message_to_tf` package that uses the _ground truth_ data coming from `gazebo_ros_p3d` plugin, hence it is exact representation of the Gazebo World.
+Therefore, this command does not launch the Gazebo client GUI to save computational power, but could be re-enabled with gui parameter set to true in the launch file.
+<!-- TODO: ADD image here -->
+![Empty World with ground truth](./imgs/empty_world_multi_ground_truth.png)
+
+### Running the simulation in Anchor Industries Representative Plant Floor
+
+**!!!IN PROGRESS, NOT DONE YET!!!**
+
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
+```
+roslaunch dingo_gazebo plant_floor_multi.launch
+```
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
+<!-- TODO: ADD image here -->
+
+### Running the simulation in Demonstration Floor
+
+**!!!IN PROGRESS, NOT DONE YET!!!**
+
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
+```
+roslaunch dingo_gazebo demo_floor_multi.launch
+```
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
+<!-- TODO: ADD image here -->
+
+
+</details>
