@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>   
+    <!-- Launch Multiple Dingo-O robot simulation with ground truth reporting -->
+    <include file="$(find dingo_gazebo)/launch/empty_world_multi_ground_truth.launch">
+        <!-- TODO: SPecify here to disable launching the default rviz and gazebo client GUI -->
+    </include>
+
+    <!-- Launch the Fabric Simulation that reads the location data of robots and attaches the fabric corners to those locations  -->
+    <!-- TODO: -->
+    <!-- <include file="$(find assistive_launch)/launch/test_launch/oarbot_blue_base.launch">  -->
+    <!-- </include>  -->
+
+    <!-- Launch RVIZ specific to Fabric + Multi robot simulation -->
+    <!-- TODO -->
+
+</launch>
