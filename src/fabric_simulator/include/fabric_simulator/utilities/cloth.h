@@ -18,56 +18,59 @@
 #include <string>
 #include <iostream>
 
+#include <float.h>
+
+// #define USE_DOUBLE // comment out if you would like to use float.
+
+#ifdef USE_DOUBLE
+typedef double Real;
+#else
+typedef float Real;
+#endif
+
 namespace pbd_object
 {
 
 struct Mesh
 {
     std::string name;
-    Eigen::MatrixX3d vertices;
+    // Eigen::MatrixX3d vertices;
+    Eigen::Matrix<Real,Eigen::Dynamic,3> vertices;
     Eigen::MatrixX3i face_tri_ids;
+    
 };
 
 class Cloth
 {
 public:
     Cloth();
-    Cloth(const Mesh &mesh, const double &bending_compliance, const double &density);
+    Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &density);
     ~Cloth();
 
-    void preSolve(const double &dt, const Eigen::RowVector3d &gravity);
-    void solve(const double &dt);
-    void postSolve(const double &dt);
+    void preSolve(const Real &dt, const Eigen::Matrix<Real,1,3> &gravity);
+    void solve(const Real &dt);
+    void postSolve(const Real &dt);
 
-    int attachNearest(const Eigen::RowVector3d &pos);
-    void updateAttachedPose(const int &id, const Eigen::RowVector3d &pos);
-
-    // Eigen::MatrixX2i getStretchingIds();
-    // Eigen::MatrixX4i getBendingIds();
-
-    // Eigen::RowVectorXd getStretchingLengths();
-    // Eigen::RowVectorXd getBendingLengths();
-
-    // Eigen::MatrixX3d getPos();
-    // Eigen::MatrixX3d getVel();
+    int attachNearest(const Eigen::Matrix<Real,1,3> &pos);
+    void updateAttachedPose(const int &id, const Eigen::Matrix<Real,1,3> &pos);
 
     Eigen::MatrixX2i *getStretchingIdsPtr();
     Eigen::MatrixX4i *getBendingIdsPtr();
 
-    Eigen::RowVectorXd *getStretchingLengthsPtr();
-    Eigen::RowVectorXd *getBendingLengthsPtr();
+    Eigen::Matrix<Real,1,Eigen::Dynamic> *getStretchingLengthsPtr();
+    Eigen::Matrix<Real,1,Eigen::Dynamic> *getBendingLengthsPtr();
 
-    Eigen::MatrixX3d *getPosPtr();
-    Eigen::MatrixX3d *getVelPtr();
+    Eigen::Matrix<Real,Eigen::Dynamic,3> *getPosPtr();
+    Eigen::Matrix<Real,Eigen::Dynamic,3> *getVelPtr();
 
 private:
     // Functions
     void initPhysics(const Eigen::MatrixX3i &face_tri_ids);
     Eigen::RowVectorXi findTriNeighbors(const Eigen::MatrixX3i &face_tri_ids);
 
-    int findNearestPositionVectorId(const Eigen::MatrixXd& matrix, const Eigen::Vector3d& pos);
-    void solveStretching(const double &compliance, const double &dt);
-    void solveBending(const double &compliance, const double &dt);
+    int findNearestPositionVectorId(const Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic>& matrix, const Eigen::Matrix<Real,3,1>& pos);
+    void solveStretching(const Real &compliance, const Real &dt);
+    void solveBending(const Real &compliance, const Real &dt);
 
     void hangFromCorners();
 
@@ -75,27 +78,27 @@ private:
     Mesh mesh_;
     int num_particles_;
 
-    Eigen::MatrixX3d pos_;
-    Eigen::MatrixX3d prev_pos_;
-    Eigen::MatrixX3d rest_pos_;
-    Eigen::MatrixX3d vel_;
+    Eigen::Matrix<Real,Eigen::Dynamic,3> pos_;
+    Eigen::Matrix<Real,Eigen::Dynamic,3> prev_pos_;
+    Eigen::Matrix<Real,Eigen::Dynamic,3> rest_pos_;
+    Eigen::Matrix<Real,Eigen::Dynamic,3> vel_;
     
-    Eigen::RowVectorXd inv_mass_;
-    double density_; // fabric mass per meter square (kg/m^2)
-    Eigen::RowVector3d grads_;
+    Eigen::Matrix<Real,1,Eigen::Dynamic> inv_mass_;
+    Real density_; // fabric mass per meter square (kg/m^2)
+    Eigen::Matrix<Real,1,3> grads_;
 
     Eigen::MatrixX2i stretching_ids_;
     Eigen::MatrixX4i bending_ids_;
-    Eigen::RowVectorXd stretching_lengths_;
-    Eigen::RowVectorXd bending_lengths_;
+    Eigen::Matrix<Real,1,Eigen::Dynamic> stretching_lengths_;
+    Eigen::Matrix<Real,1,Eigen::Dynamic> bending_lengths_;
 
-    double stretching_compliance_;
-    double bending_compliance_;
+    Real stretching_compliance_;
+    Real bending_compliance_;
 
     // May not be necessary?
     // Eigen::RowVectorXi attached_ids_; // ids of robot attached particles
     // int grab_id_;
-    // double grab_inv_mass_;
+    // Real grab_inv_mass_;
     
     // to debug:
     // int only_once;

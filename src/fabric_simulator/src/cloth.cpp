@@ -10,7 +10,7 @@ Cloth::Cloth(){
 
 }
 
-Cloth::Cloth(const Mesh &mesh, const double &bending_compliance, const double &density):
+Cloth::Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &density):
     mesh_(mesh),
     bending_compliance_(bending_compliance),
     density_(density)
@@ -22,10 +22,10 @@ Cloth::Cloth(const Mesh &mesh, const double &bending_compliance, const double &d
     pos_ = mesh_.vertices;
     prev_pos_ = mesh_.vertices;
     rest_pos_ = mesh_.vertices;
-    vel_ = Eigen::MatrixX3d::Zero(num_particles_,3);
-    inv_mass_ = Eigen::RowVectorXd::Zero(num_particles_);
+    vel_ = Eigen::Matrix<Real,Eigen::Dynamic,3>::Zero(num_particles_,3);
+    inv_mass_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(num_particles_);
     
-    grads_ = Eigen::RowVector3d::Zero();
+    grads_ = Eigen::Matrix<Real,1,3>::Zero();
 
     // std::cout << "pos_:\n" << pos_ << std::endl;
     // std::cout << "prev_pos_:\n" << prev_pos_ << std::endl;
@@ -83,8 +83,8 @@ Cloth::Cloth(const Mesh &mesh, const double &bending_compliance, const double &d
     std::cout << "stretching_ids_:\n" << stretching_ids_ << std::endl;
     std::cout << "bending_ids_:\n" << bending_ids_ << std::endl;
 
-    stretching_lengths_ = Eigen::RowVectorXd::Zero(stretching_ids_.rows()); //assigned at initPhysics
-    bending_lengths_ = Eigen::RowVectorXd::Zero(bending_ids_.rows()); //assigned at initPhysics
+    stretching_lengths_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(stretching_ids_.rows()); //assigned at initPhysics
+    bending_lengths_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(bending_ids_.rows()); //assigned at initPhysics
 
     // Not necessary? 
     // attached_ids_
@@ -105,19 +105,19 @@ void Cloth::initPhysics(const Eigen::MatrixX3i &face_tri_ids){
         int id1 = face_tri_ids(i,1);
         int id2 = face_tri_ids(i,2);
 
-        Eigen::RowVector3d e0 = pos_.row(id1) - pos_.row(id0);
-        Eigen::RowVector3d e1 = pos_.row(id2) - pos_.row(id0);
-        Eigen::RowVector3d c = e0.cross(e1);
+        Eigen::Matrix<Real,1,3> e0 = pos_.row(id1) - pos_.row(id0);
+        Eigen::Matrix<Real,1,3> e1 = pos_.row(id2) - pos_.row(id0);
+        Eigen::Matrix<Real,1,3> c = e0.cross(e1);
 
-        double A = 0.5 * c.norm();  // area
-        double mass = A * density_;
+        Real A = 0.5 * c.norm();  // area
+        Real mass = A * density_;
     
         if (mass > 0.0) {
-            double p_mass = (mass / 3.0); // divide by 3 because we have 3 vertices per triangle
+            Real p_mass = (mass / 3.0); // divide by 3 because we have 3 vertices per triangle
 
-            double p_0_mass = ( inv_mass_(id0) > 0.0 ) ? 1.0/inv_mass_(id0) : 0.0;
-            double p_1_mass = ( inv_mass_(id1) > 0.0 ) ? 1.0/inv_mass_(id1) : 0.0;
-            double p_2_mass = ( inv_mass_(id2) > 0.0 ) ? 1.0/inv_mass_(id2) : 0.0;
+            Real p_0_mass = ( inv_mass_(id0) > 0.0 ) ? 1.0/inv_mass_(id0) : 0.0;
+            Real p_1_mass = ( inv_mass_(id1) > 0.0 ) ? 1.0/inv_mass_(id1) : 0.0;
+            Real p_2_mass = ( inv_mass_(id2) > 0.0 ) ? 1.0/inv_mass_(id2) : 0.0;
 
             p_0_mass += p_mass;
             p_1_mass += p_mass;
@@ -198,12 +198,12 @@ Eigen::RowVectorXi Cloth::findTriNeighbors(const Eigen::MatrixX3i &face_tri_ids)
 
 
 // Find the nearest 3D position vector row id in the given matrix
-int Cloth::findNearestPositionVectorId(const Eigen::MatrixXd& matrix, const Eigen::Vector3d& pos) {
+int Cloth::findNearestPositionVectorId(const Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic>& matrix, const Eigen::Matrix<Real,3,1>& pos) {
   int nearestId = -1;
-  double minDistance = std::numeric_limits<double>::max();
+  Real minDistance = std::numeric_limits<Real>::max();
   for (int i = 0; i < matrix.rows(); ++i) {
-    Eigen::Vector3d currentPos = matrix.row(i);
-    double currentDistance = (currentPos - pos).norm();
+    Eigen::Matrix<Real,3,1> currentPos = matrix.row(i);
+    Real currentDistance = (currentPos - pos).norm();
     if (currentDistance < minDistance) {
       nearestId = i;
       minDistance = currentDistance;
@@ -212,16 +212,16 @@ int Cloth::findNearestPositionVectorId(const Eigen::MatrixXd& matrix, const Eige
   return nearestId;
 }
 
-void Cloth::solveStretching(const double &compliance, const double &dt){
-    double alpha = compliance / (dt*dt);
+void Cloth::solveStretching(const Real &compliance, const Real &dt){
+    Real alpha = compliance / (dt*dt);
 
     for (int i = 0; i < stretching_lengths_.size(); i++){
         int id0 = stretching_ids_(i,0);
         int id1 = stretching_ids_(i,1);
 
-        double w0 = inv_mass_(id0);
-        double w1 = inv_mass_(id1);
-        double w = w0 + w1;
+        Real w0 = inv_mass_(id0);
+        Real w1 = inv_mass_(id1);
+        Real w = w0 + w1;
 
         if (w == 0){
             continue;
@@ -229,7 +229,7 @@ void Cloth::solveStretching(const double &compliance, const double &dt){
 
         grads_ = pos_.row(id0) - pos_.row(id1);
 
-        double len = grads_.norm();
+        Real len = grads_.norm();
         if (len == 0){
             continue;
         }
@@ -238,25 +238,25 @@ void Cloth::solveStretching(const double &compliance, const double &dt){
 
         // std::cout << "grads_: " << grads_ << std::endl;
 
-        double rest_len = stretching_lengths_(i);
-        double C = len - rest_len;
-        double s = -C / (w+alpha);
+        Real rest_len = stretching_lengths_(i);
+        Real C = len - rest_len;
+        Real s = -C / (w+alpha);
 
         pos_.row(id0) += s*w0*grads_;
         pos_.row(id1) += -s*w1*grads_;
     }
 }
 
-void Cloth::solveBending(const double &compliance, const double &dt){
-    double alpha = compliance / (dt*dt);
+void Cloth::solveBending(const Real &compliance, const Real &dt){
+    Real alpha = compliance / (dt*dt);
 
     for (int i = 0; i < bending_lengths_.size(); i++){
         int id0 = bending_ids_(i,2);
         int id1 = bending_ids_(i,3);
 
-        double w0 = inv_mass_(id0);
-        double w1 = inv_mass_(id1);
-        double w = w0 + w1;
+        Real w0 = inv_mass_(id0);
+        Real w1 = inv_mass_(id1);
+        Real w = w0 + w1;
 
         if (w == 0){
             continue;
@@ -264,16 +264,16 @@ void Cloth::solveBending(const double &compliance, const double &dt){
 
         grads_ = pos_.row(id0) - pos_.row(id1);
 
-        double len = grads_.norm();
+        Real len = grads_.norm();
         if (len == 0){
             continue;
         }
 
         grads_ = grads_ / len;
 
-        double rest_len = bending_lengths_(i);
-        double C = len - rest_len;
-        double s = -C / (w+alpha);
+        Real rest_len = bending_lengths_(i);
+        Real C = len - rest_len;
+        Real s = -C / (w+alpha);
 
         pos_.row(id0) += s*w0*grads_;
         pos_.row(id1) += -s*w1*grads_;
@@ -281,9 +281,9 @@ void Cloth::solveBending(const double &compliance, const double &dt){
 }
 
 void Cloth::hangFromCorners(){
-    double min_x = std::numeric_limits<double>::infinity();
-    double max_x = -std::numeric_limits<double>::infinity();
-    double max_y = -std::numeric_limits<double>::infinity();
+    Real min_x = std::numeric_limits<Real>::infinity();
+    Real max_x = -std::numeric_limits<Real>::infinity();
+    Real max_y = -std::numeric_limits<Real>::infinity();
 
     for (int i = 0; i < num_particles_; i++) {
         min_x = std::min(min_x, pos_(i,0));
@@ -291,18 +291,18 @@ void Cloth::hangFromCorners(){
         max_y = std::max(max_y, pos_(i,1));
     }
 
-    double eps = 0.0001;
+    Real eps = 0.0001;
 
     for (int i = 0; i < num_particles_; i++) {
-        double x = pos_(i,0);
-        double y = pos_(i,1);
+        Real x = pos_(i,0);
+        Real y = pos_(i,1);
         if (y > max_y - eps && (x < min_x + eps || x > max_x - eps)) {
             inv_mass_(i) = 0.0;
         }
     }
 }
 
-void Cloth::preSolve(const double &dt, const Eigen::RowVector3d &gravity){
+void Cloth::preSolve(const Real &dt, const Eigen::Matrix<Real,1,3> &gravity){
     for (int i = 0; i< num_particles_; i++){
         if (inv_mass_(i) > 0){
             // std::cout << "i :" << i << std::endl;
@@ -315,7 +315,7 @@ void Cloth::preSolve(const double &dt, const Eigen::RowVector3d &gravity){
             pos_.row(i) += vel_.row(i)*dt;
 
             // Prevent going below ground
-            double z = pos_(i,2);
+            Real z = pos_(i,2);
             if (z < 0.){
                 pos_.row(i) = prev_pos_.row(i) ;
                 pos_(i,2) = 0.0;
@@ -333,12 +333,12 @@ void Cloth::preSolve(const double &dt, const Eigen::RowVector3d &gravity){
     }
 }
 
-void Cloth::solve(const double &dt){
+void Cloth::solve(const Real &dt){
     solveStretching(stretching_compliance_,dt);
     solveBending(bending_compliance_,dt);
 }
 
-void Cloth::postSolve(const double &dt){
+void Cloth::postSolve(const Real &dt){
     for (int i = 0; i< num_particles_; i++){
         if (inv_mass_(i) != 0){
             vel_.row(i) = (pos_.row(i) - prev_pos_.row(i))/dt;
@@ -346,7 +346,7 @@ void Cloth::postSolve(const double &dt){
     }
 }
 
-int Cloth::attachNearest(const Eigen::RowVector3d &pos){
+int Cloth::attachNearest(const Eigen::Matrix<Real,1,3> &pos){
     int id = findNearestPositionVectorId(pos_,pos);
     // Make that particle stationary
     if (id >= 0){
@@ -355,23 +355,23 @@ int Cloth::attachNearest(const Eigen::RowVector3d &pos){
     return id;
 }
 
-void Cloth::updateAttachedPose(const int &id, const Eigen::RowVector3d &pos){
+void Cloth::updateAttachedPose(const int &id, const Eigen::Matrix<Real,1,3> &pos){
     pos_.row(id) = pos;
 }
 
-Eigen::MatrixX3d *Cloth::getPosPtr(){
+Eigen::Matrix<Real,Eigen::Dynamic,3> *Cloth::getPosPtr(){
     return &pos_;
 }
 
-Eigen::MatrixX3d *Cloth::getVelPtr(){
+Eigen::Matrix<Real,Eigen::Dynamic,3> *Cloth::getVelPtr(){
     return &vel_;
 }
 
-Eigen::RowVectorXd *Cloth::getStretchingLengthsPtr(){
+Eigen::Matrix<Real,1,Eigen::Dynamic> *Cloth::getStretchingLengthsPtr(){
     return &stretching_lengths_;
 }
 
-Eigen::RowVectorXd *Cloth::getBendingLengthsPtr(){
+Eigen::Matrix<Real,1,Eigen::Dynamic> *Cloth::getBendingLengthsPtr(){
     return &bending_lengths_;
 }
 

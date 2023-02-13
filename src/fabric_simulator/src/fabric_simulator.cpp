@@ -76,25 +76,25 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<bool>("active", p_active_, true);
     nh_local_.param<bool>("reset", p_reset_, false);
 
-    nh_local_.param<double>("gravity_x", gravity_x_, 0.0);
-    nh_local_.param<double>("gravity_y", gravity_y_, 0.0);
-    nh_local_.param<double>("gravity_z", gravity_z_, -9.81);
+    nh_local_.param<Real>("gravity_x", gravity_x_, 0.0);
+    nh_local_.param<Real>("gravity_y", gravity_y_, 0.0);
+    nh_local_.param<Real>("gravity_z", gravity_z_, -9.81);
     
-    nh_local_.param<double>("dt", dt_, 1.0 / 100.0); //200
+    nh_local_.param<Real>("dt", dt_, 1.0 / 100.0); //200
     nh_local_.param<bool>("set_sim_rate_auto", set_sim_rate_auto_, false); // to set the simulation rate and dt automatically
 
     nh_local_.param<int>("num_substeps", num_substeps_, 3); //3
     nh_local_.param<int>("num_steps", num_steps_, 1);
     
-    nh_local_.param<double>("fabric_x", fabric_x_, 2.); //2
-    nh_local_.param<double>("fabric_y", fabric_y_, 2.); //2
-    nh_local_.param<double>("fabric_density", fabric_density_, 5);
-    nh_local_.param<double>("fabric_resolution", fabric_resolution_, 10); //10
-    nh_local_.param<double>("fabric_bending_compliance", fabric_bending_compliance_, 0.01);
-    nh_local_.param<double>("initial_height", initial_height_, 3.0);
+    nh_local_.param<Real>("fabric_x", fabric_x_, 2.); //2
+    nh_local_.param<Real>("fabric_y", fabric_y_, 2.); //2
+    nh_local_.param<Real>("fabric_density", fabric_density_, 5);
+    nh_local_.param<Real>("fabric_resolution", fabric_resolution_, 10); //10
+    nh_local_.param<Real>("fabric_bending_compliance", fabric_bending_compliance_, 0.01);
+    nh_local_.param<Real>("initial_height", initial_height_, 3.0);
     
-    nh_local_.param<double>("simulation_rate", simulation_rate_, 90.0); //90
-    nh_local_.param<double>("rendering_rate", rendering_rate_, 30.0); //30
+    nh_local_.param<Real>("simulation_rate", simulation_rate_, 90.0); //90
+    nh_local_.param<Real>("rendering_rate", rendering_rate_, 30.0); //30
 
     nh_local_.param<std::string>("fabric_points_topic_name", fabric_points_topic_name_, std::string("cloth_points"));
     nh_local_.param<std::string>("fabric_points_frame_id", fabric_points_frame_id_, std::string("map"));
@@ -104,7 +104,7 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<std::string>("odom_03_topic_name", odom_03_topic_name_, std::string("d3/ground_truth/odom"));
     nh_local_.param<std::string>("odom_04_topic_name", odom_04_topic_name_, std::string("d4/ground_truth/odom"));
 
-    nh_local_.param<double>("fabric_rob_z_offset_", fabric_rob_z_offset_, 1.0);
+    nh_local_.param<Real>("fabric_rob_z_offset_", fabric_rob_z_offset_, 1.0);
 
     // Set timer periods based on the parameters
     timer_render_.setPeriod(ros::Duration(1.0/rendering_rate_));
@@ -183,9 +183,9 @@ void FabricSimulator::reset(){
     nh_local_.setParam("reset",false);
 }
 
-pbd_object::Mesh FabricSimulator::createMeshRectangular(const std::string &name, const double &fabric_x, const double &fabric_y, const double &fabric_z, const double &fabric_res){
+pbd_object::Mesh FabricSimulator::createMeshRectangular(const std::string &name, const Real &fabric_x, const Real &fabric_y, const Real &fabric_z, const Real &fabric_res){
     // Create vector of 3D Eigen vectors to hold the "list of vertices" and "list of face triangle ids"
-    std::vector<Eigen::RowVector3d> vertices;
+    std::vector<Eigen::Matrix<Real,1,3>> vertices;
     std::vector<Eigen::RowVector3i> face_tri_ids;
 
     int num_particle_x = fabric_x * fabric_res;
@@ -193,17 +193,17 @@ pbd_object::Mesh FabricSimulator::createMeshRectangular(const std::string &name,
     // Assuming a fabric centered at the origin, create a linear spaced coordinate vectors for the coordinates
     
     // Generate the x_coords
-    Eigen::RowVectorXd x_coords(num_particle_x + 1);
-    double start = fabric_x/2.0;
-    double end = -fabric_x/2.0;
-    double step = (end - start) / num_particle_x;
+    Eigen::Matrix<Real,1,Eigen::Dynamic> x_coords(num_particle_x + 1);
+    Real start = fabric_x/2.0;
+    Real end = -fabric_x/2.0;
+    Real step = (end - start) / num_particle_x;
 
     for (int i = 0; i <= num_particle_x; i++) {
         x_coords(i) = start + i * step;
     }
     
     // Generate the y_coords
-    Eigen::RowVectorXd y_coords(num_particle_y + 1);
+    Eigen::Matrix<Real,1,Eigen::Dynamic> y_coords(num_particle_y + 1);
     start = fabric_y/2.0;
     end = -fabric_y/2.0;
     step = (end - start) / num_particle_y;
@@ -215,17 +215,17 @@ pbd_object::Mesh FabricSimulator::createMeshRectangular(const std::string &name,
     // Create vertices with x,y,z coordinates
     for (int i = 0; i < x_coords.size(); i++) {
         for (int j = 0; j < y_coords.size(); j++) {
-            Eigen::RowVector3d v(x_coords(i), y_coords(j), fabric_z);
+            Eigen::Matrix<Real,1,3> v(x_coords(i), y_coords(j), fabric_z);
             vertices.push_back(v);
         }
     }
 
-    // Eigen::Map<Eigen::MatrixXd> vertices_mat((double *)vertices.data(), vertices.size(), 3);
-    // (double *)vertices.data() returns a pointer to the first element of the vertices vector, 
-    // which can be cast to a double pointer. The Eigen::Map object takes the pointer, the 
+    // Eigen::Map<Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic>> vertices_mat((Real *)vertices.data(), vertices.size(), 3);
+    // (Real *)vertices.data() returns a pointer to the first element of the vertices vector, 
+    // which can be cast to a Real pointer. The Eigen::Map object takes the pointer, the 
     // number of rows vertices.size(), and the number of columns 3, as arguments, and maps this 
-    // memory block to an Eigen::MatrixXd object.
-    Eigen::MatrixXd vertices_mat(vertices.size(), 3);
+    // memory block to an Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic> object.
+    Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic> vertices_mat(vertices.size(), 3);
     for (int i = 0; i < vertices.size(); i++) {
         vertices_mat.row(i) = vertices[i];
     }
@@ -316,7 +316,7 @@ void FabricSimulator::simulate(const ros::TimerEvent& e){
     // With some kind of self lock to prevent collision with rendering
     boost::recursive_mutex::scoped_lock lock(mtx_);
 
-    double sdt = dt_ / num_substeps_;
+    Real sdt = dt_ / num_substeps_;
 
     // std::cout << "sdt: " << sdt << std::endl; 
 
@@ -338,7 +338,7 @@ void FabricSimulator::simulate(const ros::TimerEvent& e){
     // std::chrono::high_resolution_clock::time_point finish_time = high_resolution_clock::now();
     ros::Time finish_time = ros::Time::now();
     
-    // double elapsed_time = duration_cast<microseconds>(finish_time - start_time).count() * 0.000001;
+    // Real elapsed_time = duration_cast<microseconds>(finish_time - start_time).count() * 0.000001;
     ros::Duration elapsed_time = finish_time - start_time;
 
     time_sum_ += elapsed_time.toSec();
@@ -363,7 +363,7 @@ void FabricSimulator::simulate(const ros::TimerEvent& e){
         time_frames_ = 0;
         time_sum_ = 0;
 
-        // Eigen::MatrixX3d *pos_ptr = fabric_.getPosPtr();
+        // Eigen::Matrix<Real,Eigen::Dynamic,3> *pos_ptr = fabric_.getPosPtr();
         // Eigen::MatrixX2i *stretching_ids_ptr = fabric_.getStretchingIdsPtr();
         // drawRviz(pos_ptr);
         // drawRvizWireframe(pos_ptr,stretching_ids_ptr);
@@ -374,13 +374,13 @@ void FabricSimulator::render(const ros::TimerEvent& e){
     // // With some kind of self lock to prevent collision with simulation
     boost::recursive_mutex::scoped_lock lock(mtx_);
 
-    Eigen::MatrixX3d *pos_ptr = fabric_.getPosPtr();
+    Eigen::Matrix<Real,Eigen::Dynamic,3> *pos_ptr = fabric_.getPosPtr();
     Eigen::MatrixX2i *stretching_ids_ptr = fabric_.getStretchingIdsPtr();
     drawRviz(pos_ptr);
     drawRvizWireframe(pos_ptr,stretching_ids_ptr);
 }
 
-void FabricSimulator::drawRviz(const Eigen::MatrixX3d *poses){
+void FabricSimulator::drawRviz(const Eigen::Matrix<Real,Eigen::Dynamic,3> *poses){
     std::vector<geometry_msgs::Point> clothRVIZPoints;
 
     for (int i = 0; i < poses->rows(); i++) {
@@ -395,7 +395,7 @@ void FabricSimulator::drawRviz(const Eigen::MatrixX3d *poses){
     publishRvizPoints(clothRVIZPoints);
 }
 
-void FabricSimulator::drawRvizWireframe(const Eigen::MatrixX3d *poses, const Eigen::MatrixX2i *ids){
+void FabricSimulator::drawRvizWireframe(const Eigen::Matrix<Real,Eigen::Dynamic,3> *poses, const Eigen::MatrixX2i *ids){
     // objects: *poses, *ids
     std::vector<geometry_msgs::Point> clothRVIZEdges;
 
@@ -471,11 +471,11 @@ void FabricSimulator::publishRvizLines(const std::vector<geometry_msgs::Point> &
 }
 
 void FabricSimulator::odometryCb_01(const nav_msgs::Odometry::ConstPtr odom_msg){
-    double x = odom_msg->pose.pose.position.x;
-    double y = odom_msg->pose.pose.position.y;
-    double z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
+    Real x = odom_msg->pose.pose.position.x;
+    Real y = odom_msg->pose.pose.position.y;
+    Real z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
     
-    Eigen::RowVector3d pos(x, y, z);
+    Eigen::Matrix<Real,1,3> pos(x, y, z);
 
     if (!is_rob_01_attached_)
     {
@@ -496,11 +496,11 @@ void FabricSimulator::odometryCb_01(const nav_msgs::Odometry::ConstPtr odom_msg)
 }
 
 void FabricSimulator::odometryCb_02(const nav_msgs::Odometry::ConstPtr odom_msg){
-    double x = odom_msg->pose.pose.position.x;
-    double y = odom_msg->pose.pose.position.y;
-    double z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
+    Real x = odom_msg->pose.pose.position.x;
+    Real y = odom_msg->pose.pose.position.y;
+    Real z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
     
-    Eigen::RowVector3d pos(x, y, z);
+    Eigen::Matrix<Real,1,3> pos(x, y, z);
 
     if (!is_rob_02_attached_)
     {
@@ -521,11 +521,11 @@ void FabricSimulator::odometryCb_02(const nav_msgs::Odometry::ConstPtr odom_msg)
 }
 
 void FabricSimulator::odometryCb_03(const nav_msgs::Odometry::ConstPtr odom_msg){
-    double x = odom_msg->pose.pose.position.x;
-    double y = odom_msg->pose.pose.position.y;
-    double z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
+    Real x = odom_msg->pose.pose.position.x;
+    Real y = odom_msg->pose.pose.position.y;
+    Real z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
     
-    Eigen::RowVector3d pos(x, y, z);
+    Eigen::Matrix<Real,1,3> pos(x, y, z);
 
     if (!is_rob_03_attached_)
     {
@@ -546,11 +546,11 @@ void FabricSimulator::odometryCb_03(const nav_msgs::Odometry::ConstPtr odom_msg)
 }
 
 void FabricSimulator::odometryCb_04(const nav_msgs::Odometry::ConstPtr odom_msg){
-    double x = odom_msg->pose.pose.position.x;
-    double y = odom_msg->pose.pose.position.y;
-    double z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
+    Real x = odom_msg->pose.pose.position.x;
+    Real y = odom_msg->pose.pose.position.y;
+    Real z = odom_msg->pose.pose.position.z + fabric_rob_z_offset_;
     
-    Eigen::RowVector3d pos(x, y, z);
+    Eigen::Matrix<Real,1,3> pos(x, y, z);
 
     if (!is_rob_04_attached_)
     {

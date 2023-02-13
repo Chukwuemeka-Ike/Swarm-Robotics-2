@@ -47,17 +47,17 @@ private:
     // Create a mesh structure with face triangle ids and vertice for particle initial poses
     // face triangle ids; vector with n elements with 3d integer rowvectors. each row is 3 particle id of a triangle
     // vertice: vector with m elements with 3d row vectors. each row is 3D xyz position of a particle.
-    pbd_object::Mesh createMeshRectangular(const std::string &name, const double &fabric_x, const double &fabric_y, const double &fabric_z, const double &fabric_res);
+    pbd_object::Mesh createMeshRectangular(const std::string &name, const Real &fabric_x, const Real &fabric_y, const Real &fabric_z, const Real &fabric_res);
 
     // Helper functions to publish created markers
     void publishRvizPoints(const std::vector<geometry_msgs::Point> &points);
     void publishRvizLines(const std::vector<geometry_msgs::Point> &points);
 
     // Creates the markers to publish
-    // void drawRviz(const Eigen::MatrixX3d &poses);
-    // void drawRvizWireframe(const Eigen::MatrixX3d &poses, const Eigen::MatrixX2i &ids);
-    void drawRviz(const Eigen::MatrixX3d *poses);
-    void drawRvizWireframe(const Eigen::MatrixX3d *poses, const Eigen::MatrixX2i *ids);
+    // void drawRviz(const Eigen::Matrix<Real,Eigen::Dynamic,3> &poses);
+    // void drawRvizWireframe(const Eigen::Matrix<Real,Eigen::Dynamic,3> &poses, const Eigen::MatrixX2i &ids);
+    void drawRviz(const Eigen::Matrix<Real,Eigen::Dynamic,3> *poses);
+    void drawRvizWireframe(const Eigen::Matrix<Real,Eigen::Dynamic,3> *poses, const Eigen::MatrixX2i *ids);
 
     // Timer callback functions
     void simulate(const ros::TimerEvent& e);
@@ -94,26 +94,26 @@ private:
     bool p_active_;
     bool p_reset_;
 
-    double gravity_x_;
-    double gravity_y_;
-    double gravity_z_;
+    Real gravity_x_;
+    Real gravity_y_;
+    Real gravity_z_;
     
-    double dt_;
+    Real dt_;
     bool set_sim_rate_auto_; //param to set the simulation rate and dt automatically
 
     int num_substeps_;
     int num_steps_;
     
     // Fabric mesh properties: (Assuming fabric is rectangular)
-    double fabric_x_; // expansion in x dimension (m)
-    double fabric_y_; // expansion in y dimension (m)
-    double fabric_density_; // fabric mass per meter square (kg/m^2)
-    double fabric_resolution_; // particle resolution per meter
-    double fabric_bending_compliance_;
-    double initial_height_; // initial fabric height from ground (m)
+    Real fabric_x_; // expansion in x dimension (m)
+    Real fabric_y_; // expansion in y dimension (m)
+    Real fabric_density_; // fabric mass per meter square (kg/m^2)
+    Real fabric_resolution_; // particle resolution per meter
+    Real fabric_bending_compliance_;
+    Real initial_height_; // initial fabric height from ground (m)
     
-    double simulation_rate_;
-    double rendering_rate_;
+    Real simulation_rate_;
+    Real rendering_rate_;
 
     std::string fabric_points_topic_name_;
     std::string fabric_points_frame_id_;
@@ -123,10 +123,10 @@ private:
     std::string odom_03_topic_name_; 
     std::string odom_04_topic_name_;
     
-    double fabric_rob_z_offset_; // Additional  attachment height to robots
+    Real fabric_rob_z_offset_; // Additional  attachment height to robots
 
     // Other variables
-    Eigen::RowVector3d gravity_;
+    Eigen::Matrix<Real,1,3> gravity_;
 
     bool is_auto_sim_rate_set_;
 
@@ -141,7 +141,7 @@ private:
     int rob_04_attached_id_;
 
     int time_frames_; //to report the performance per frame
-    double time_sum_; //to report the performance per frame
+    Real time_sum_; //to report the performance per frame
 
     // TODO: In the future, implement cloth and other deformable/rigid objects as PBDObjects
     // std::vector<PBDObject> sim_objects_;
