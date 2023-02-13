@@ -52,6 +52,6 @@ src/CMakeLists.txt
 
 *.DS_Store
 .vscode/
-# src/dingo
-# src/dingo_desktop
-# src/dingo_simulator
+src/dingo
+src/dingo_desktop
+src/dingo_simulator
