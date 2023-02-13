@@ -142,7 +142,7 @@ class Edge(object):
             
         else:
             return
-        movement_for_each = 10.0*strength * (length - target_length) / 2.0
+        movement_for_each = 1.0*strength * (length - target_length) / 2.0
 
         for i in [0,1,2]:
             if not self.p1.constrained: self.p1.pos[i] += movement_for_each*vec[i]
@@ -318,7 +318,7 @@ class ClothCPU(object):
     
 
 point_n = 12
-fabric_density = 100 # kg/m^2 (denim 0.3kg/m2)
+fabric_density = 200 # kg/m^2 (denim 0.3kg/m2)
 fabric_area = 1.0 # m^2
 total_num_particles = point_n*point_n
 particle_mass = (fabric_density * fabric_area) / total_num_particles # kg
@@ -445,6 +445,7 @@ def main():
         draw()
         clock.tick(target_fps)
         t_all.append(timeit.default_timer()-tic)
+        print(timeit.default_timer()-tic)
         # Note: No need to add rospy.rate sleep here, let the loop run as fast as it can
         
     #print (np.mean(t_all),np.std(t_all))    
