@@ -80,8 +80,8 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<double>("gravity_y", gravity_y_, 0.0);
     nh_local_.param<double>("gravity_z", gravity_z_, -9.81);
     
-    nh_local_.param<double>("dt", dt_, 1.0 / 125.0); //90
-    nh_local_.param<bool>("set_sim_rate_auto", set_sim_rate_auto_, true); // to set the simulation rate and dt automatically
+    nh_local_.param<double>("dt", dt_, 1.0 / 100.0); //200
+    nh_local_.param<bool>("set_sim_rate_auto", set_sim_rate_auto_, false); // to set the simulation rate and dt automatically
 
     nh_local_.param<int>("num_substeps", num_substeps_, 3); //3
     nh_local_.param<int>("num_steps", num_steps_, 1);
@@ -90,8 +90,8 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<double>("fabric_y", fabric_y_, 2.); //2
     nh_local_.param<double>("fabric_density", fabric_density_, 5);
     nh_local_.param<double>("fabric_resolution", fabric_resolution_, 10); //10
-    nh_local_.param<double>("fabric_bending_compliance", fabric_bending_compliance_, 1.0);
-    nh_local_.param<double>("initial_height", initial_height_, 1.0);
+    nh_local_.param<double>("fabric_bending_compliance", fabric_bending_compliance_, 0.01);
+    nh_local_.param<double>("initial_height", initial_height_, 3.0);
     
     nh_local_.param<double>("simulation_rate", simulation_rate_, 90.0); //90
     nh_local_.param<double>("rendering_rate", rendering_rate_, 30.0); //30
@@ -233,20 +233,64 @@ pbd_object::Mesh FabricSimulator::createMeshRectangular(const std::string &name,
 
 
     // Create face triangle ids
+    // int id = 0;
+    // for (int i = 0; i < x_coords.size() - 1; i++) {
+    //     for (int j = 0; j < y_coords.size() - 1; j++) {
+
+    //         Eigen::RowVector3i ids(id, id + 1, id + y_coords.size());
+    //         face_tri_ids.push_back(ids);
+
+    //         if (j > 0) {
+    //             Eigen::RowVector3i ids(id, id + y_coords.size(), id + y_coords.size() - 1);
+    //             face_tri_ids.push_back(ids);
+    //         }
+
+    //         if (j + 1 == y_coords.size() - 1) {
+    //             Eigen::RowVector3i ids(id + 1, id + 1 + y_coords.size(), id + 1 + y_coords.size() - 1);
+    //             face_tri_ids.push_back(ids);
+    //             id++;
+    //         }
+    //         id++;
+    //     }
+    // }
+
+    // Create face triangle ids (more regular mesh than above)
     int id = 0;
     for (int i = 0; i < x_coords.size() - 1; i++) {
         for (int j = 0; j < y_coords.size() - 1; j++) {
-            Eigen::RowVector3i ids(id, id + 1, id + y_coords.size());
-            face_tri_ids.push_back(ids);
+            if (i % 2 == 0) {
+                if (j % 2 == 0){
+                    Eigen::RowVector3i ids(id, id+1, id+1+y_coords.size());
+                    face_tri_ids.push_back(ids);
 
-            if (j > 0) {
-                Eigen::RowVector3i ids(id, id + y_coords.size(), id + y_coords.size() - 1);
-                face_tri_ids.push_back(ids);
+                    Eigen::RowVector3i idss(id, id+1+y_coords.size(), id+y_coords.size());
+                    face_tri_ids.push_back(idss);
+                } else { // ie (j % 2 == 1)
+                    Eigen::RowVector3i ids(id, id+1, id+y_coords.size());
+                    face_tri_ids.push_back(ids);
+
+                    Eigen::RowVector3i idss(id+1, id+1+y_coords.size(), id+y_coords.size());
+                    face_tri_ids.push_back(idss);
+                }
+            } 
+            else { // ie (i % 2 == 1)
+                if (j % 2 == 0){
+                    Eigen::RowVector3i ids(id, id+1, id+y_coords.size());
+                    face_tri_ids.push_back(ids);
+
+                    Eigen::RowVector3i idss(id+1, id+1+y_coords.size(), id+y_coords.size());
+                    face_tri_ids.push_back(idss);
+                } else { // ie (j % 2 == 1)
+                    Eigen::RowVector3i ids(id, id+1, id+1+y_coords.size());
+                    face_tri_ids.push_back(ids);
+
+                    Eigen::RowVector3i idss(id, id+1+y_coords.size(), id+y_coords.size());
+                    face_tri_ids.push_back(idss);
+                }
             }
 
+
             if (j + 1 == y_coords.size() - 1) {
-                Eigen::RowVector3i ids(id + 1, id + 1 + y_coords.size(), id + 1 + y_coords.size() - 1);
-                face_tri_ids.push_back(ids);
                 id++;
             }
             id++;
@@ -300,7 +344,7 @@ void FabricSimulator::simulate(const ros::TimerEvent& e){
     time_sum_ += elapsed_time.toSec();
     time_frames_ += 1;
 
-    if (time_frames_ > 10) {
+    if (time_frames_ > 100) {
         time_sum_ /= time_frames_;
         
         // std::cout << std::fixed << std::setprecision(3) << time_sum_ << " s per frame" << std::endl;
@@ -313,27 +357,22 @@ void FabricSimulator::simulate(const ros::TimerEvent& e){
             dt_ = time_sum_;
             timer_simulate_.setPeriod(ros::Duration(time_sum_));
             is_auto_sim_rate_set_ = true; 
+            std::cout << "Automatic setup. dt = " << dt_ << " seconds." << std::endl;
         }
 
         time_frames_ = 0;
         time_sum_ = 0;
-    }
 
-    // Eigen::MatrixX3d *pos_ptr = fabric_.getPosPtr();
-    // Eigen::MatrixX2i *stretching_ids_ptr = fabric_.getStretchingIdsPtr();
-    // drawRviz(pos_ptr);
-    // drawRvizWireframe(pos_ptr,stretching_ids_ptr);
+        // Eigen::MatrixX3d *pos_ptr = fabric_.getPosPtr();
+        // Eigen::MatrixX2i *stretching_ids_ptr = fabric_.getStretchingIdsPtr();
+        // drawRviz(pos_ptr);
+        // drawRvizWireframe(pos_ptr,stretching_ids_ptr);
+    }
 }
 
 void FabricSimulator::render(const ros::TimerEvent& e){
-    // With some kind of self lock to prevent collision with simulation
+    // // With some kind of self lock to prevent collision with simulation
     boost::recursive_mutex::scoped_lock lock(mtx_);
-    
-    // Publish RVIZ visualization markers here
-    // Eigen::MatrixX3d pos = fabric_.getPos();
-    // Eigen::MatrixX3d stretching_ids = fabric_.getStretchingIds();
-    // drawRviz(pos);
-    // drawRvizWireframe(pos,stretching_ids);
 
     Eigen::MatrixX3d *pos_ptr = fabric_.getPosPtr();
     Eigen::MatrixX2i *stretching_ids_ptr = fabric_.getStretchingIdsPtr();

@@ -15,7 +15,7 @@ Cloth::Cloth(const Mesh &mesh, const double &bending_compliance, const double &d
     bending_compliance_(bending_compliance),
     density_(density)
 {
-    stretching_compliance_ = 0.0;
+    stretching_compliance_ = 1.0/100000 ; //0.0;
 
     num_particles_ = mesh_.vertices.rows();
     
@@ -149,7 +149,7 @@ void Cloth::initPhysics(const Eigen::MatrixX3i &face_tri_ids){
     // std::cout << "stretching_lengths_:\n" << stretching_lengths_ << std::endl;
     // std::cout << "bending_lengths_:\n" << bending_lengths_ << std::endl;
 
-    // hangFromCorners();
+    hangFromCorners();
 
     // std::cout << "inv_mass_ after hang:\n" << inv_mass_ << std::endl;
 }

@@ -57,7 +57,7 @@ class Cloth():
                     edge_ids.append([id0, id1])
 
                 # Tri pair
-                if n >= 0:
+                if n >= 0 and id0<id1:
                     ni = n // 3
                     nj = n % 3
                     id2 = mesh["face_tri_ids"][i][(j + 2) % 3]
