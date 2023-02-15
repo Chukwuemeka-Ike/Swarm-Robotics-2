@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <std_msgs/Float32.h>
 #include <nav_msgs/Odometry.h>
 
@@ -49,6 +50,8 @@ private:
     // vertice: vector with m elements with 3d row vectors. each row is 3D xyz position of a particle.
     pbd_object::Mesh createMeshRectangular(const std::string &name, const Real &fabric_x, const Real &fabric_y, const Real &fabric_z, const Real &fabric_res);
 
+    void readAttachedRobotForces();
+
     // Helper functions to publish created markers
     void publishRvizPoints(const std::vector<geometry_msgs::Point> &points);
     void publishRvizLines(const std::vector<geometry_msgs::Point> &points);
@@ -62,6 +65,7 @@ private:
     // Timer callback functions
     void simulate(const ros::TimerEvent& e);
     void render(const ros::TimerEvent& e);
+    void publishWrenches(const ros::TimerEvent& e);
 
     // Odometry callback functions
     void odometryCb_01(const nav_msgs::Odometry::ConstPtr odom_msg);
@@ -81,7 +85,14 @@ private:
     boost::recursive_mutex &mtx_;
 
     ros::Publisher pub_fabric_points_;
+
+    ros::Publisher pub_wrench_stamped_01_;
+    ros::Publisher pub_wrench_stamped_02_;
+    ros::Publisher pub_wrench_stamped_03_;
+    ros::Publisher pub_wrench_stamped_04_;
+
     ros::ServiceServer params_srv_;
+    
     ros::Subscriber sub_odom_01_;
     ros::Subscriber sub_odom_02_;
     ros::Subscriber sub_odom_03_;
@@ -89,6 +100,7 @@ private:
 
     ros::Timer timer_render_;
     ros::Timer timer_simulate_;
+    ros::Timer timer_wrench_pub_;
 
     // ROS Parameters
     bool p_active_;
@@ -115,6 +127,8 @@ private:
     Real simulation_rate_;
     Real rendering_rate_;
 
+    Real wrench_pub_rate_;
+
     std::string fabric_points_topic_name_;
     std::string fabric_points_frame_id_;
 
@@ -122,6 +136,16 @@ private:
     std::string odom_02_topic_name_; 
     std::string odom_03_topic_name_; 
     std::string odom_04_topic_name_;
+
+    std::string wrench_01_topic_name_;
+    std::string wrench_02_topic_name_; 
+    std::string wrench_03_topic_name_; 
+    std::string wrench_04_topic_name_;
+
+    std::string wrench_01_frame_id_;
+    std::string wrench_02_frame_id_; 
+    std::string wrench_03_frame_id_; 
+    std::string wrench_04_frame_id_;
     
     Real fabric_rob_z_offset_; // Additional  attachment height to robots
 
@@ -139,6 +163,11 @@ private:
     int rob_02_attached_id_;
     int rob_03_attached_id_;
     int rob_04_attached_id_;
+
+    Eigen::Matrix<Real,1,3> rob_01_attached_force_;
+    Eigen::Matrix<Real,1,3> rob_02_attached_force_;
+    Eigen::Matrix<Real,1,3> rob_03_attached_force_;
+    Eigen::Matrix<Real,1,3> rob_04_attached_force_;
 
     int time_frames_; //to report the performance per frame
     Real time_sum_; //to report the performance per frame

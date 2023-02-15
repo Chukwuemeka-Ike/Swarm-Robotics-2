@@ -6,6 +6,7 @@
 #define CLOTH_H
 
 #include <math.h>
+#include <cmath>
 #include <numeric>
 #include <vector>
 #include <unordered_map> 
@@ -51,6 +52,8 @@ public:
     void solve(const Real &dt);
     void postSolve(const Real &dt);
 
+    void hangFromCorners(const int &num_corners);
+
     int attachNearest(const Eigen::Matrix<Real,1,3> &pos);
     void updateAttachedPose(const int &id, const Eigen::Matrix<Real,1,3> &pos);
 
@@ -62,6 +65,11 @@ public:
 
     Eigen::Matrix<Real,Eigen::Dynamic,3> *getPosPtr();
     Eigen::Matrix<Real,Eigen::Dynamic,3> *getVelPtr();
+    Eigen::Matrix<Real,Eigen::Dynamic,3> *getForPtr();
+
+    std::vector<int> *getAttachedIdsPtr();
+
+    void resetForces();
 
 private:
     // Functions
@@ -72,8 +80,6 @@ private:
     void solveStretching(const Real &compliance, const Real &dt);
     void solveBending(const Real &compliance, const Real &dt);
 
-    void hangFromCorners();
-
     // Variables
     Mesh mesh_;
     int num_particles_;
@@ -82,6 +88,7 @@ private:
     Eigen::Matrix<Real,Eigen::Dynamic,3> prev_pos_;
     Eigen::Matrix<Real,Eigen::Dynamic,3> rest_pos_;
     Eigen::Matrix<Real,Eigen::Dynamic,3> vel_;
+    Eigen::Matrix<Real,Eigen::Dynamic,3> for_;
     
     Eigen::Matrix<Real,1,Eigen::Dynamic> inv_mass_;
     Real density_; // fabric mass per meter square (kg/m^2)
@@ -97,6 +104,8 @@ private:
 
     // May not be necessary?
     // Eigen::RowVectorXi attached_ids_; // ids of robot attached particles
+    std::vector<int> attached_ids_; // ids of robot attached particles
+
     // int grab_id_;
     // Real grab_inv_mass_;
     

@@ -29,9 +29,16 @@ FabricSimulator::FabricSimulator(ros::NodeHandle &nh, ros::NodeHandle &nh_local,
     rob_03_attached_id_ = -1;
     rob_04_attached_id_ = -1;
 
+    rob_01_attached_force_.setZero();
+    rob_02_attached_force_.setZero();
+    rob_03_attached_force_.setZero();
+    rob_04_attached_force_.setZero();
+
     // Initialize Timers with deafault period (note: last 2 false mean: oneshot=false, autostart=false)
     timer_render_ = nh_.createTimer(ros::Duration(1.0), &FabricSimulator::render, this,false, false); 
     timer_simulate_ = nh_.createTimer(ros::Duration(1.0), &FabricSimulator::simulate, this,false, false); 
+
+    timer_wrench_pub_ = nh_.createTimer(ros::Duration(1.0), &FabricSimulator::publishWrenches, this,false, false); 
 
     // Initilize parameters
     params_srv_ = nh_local_.advertiseService("params", &FabricSimulator::updateParams, this);
@@ -88,13 +95,15 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     
     nh_local_.param<Real>("fabric_x", fabric_x_, 2.); //2
     nh_local_.param<Real>("fabric_y", fabric_y_, 2.); //2
-    nh_local_.param<Real>("fabric_density", fabric_density_, 5);
+    nh_local_.param<Real>("fabric_density", fabric_density_, 2.5);
     nh_local_.param<Real>("fabric_resolution", fabric_resolution_, 10); //10
     nh_local_.param<Real>("fabric_bending_compliance", fabric_bending_compliance_, 0.01);
-    nh_local_.param<Real>("initial_height", initial_height_, 3.0);
+    nh_local_.param<Real>("initial_height", initial_height_, 1.0);
     
     nh_local_.param<Real>("simulation_rate", simulation_rate_, 90.0); //90
     nh_local_.param<Real>("rendering_rate", rendering_rate_, 30.0); //30
+
+    nh_local_.param<Real>("wrench_pub_rate", wrench_pub_rate_, 60.0); //60
 
     nh_local_.param<std::string>("fabric_points_topic_name", fabric_points_topic_name_, std::string("cloth_points"));
     nh_local_.param<std::string>("fabric_points_frame_id", fabric_points_frame_id_, std::string("map"));
@@ -104,11 +113,23 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<std::string>("odom_03_topic_name", odom_03_topic_name_, std::string("d3/ground_truth/odom"));
     nh_local_.param<std::string>("odom_04_topic_name", odom_04_topic_name_, std::string("d4/ground_truth/odom"));
 
+    nh_local_.param<std::string>("wrench_01_topic_name", wrench_01_topic_name_, std::string("d1/fabric_wrench_stamped"));
+    nh_local_.param<std::string>("wrench_02_topic_name", wrench_02_topic_name_, std::string("d2/fabric_wrench_stamped"));
+    nh_local_.param<std::string>("wrench_03_topic_name", wrench_03_topic_name_, std::string("d3/fabric_wrench_stamped"));
+    nh_local_.param<std::string>("wrench_04_topic_name", wrench_04_topic_name_, std::string("d4/fabric_wrench_stamped"));
+
+    nh_local_.param<std::string>("wrench_01_frame_id", wrench_01_frame_id_, std::string("d1_fabric_wrench"));
+    nh_local_.param<std::string>("wrench_02_frame_id", wrench_02_frame_id_, std::string("d2_fabric_wrench"));
+    nh_local_.param<std::string>("wrench_03_frame_id", wrench_03_frame_id_, std::string("d3_fabric_wrench"));
+    nh_local_.param<std::string>("wrench_04_frame_id", wrench_04_frame_id_, std::string("d4_fabric_wrench"));
+
     nh_local_.param<Real>("fabric_rob_z_offset_", fabric_rob_z_offset_, 1.0);
 
     // Set timer periods based on the parameters
     timer_render_.setPeriod(ros::Duration(1.0/rendering_rate_));
     timer_simulate_.setPeriod(ros::Duration(1.0/simulation_rate_));
+
+    timer_wrench_pub_.setPeriod(ros::Duration(1.0/wrench_pub_rate_));
 
     // Initilize gravity vector
     gravity_ << gravity_x_, gravity_y_, gravity_z_;    
@@ -124,6 +145,9 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     // Create cloth
     fabric_ = pbd_object::Cloth(fabric_mesh, fabric_bending_compliance_, fabric_density_);
 
+    // Hang fabric from corners
+    fabric_.hangFromCorners(0);
+
     if (p_active_ != prev_active) {
         if (p_active_) {
             // Create subscribers
@@ -135,9 +159,15 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
             // Create publishers
             pub_fabric_points_ = nh_.advertise<visualization_msgs::Marker>(fabric_points_topic_name_, 1);
 
+            pub_wrench_stamped_01_ = nh_.advertise<geometry_msgs::WrenchStamped>(wrench_01_topic_name_, 1);
+            pub_wrench_stamped_02_ = nh_.advertise<geometry_msgs::WrenchStamped>(wrench_02_topic_name_, 1);
+            pub_wrench_stamped_03_ = nh_.advertise<geometry_msgs::WrenchStamped>(wrench_03_topic_name_, 1);
+            pub_wrench_stamped_04_ = nh_.advertise<geometry_msgs::WrenchStamped>(wrench_04_topic_name_, 1);
+
             // Start timers
             timer_simulate_.start();
             timer_render_.start();
+            timer_wrench_pub_.start();
         }
         else {
             // Send empty message?
@@ -154,6 +184,7 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
             // Stop timers
             timer_render_.stop();
             timer_simulate_.stop();
+            timer_wrench_pub_.stop();
         }
     }
 
@@ -178,6 +209,11 @@ void FabricSimulator::reset(){
     rob_02_attached_id_ = -1;
     rob_03_attached_id_ = -1;
     rob_04_attached_id_ = -1;
+
+    rob_01_attached_force_.setZero();
+    rob_02_attached_force_.setZero();
+    rob_03_attached_force_.setZero();
+    rob_04_attached_force_.setZero();
 
     p_reset_ = false;
     nh_local_.setParam("reset",false);
@@ -229,8 +265,6 @@ pbd_object::Mesh FabricSimulator::createMeshRectangular(const std::string &name,
     for (int i = 0; i < vertices.size(); i++) {
         vertices_mat.row(i) = vertices[i];
     }
-
-
 
     // Create face triangle ids
     // int id = 0;
@@ -303,7 +337,6 @@ pbd_object::Mesh FabricSimulator::createMeshRectangular(const std::string &name,
         face_tri_ids_mat.row(i) = face_tri_ids[i];
     }
 
-
     pbd_object::Mesh mesh;
     mesh.name = name;
     mesh.vertices = vertices_mat;
@@ -317,8 +350,6 @@ void FabricSimulator::simulate(const ros::TimerEvent& e){
     boost::recursive_mutex::scoped_lock lock(mtx_);
 
     Real sdt = dt_ / num_substeps_;
-
-    // std::cout << "sdt: " << sdt << std::endl; 
 
     // std::chrono::high_resolution_clock::time_point start_time = high_resolution_clock::now();
     ros::Time start_time = ros::Time::now();
@@ -335,38 +366,36 @@ void FabricSimulator::simulate(const ros::TimerEvent& e){
     }
     // -------------------------------
 
+    // // To debug force readings from hanged corners (use inly when robots are not attached)
+    // std::vector<int> *attached_ids_ptr = fabric_.getAttachedIdsPtr();
+    // Eigen::Matrix<Real,Eigen::Dynamic,3> *for_ptr = fabric_.getForPtr();
+    // int id = (*attached_ids_ptr)[0]; // First attached id
+    // // force at that attached id
+    // std::cout << "id: " << id << ". Force = " << for_ptr->row(id)/num_substeps_ << " N." << std::endl;
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++==
+    readAttachedRobotForces();
+    fabric_.resetForces();
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++==
+
     // std::chrono::high_resolution_clock::time_point finish_time = high_resolution_clock::now();
     ros::Time finish_time = ros::Time::now();
-    
     // Real elapsed_time = duration_cast<microseconds>(finish_time - start_time).count() * 0.000001;
     ros::Duration elapsed_time = finish_time - start_time;
-
     time_sum_ += elapsed_time.toSec();
     time_frames_ += 1;
-
     if (time_frames_ > 100) {
         time_sum_ /= time_frames_;
-        
-        // std::cout << std::fixed << std::setprecision(3) << time_sum_ << " s per frame" << std::endl;
-        // time_sum_str = to_string(time_sum_);
-        // ROS_INFO("[Fabric Simulator]: %s s per frame",time_sum_str.c_srt());
-        ROS_INFO("[Fabric Simulator]: %lf secs per frame", time_sum_);
-
-        // Smart dt and simulation rate selection
+        ROS_INFO("[Fabric Simulator]: %-4.2lf ms per simulation iteration", time_sum_*1000);
+        // Smart dt and simulation rate selection (debug)
         if (!is_auto_sim_rate_set_ && set_sim_rate_auto_) {
             dt_ = time_sum_;
             timer_simulate_.setPeriod(ros::Duration(time_sum_));
             is_auto_sim_rate_set_ = true; 
             std::cout << "Automatic setup. dt = " << dt_ << " seconds." << std::endl;
         }
-
         time_frames_ = 0;
         time_sum_ = 0;
-
-        // Eigen::Matrix<Real,Eigen::Dynamic,3> *pos_ptr = fabric_.getPosPtr();
-        // Eigen::MatrixX2i *stretching_ids_ptr = fabric_.getStretchingIdsPtr();
-        // drawRviz(pos_ptr);
-        // drawRvizWireframe(pos_ptr,stretching_ids_ptr);
     }
 }
 
@@ -568,4 +597,81 @@ void FabricSimulator::odometryCb_04(const nav_msgs::Odometry::ConstPtr odom_msg)
         // tell sim object to update its position
             fabric_.updateAttachedPose(rob_04_attached_id_, pos);
     }
+}
+
+void FabricSimulator::readAttachedRobotForces(){
+    Eigen::Matrix<Real,Eigen::Dynamic,3> *for_ptr = fabric_.getForPtr();
+
+    // std::cout << "Here" << std::endl;
+
+    if (is_rob_01_attached_){
+        rob_01_attached_force_ = for_ptr->row(rob_01_attached_id_)/num_substeps_;
+        // std::cout << "id: " << rob_01_attached_id_ << ". Force = " << ": " << for_ptr->row(rob_01_attached_id_)/num_substeps_ << " N." << std::endl;
+    }
+    if (is_rob_02_attached_){
+        rob_02_attached_force_ = for_ptr->row(rob_02_attached_id_)/num_substeps_;
+    }
+    if (is_rob_03_attached_){
+        rob_03_attached_force_ = for_ptr->row(rob_03_attached_id_)/num_substeps_;
+    }
+    if (is_rob_04_attached_){
+        rob_04_attached_force_ = for_ptr->row(rob_04_attached_id_)/num_substeps_;
+    }
+}
+
+// Publish forces on each robot by the fabric
+void FabricSimulator::publishWrenches(const ros::TimerEvent& e){
+    geometry_msgs::WrenchStamped msg;
+    msg.header.stamp = ros::Time::now();
+
+    // std::cout << "Here22" << std::endl;
+
+    if (is_rob_01_attached_){
+        // std::cout << "id: " << rob_01_attached_id_ << ". Force = " << rob_01_attached_force_ << " N." << std::endl;
+
+        msg.header.frame_id = wrench_01_frame_id_;
+        msg.wrench.force.x = rob_01_attached_force_(0);
+        msg.wrench.force.y = rob_01_attached_force_(1);
+        msg.wrench.force.z = rob_01_attached_force_(2);
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+        pub_wrench_stamped_01_.publish(msg);
+    }
+    if (is_rob_02_attached_){
+        // std::cout << "id: " << rob_02_attached_id_ << ". Force = " << rob_02_attached_force_ << " N." << std::endl;
+
+        msg.header.frame_id = wrench_02_frame_id_;
+        msg.wrench.force.x = rob_02_attached_force_(0);
+        msg.wrench.force.y = rob_02_attached_force_(1);
+        msg.wrench.force.z = rob_02_attached_force_(2);
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+        pub_wrench_stamped_02_.publish(msg);
+    }
+    if (is_rob_03_attached_){
+        // std::cout << "id: " << rob_03_attached_id_ << ". Force = " << rob_03_attached_force_ << " N." << std::endl;
+
+        msg.header.frame_id = wrench_03_frame_id_;
+        msg.wrench.force.x = rob_03_attached_force_(0);
+        msg.wrench.force.y = rob_03_attached_force_(1);
+        msg.wrench.force.z = rob_03_attached_force_(2);
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+        pub_wrench_stamped_03_.publish(msg);
+    }
+    if (is_rob_04_attached_){
+        // std::cout << "id: " << rob_04_attached_id_ << ". Force = " << rob_04_attached_force_ << " N." << std::endl;
+
+        msg.header.frame_id = wrench_04_frame_id_;
+        msg.wrench.force.x = rob_04_attached_force_(0);
+        msg.wrench.force.y = rob_04_attached_force_(1);
+        msg.wrench.force.z = rob_04_attached_force_(2);
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+        pub_wrench_stamped_04_.publish(msg);
+    }    
 }

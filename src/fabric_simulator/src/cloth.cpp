@@ -25,6 +25,8 @@ Cloth::Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &densi
     vel_ = Eigen::Matrix<Real,Eigen::Dynamic,3>::Zero(num_particles_,3);
     inv_mass_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(num_particles_);
     
+    for_ = Eigen::Matrix<Real,Eigen::Dynamic,3>::Zero(num_particles_,3);
+    
     grads_ = Eigen::Matrix<Real,1,3>::Zero();
 
     // std::cout << "pos_:\n" << pos_ << std::endl;
@@ -86,8 +88,9 @@ Cloth::Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &densi
     stretching_lengths_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(stretching_ids_.rows()); //assigned at initPhysics
     bending_lengths_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(bending_ids_.rows()); //assigned at initPhysics
 
+    // attached_ids_  //Initially empty vector of integers to store the ids of attached (fixed) particles.
+
     // Not necessary? 
-    // attached_ids_
     // only_once 
 
     initPhysics(mesh_.face_tri_ids);
@@ -130,6 +133,7 @@ void Cloth::initPhysics(const Eigen::MatrixX3i &face_tri_ids){
     }
 
     // std::cout << "inv_mass_:\n" << inv_mass_ << std::endl;
+    std::cout << "particle masses:\n" << inv_mass_.cwiseInverse() << " kg." << std::endl;
     std::cout << "Total fabric mass:\n" << inv_mass_.cwiseInverse().sum() << " kg." << std::endl;
 
     
@@ -149,9 +153,6 @@ void Cloth::initPhysics(const Eigen::MatrixX3i &face_tri_ids){
     // std::cout << "stretching_lengths_:\n" << stretching_lengths_ << std::endl;
     // std::cout << "bending_lengths_:\n" << bending_lengths_ << std::endl;
 
-    hangFromCorners();
-
-    // std::cout << "inv_mass_ after hang:\n" << inv_mass_ << std::endl;
 }
 
 Eigen::RowVectorXi Cloth::findTriNeighbors(const Eigen::MatrixX3i &face_tri_ids){
@@ -230,7 +231,7 @@ void Cloth::solveStretching(const Real &compliance, const Real &dt){
         grads_ = pos_.row(id0) - pos_.row(id1);
 
         Real len = grads_.norm();
-        if (len == 0){
+        if (len <= static_cast<Real>(1e-6)){
             continue;
         }
 
@@ -240,10 +241,33 @@ void Cloth::solveStretching(const Real &compliance, const Real &dt){
 
         Real rest_len = stretching_lengths_(i);
         Real C = len - rest_len;
-        Real s = -C / (w+alpha);
+        Real K = w+alpha;
+        
+        if (std::fabs(K) <= static_cast<Real>(1e-6)){
+            continue;
+        } 
 
+        Real s = -C / K; // lambda
+
+        // Position corrections
+        // if (w0 != 0 && w1 != 0 ){
+        //     pos_.row(id0) += s*w0*grads_;
+        //     pos_.row(id1) += -s*w1*grads_;
+        // }
+        // if (w0 == 0 && w1 != 0){
+        //     pos_.row(id1) += -2.0*s*w1*grads_;
+        // }
+        // if (w0 != 0 && w1 == 0){
+        //     pos_.row(id0) += 2.0*s*w0*grads_;
+        // }
         pos_.row(id0) += s*w0*grads_;
         pos_.row(id1) += -s*w1*grads_;
+        
+
+        // Force calculation
+        Real f = (s / (dt*dt)); 
+        for_.row(id0) += f*grads_;
+        for_.row(id1) += -f*grads_;
     }
 }
 
@@ -265,7 +289,7 @@ void Cloth::solveBending(const Real &compliance, const Real &dt){
         grads_ = pos_.row(id0) - pos_.row(id1);
 
         Real len = grads_.norm();
-        if (len == 0){
+        if (len < static_cast<Real>(1e-6)){
             continue;
         }
 
@@ -273,21 +297,47 @@ void Cloth::solveBending(const Real &compliance, const Real &dt){
 
         Real rest_len = bending_lengths_(i);
         Real C = len - rest_len;
-        Real s = -C / (w+alpha);
+        Real K = w+alpha;
+    
+        if (std::fabs(K) <= static_cast<Real>(1e-6)){
+            continue;
+        } 
 
+        Real s = -C / K; // lambda
+
+        // Position corrections
+        // if (w0 != 0 && w1 != 0 ){
+        //     pos_.row(id0) += s*w0*grads_;
+        //     pos_.row(id1) += -s*w1*grads_;
+        // }
+        // if (w0 == 0 && w1 != 0){
+        //     pos_.row(id1) += -2.0*s*w1*grads_;
+        // }
+        // if (w0 != 0 && w1 == 0){
+        //     pos_.row(id0) += 2.0*s*w0*grads_;
+        // }
         pos_.row(id0) += s*w0*grads_;
         pos_.row(id1) += -s*w1*grads_;
     }
 }
 
-void Cloth::hangFromCorners(){
+void Cloth::hangFromCorners(const int &num_corners){
+    // if num_corners = 0: Do not fix any corners, free fall
+    // if num_corners = 1: Fix from 1 corners
+    // if num_corners = 2: Fix from 2 corners
+    // if num_corners = 3: Fix from 3 corners
+    // if num_corners = 4: Fix all corners
+    // if num_corners = else: Fix all corners
+
     Real min_x = std::numeric_limits<Real>::infinity();
     Real max_x = -std::numeric_limits<Real>::infinity();
+    Real min_y = std::numeric_limits<Real>::infinity();
     Real max_y = -std::numeric_limits<Real>::infinity();
 
     for (int i = 0; i < num_particles_; i++) {
         min_x = std::min(min_x, pos_(i,0));
         max_x = std::max(max_x, pos_(i,0));
+        min_y = std::min(min_y, pos_(i,1));
         max_y = std::max(max_y, pos_(i,1));
     }
 
@@ -296,8 +346,47 @@ void Cloth::hangFromCorners(){
     for (int i = 0; i < num_particles_; i++) {
         Real x = pos_(i,0);
         Real y = pos_(i,1);
-        if (y > max_y - eps && (x < min_x + eps || x > max_x - eps)) {
-            inv_mass_(i) = 0.0;
+
+        switch(num_corners) {
+            case 0:
+                std::cout << "Did not virtually hang from any corners." << std::endl;
+                return;
+                // break;
+            case 1:
+                std::cout << "Virtually hang from 1 corners." << std::endl;
+                if (y > max_y - eps && x > max_x - eps) {
+                    inv_mass_(i) = 0.0;
+                    attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
+                }
+                break;
+            case 2:
+                std::cout << "Virtually hang from 2 corners." << std::endl;
+                if (y > max_y - eps && (x < min_x + eps || x > max_x - eps)) {
+                    inv_mass_(i) = 0.0;
+                    attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
+                }
+                break;
+            case 3:
+                std::cout << "Virtually hang from 3 corners." << std::endl;
+                if ((y > max_y - eps && x < min_x + eps) || (y > max_y - eps && x > max_x - eps) || (y < min_y + eps && x > max_x - eps) ) {
+                    inv_mass_(i) = 0.0;
+                    attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
+                }
+                break;
+            case 4:
+                std::cout << "Virtually hang all corners." << std::endl;
+                if ((y < min_y + eps || y > max_y - eps  ) && (x < min_x + eps || x > max_x - eps)) {
+                    inv_mass_(i) = 0.0;
+                    attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
+                }
+                break;
+            default:
+                std::cout << "Err. Virtually hang all corners." << std::endl;
+                if ((y < min_y + eps || y > max_y - eps  ) && (x < min_x + eps || x > max_x - eps)) {
+                    inv_mass_(i) = 0.0;
+                    attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
+                }
+                break;
         }
     }
 }
@@ -339,6 +428,7 @@ void Cloth::solve(const Real &dt){
 }
 
 void Cloth::postSolve(const Real &dt){
+    // Update velocities
     for (int i = 0; i< num_particles_; i++){
         if (inv_mass_(i) != 0){
             vel_.row(i) = (pos_.row(i) - prev_pos_.row(i))/dt;
@@ -346,11 +436,17 @@ void Cloth::postSolve(const Real &dt){
     }
 }
 
+void Cloth::resetForces(){
+    // Also Reset accumulated forces for the next iteration
+    for_.setZero();
+}
+
 int Cloth::attachNearest(const Eigen::Matrix<Real,1,3> &pos){
     int id = findNearestPositionVectorId(pos_,pos);
     // Make that particle stationary
     if (id >= 0){
         inv_mass_(id) = 0.0;
+        attached_ids_.push_back(id); // add fixed particle id to the attached_ids_ vector
     }
     return id;
 }
@@ -367,6 +463,10 @@ Eigen::Matrix<Real,Eigen::Dynamic,3> *Cloth::getVelPtr(){
     return &vel_;
 }
 
+Eigen::Matrix<Real,Eigen::Dynamic,3> *Cloth::getForPtr(){
+    return &for_;
+}
+
 Eigen::Matrix<Real,1,Eigen::Dynamic> *Cloth::getStretchingLengthsPtr(){
     return &stretching_lengths_;
 }
@@ -381,4 +481,8 @@ Eigen::MatrixX2i *Cloth::getStretchingIdsPtr(){
 
 Eigen::MatrixX4i *Cloth::getBendingIdsPtr(){
     return &bending_ids_;
+}
+
+std::vector<int> *Cloth::getAttachedIdsPtr(){
+    return &attached_ids_;
 }
