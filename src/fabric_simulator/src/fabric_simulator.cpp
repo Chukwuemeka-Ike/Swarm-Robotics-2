@@ -95,10 +95,10 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     
     nh_local_.param<Real>("fabric_x", fabric_x_, 2.); //2
     nh_local_.param<Real>("fabric_y", fabric_y_, 2.); //2
-    nh_local_.param<Real>("fabric_density", fabric_density_, 2.5);
+    nh_local_.param<Real>("fabric_density", fabric_density_, 1.0);
     nh_local_.param<Real>("fabric_resolution", fabric_resolution_, 10); //10
     nh_local_.param<Real>("fabric_bending_compliance", fabric_bending_compliance_, 0.01);
-    nh_local_.param<Real>("initial_height", initial_height_, 1.0);
+    nh_local_.param<Real>("initial_height", initial_height_, 0.8);
     
     nh_local_.param<Real>("simulation_rate", simulation_rate_, 90.0); //90
     nh_local_.param<Real>("rendering_rate", rendering_rate_, 30.0); //30
@@ -118,12 +118,12 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<std::string>("wrench_03_topic_name", wrench_03_topic_name_, std::string("d3/fabric_wrench_stamped"));
     nh_local_.param<std::string>("wrench_04_topic_name", wrench_04_topic_name_, std::string("d4/fabric_wrench_stamped"));
 
-    nh_local_.param<std::string>("wrench_01_frame_id", wrench_01_frame_id_, std::string("d1_fabric_wrench"));
-    nh_local_.param<std::string>("wrench_02_frame_id", wrench_02_frame_id_, std::string("d2_fabric_wrench"));
-    nh_local_.param<std::string>("wrench_03_frame_id", wrench_03_frame_id_, std::string("d3_fabric_wrench"));
-    nh_local_.param<std::string>("wrench_04_frame_id", wrench_04_frame_id_, std::string("d4_fabric_wrench"));
+    nh_local_.param<std::string>("wrench_01_frame_id", wrench_01_frame_id_, std::string("d1_tf_fabric_mount_link"));
+    nh_local_.param<std::string>("wrench_02_frame_id", wrench_02_frame_id_, std::string("d2_tf_fabric_mount_link"));
+    nh_local_.param<std::string>("wrench_03_frame_id", wrench_03_frame_id_, std::string("d3_tf_fabric_mount_link"));
+    nh_local_.param<std::string>("wrench_04_frame_id", wrench_04_frame_id_, std::string("d4_tf_fabric_mount_link"));
 
-    nh_local_.param<Real>("fabric_rob_z_offset_", fabric_rob_z_offset_, 1.0);
+    nh_local_.param<Real>("fabric_rob_z_offset_", fabric_rob_z_offset_, 0.0); // 0.785145); // makes it 80cm above ground
 
     // Set timer periods based on the parameters
     timer_render_.setPeriod(ros::Duration(1.0/rendering_rate_));
