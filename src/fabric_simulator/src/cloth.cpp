@@ -15,9 +15,10 @@ Cloth::Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &densi
     bending_compliance_(bending_compliance),
     density_(density)
 {
-    stretching_compliance_ = 1.0/100000 ; //0.0;
+    stretching_compliance_ = 0.0; // 1.0/100000 ; //0.0;
 
     num_particles_ = mesh_.vertices.rows();
+    std::cout << "num particles: " << num_particles_ << std::endl;
     
     pos_ = mesh_.vertices;
     prev_pos_ = mesh_.vertices;
@@ -82,8 +83,9 @@ Cloth::Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &densi
     stretching_ids_ = edge_ids_mat;
     bending_ids_ = tri_pair_ids_mat;
 
-    std::cout << "stretching_ids_:\n" << stretching_ids_ << std::endl;
-    std::cout << "bending_ids_:\n" << bending_ids_ << std::endl;
+    // std::cout << "stretching_ids_:\n" << stretching_ids_ << std::endl;
+    // std::cout << "bending_ids_:\n" << bending_ids_ << std::endl;
+    std::cout << "num edges: " << stretching_ids_.rows() << std::endl;
 
     stretching_lengths_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(stretching_ids_.rows()); //assigned at initPhysics
     bending_lengths_ = Eigen::Matrix<Real,1,Eigen::Dynamic>::Zero(bending_ids_.rows()); //assigned at initPhysics
@@ -133,7 +135,7 @@ void Cloth::initPhysics(const Eigen::MatrixX3i &face_tri_ids){
     }
 
     // std::cout << "inv_mass_:\n" << inv_mass_ << std::endl;
-    std::cout << "particle masses:\n" << inv_mass_.cwiseInverse() << " kg." << std::endl;
+    // std::cout << "particle masses:\n" << inv_mass_.cwiseInverse() << " kg." << std::endl;
     std::cout << "Total fabric mass:\n" << inv_mass_.cwiseInverse().sum() << " kg." << std::endl;
 
     

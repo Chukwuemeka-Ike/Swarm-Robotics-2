@@ -108,10 +108,10 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<std::string>("fabric_points_topic_name", fabric_points_topic_name_, std::string("cloth_points"));
     nh_local_.param<std::string>("fabric_points_frame_id", fabric_points_frame_id_, std::string("map"));
 
-    nh_local_.param<std::string>("odom_01_topic_name", odom_01_topic_name_, std::string("d1/ground_truth/odom"));
-    nh_local_.param<std::string>("odom_02_topic_name", odom_02_topic_name_, std::string("d2/ground_truth/odom"));
-    nh_local_.param<std::string>("odom_03_topic_name", odom_03_topic_name_, std::string("d3/ground_truth/odom"));
-    nh_local_.param<std::string>("odom_04_topic_name", odom_04_topic_name_, std::string("d4/ground_truth/odom"));
+    nh_local_.param<std::string>("odom_01_topic_name", odom_01_topic_name_, std::string("d1/ground_truth/fabric_mount/odom"));
+    nh_local_.param<std::string>("odom_02_topic_name", odom_02_topic_name_, std::string("d2/ground_truth/fabric_mount/odom"));
+    nh_local_.param<std::string>("odom_03_topic_name", odom_03_topic_name_, std::string("d3/ground_truth/fabric_mount/odom"));
+    nh_local_.param<std::string>("odom_04_topic_name", odom_04_topic_name_, std::string("d4/ground_truth/fabric_mount/odom"));
 
     nh_local_.param<std::string>("wrench_01_topic_name", wrench_01_topic_name_, std::string("d1/fabric_wrench_stamped"));
     nh_local_.param<std::string>("wrench_02_topic_name", wrench_02_topic_name_, std::string("d2/fabric_wrench_stamped"));

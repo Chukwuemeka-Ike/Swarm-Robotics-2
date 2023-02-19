@@ -39,8 +39,8 @@ namespace fabric_simulator
 class FabricSimulator
 {
 public:
-  FabricSimulator(ros::NodeHandle &nh, ros::NodeHandle &nh_local, boost::recursive_mutex &mtx);
-  ~FabricSimulator();
+    FabricSimulator(ros::NodeHandle &nh, ros::NodeHandle &nh_local, boost::recursive_mutex &mtx);
+    ~FabricSimulator();
 
 private:
     // Functions ---------------------------------

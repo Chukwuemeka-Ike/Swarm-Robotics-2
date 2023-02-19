@@ -5,12 +5,12 @@
         <!-- TODO: SPecify here to disable launching the default rviz and gazebo client GUI -->
     </include>
 
-    <!-- Launch the Fabric Simulation that reads the location data of robots and attaches the fabric corners to those locations  -->
-    <!-- TODO: -->
-    <!-- <include file="$(find assistive_launch)/launch/test_launch/oarbot_blue_base.launch">  -->
-    <!-- </include>  -->
-
     <!-- Launch RVIZ specific to Fabric + Multi robot simulation -->
-    <!-- TODO -->
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find dingo_viz)/rviz/multi_dingo_with_cloth_sim.rviz" output="screen"/>
+
+    <!-- RQT EZ publisher -->
+    <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen">
+        <rosparam command="load" file="/home/burak/ez_cmd_vel_multi_dingo.yaml" subst_value="true" />
+    </node>
 
 </launch>

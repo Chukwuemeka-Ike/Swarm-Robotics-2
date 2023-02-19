@@ -35,15 +35,14 @@ import tf.transformations
 class WrenchTransformer():
     def __init__(self):
         rospy.init_node('wrench_transformer', anonymous=True)
-        self.is_following_started = False
 
         # Topic name to publish
         self.wrench_topic_name_out = rospy.get_param("~wrench_topic_name_out", "tool_wrench_filtered")
         # Topic name to subsribe
         self.wrench_topic_name_in = rospy.get_param("~wrench_topic_name_in", "tool_wrench_raw")
-        # Specified arm base tf frame name 
-        self.tf_a_frame_name = rospy.get_param("~tf_a_frame_name", "d1_tf_fabric_mount_link")
-        self.tf_b_frame_name = rospy.get_param("~tf_b_frame_name", "d1_tf_base_link")
+        # Specified tf frame names
+        self.tf_a_frame_name = rospy.get_param("~tf_a_frame_name", "tf_a_link")
+        self.tf_b_frame_name = rospy.get_param("~tf_b_frame_name", "tf_b_link")
 
         # Publisher
         self.pub_wrench = rospy.Publisher(self.wrench_topic_name_out, geometry_msgs.msg.Wrench, queue_size=1)
@@ -58,8 +57,6 @@ class WrenchTransformer():
         self.T_a2b = None
         self.is_ok_tf = False
 
-        self.initial_time = rospy.Time.now().to_sec()
-
         # To store the applied force on frame a
         self.F_a = [0.,0.,0.,0.,0.,0.]
 
@@ -67,6 +64,9 @@ class WrenchTransformer():
         self.pub_rate = rospy.get_param("~pub_rate", 100.0)
         self.rate = rospy.Rate(self.pub_rate)
         self.expected_duration = 1.00/self.pub_rate # seconds per cycle
+
+        self.wait_timeout = 10.0*self.expected_duration
+        self.last_msg_time = 0.0
 
         # Start control
         rospy.Timer(rospy.Duration(self.expected_duration), self.wrench_transformer)
@@ -91,7 +91,7 @@ class WrenchTransformer():
             return True
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             # Put a warning which says that the transformation could not found
-            rospy.logerr('wrench_transformer: Waiting to find the transformation from %s to %s' 
+            rospy.logwarn_once('wrench_transformer: Waiting to find the transformation from %s to %s' 
                             % (self.tf_a_frame_name, self.tf_b_frame_name)) 
             return False
 
@@ -118,14 +118,15 @@ class WrenchTransformer():
         self.publish_wrench(f_b,t_b)
 
     def publish_wrench(self, f,t):
-        wrench_msg = geometry_msgs.msg.Wrench()
-        wrench_msg.force.x = f[0]
-        wrench_msg.force.y = f[1]
-        wrench_msg.force.z = f[2]
-        wrench_msg.torque.x = t[0]
-        wrench_msg.torque.y = t[1]
-        wrench_msg.torque.z = t[2]
-        self.pub_wrench.publish(wrench_msg)
+        if not ((rospy.Time.now().to_sec() - self.last_msg_time) > self.wait_timeout):
+            wrench_msg = geometry_msgs.msg.Wrench()
+            wrench_msg.force.x = f[0]
+            wrench_msg.force.y = f[1]
+            wrench_msg.force.z = f[2]
+            wrench_msg.torque.x = t[0]
+            wrench_msg.torque.y = t[1]
+            wrench_msg.torque.z = t[2]
+            self.pub_wrench.publish(wrench_msg)
 
     """
     def publishWrenchStamped(self, header, wrench):
@@ -154,6 +155,7 @@ class WrenchTransformer():
         F_ang_z = wrench_stamped_msg.wrench.torque.z
 
         self.F_a = [F_lin_x,F_lin_y,F_lin_z,F_ang_x,F_ang_y,F_ang_z]
+        self.last_msg_time = rospy.Time.now().to_sec()
 
 if __name__ == '__main__':
     wrenchTransformer = WrenchTransformer()
