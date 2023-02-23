@@ -396,11 +396,6 @@ void Cloth::hangFromCorners(const int &num_corners){
 void Cloth::preSolve(const Real &dt, const Eigen::Matrix<Real,1,3> &gravity){
     for (int i = 0; i< num_particles_; i++){
         if (inv_mass_(i) > 0){
-            // std::cout << "i :" << i << std::endl;
-            // std::cout << "pos_.row(i): " << pos_.row(i) << std::endl;
-            // std::cout << "prev_pos_.row(i): " << prev_pos_.row(i) << std::endl;
-            // std::cout << "vel_.row(i): " << vel_.row(i) << std::endl;
-
             vel_.row(i) += gravity*dt;
             prev_pos_.row(i) = pos_.row(i);
             pos_.row(i) += vel_.row(i)*dt;
@@ -411,15 +406,6 @@ void Cloth::preSolve(const Real &dt, const Eigen::Matrix<Real,1,3> &gravity){
                 pos_.row(i) = prev_pos_.row(i) ;
                 pos_(i,2) = 0.0;
             }
-
-            
-            // std::cout << "i :" << i << std::endl;
-            // std::cout << "pos_.row(i): " << pos_.row(i) << std::endl;
-            // std::cout << "prev_pos_.row(i): " << prev_pos_.row(i) << std::endl;
-            // std::cout << "vel_.row(i): " << vel_.row(i) << std::endl;
-
-            // std::string s;
-            // std::cin >> s;
         }
     }
 }

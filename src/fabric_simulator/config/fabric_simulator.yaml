@@ -11,7 +11,7 @@ num_steps: 1 # experimental only. do not change from 1
 fabric_x: 2.0 # fabric x size in meters
 fabric_y: 2.0 # fabric y size in meters
 fabric_density: 1.0 # fabric mass per meter square (kg/m^2)
-fabric_resolution: 10 # particle resolution per meter 
+fabric_resolution: 7 # particle resolution per meter 
 fabric_bending_compliance: 0.01 # Note, fabric stretching compliance assumed to be 0.0 already.
 initial_height: 0.8 # initial fabric height from ground (m)
 simulation_rate: 90.0

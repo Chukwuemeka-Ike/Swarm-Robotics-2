@@ -15,6 +15,10 @@ int main(int argc, char **argv)
     boost::recursive_mutex mtx;
 
     try {
+        ros::AsyncSpinner spinner(0); 
+        // See: https://roboticsbackend.com/ros-asyncspinner-example/
+        spinner.start();
+
         // Inform user with the node name
         std::string node_name = ros::this_node::getName();
         ROS_INFO("[%s]: Initializing",node_name.c_str());
@@ -22,7 +26,9 @@ int main(int argc, char **argv)
         FabricSimulator fabricSimulator(nh, nh_local, mtx);
 
         ROS_INFO("[%s]: Initialized.",node_name.c_str());
-        ros::spin();
+        
+        ros::waitForShutdown();
+        // ros::spin();
     }
     catch (const char* s) {
         ROS_FATAL_STREAM("[Fabric Simulator]: " << s);
