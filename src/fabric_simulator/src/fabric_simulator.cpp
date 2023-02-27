@@ -51,6 +51,7 @@ FabricSimulator::~FabricSimulator() {
     nh_local_.deleteParam("gravity_z");
 
     nh_local_.deleteParam("dt");
+    nh_local_.deleteParam("set_sim_rate_auto");
     nh_local_.deleteParam("num_substeps");
     nh_local_.deleteParam("num_steps");
 
@@ -63,6 +64,7 @@ FabricSimulator::~FabricSimulator() {
 
     nh_local_.deleteParam("simulation_rate");
     nh_local_.deleteParam("rendering_rate");
+    nh_local_.deleteParam("wrench_pub_rate");
 
     nh_local_.deleteParam("fabric_points_topic_name");
     nh_local_.deleteParam("fabric_points_frame_id");
@@ -71,6 +73,16 @@ FabricSimulator::~FabricSimulator() {
     nh_local_.deleteParam("odom_02_topic_name");
     nh_local_.deleteParam("odom_03_topic_name");
     nh_local_.deleteParam("odom_04_topic_name");
+
+    nh_local_.deleteParam("wrench_01_topic_name");
+    nh_local_.deleteParam("wrench_02_topic_name");
+    nh_local_.deleteParam("wrench_03_topic_name");
+    nh_local_.deleteParam("wrench_04_topic_name");
+
+    nh_local_.deleteParam("wrench_01_frame_id");
+    nh_local_.deleteParam("wrench_02_frame_id");
+    nh_local_.deleteParam("wrench_03_frame_id");
+    nh_local_.deleteParam("wrench_04_frame_id");
     
     nh_local_.deleteParam("fabric_rob_z_offset");
 }
@@ -172,6 +184,9 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
         else {
             // Send empty message?
 
+            // Stop publishers
+            pub_fabric_points_.shutdown();
+
             // Stop subscribers
             sub_odom_01_.shutdown();
             sub_odom_02_.shutdown();
@@ -179,7 +194,10 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
             sub_odom_04_.shutdown();
 
             // Stop publishers
-            pub_fabric_points_.shutdown();
+            pub_wrench_stamped_01_.shutdown();
+            pub_wrench_stamped_02_.shutdown();
+            pub_wrench_stamped_03_.shutdown();
+            pub_wrench_stamped_04_.shutdown();
 
             // Stop timers
             timer_render_.stop();

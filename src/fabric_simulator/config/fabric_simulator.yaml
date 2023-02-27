@@ -1,7 +1,7 @@
 # Gravity of environment for fabric simulation
 gravity_x: 0.0 # m/s^2
 gravity_y: 0.0 # m/s^2
-gravity_z: -0.981 # m/s^2
+gravity_z: -9.81 # m/s^2
 
 dt: 0.01 # seconds. Simulated time per iteration of the fabric simulatiob.
 set_sim_rate_auto: false  # to set the simulation rate and dt automaticall, do not use

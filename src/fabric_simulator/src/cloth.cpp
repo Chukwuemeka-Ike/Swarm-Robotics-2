@@ -252,16 +252,6 @@ void Cloth::solveStretching(const Real &compliance, const Real &dt){
         Real s = -C / K; // lambda
 
         // Position corrections
-        // if (w0 != 0 && w1 != 0 ){
-        //     pos_.row(id0) += s*w0*grads_;
-        //     pos_.row(id1) += -s*w1*grads_;
-        // }
-        // if (w0 == 0 && w1 != 0){
-        //     pos_.row(id1) += -2.0*s*w1*grads_;
-        // }
-        // if (w0 != 0 && w1 == 0){
-        //     pos_.row(id0) += 2.0*s*w0*grads_;
-        // }
         pos_.row(id0) += s*w0*grads_;
         pos_.row(id1) += -s*w1*grads_;
         
@@ -308,16 +298,6 @@ void Cloth::solveBending(const Real &compliance, const Real &dt){
         Real s = -C / K; // lambda
 
         // Position corrections
-        // if (w0 != 0 && w1 != 0 ){
-        //     pos_.row(id0) += s*w0*grads_;
-        //     pos_.row(id1) += -s*w1*grads_;
-        // }
-        // if (w0 == 0 && w1 != 0){
-        //     pos_.row(id1) += -2.0*s*w1*grads_;
-        // }
-        // if (w0 != 0 && w1 == 0){
-        //     pos_.row(id0) += 2.0*s*w0*grads_;
-        // }
         pos_.row(id0) += s*w0*grads_;
         pos_.row(id1) += -s*w1*grads_;
     }
