@@ -74,6 +74,8 @@ DloSimulator::~DloSimulator() {
 
     nh_local_.deleteParam("initial_height");
 
+    nh_local_.deleteParam("num_hang_corners");
+
     nh_local_.deleteParam("simulation_rate");
     nh_local_.deleteParam("rendering_rate");
     /*
@@ -134,6 +136,8 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
     nh_local_.param<Real>("dlo_bending_compliance_y", dlo_bending_compliance_y_, 0.01);
 
     nh_local_.param<Real>("initial_height", initial_height_, 1.0);
+
+    nh_local_.param<int>("num_hang_corners", num_hang_corners_, 1);
     
     nh_local_.param<Real>("simulation_rate", simulation_rate_, 90.0); //90
     nh_local_.param<Real>("rendering_rate", rendering_rate_, 30.0); //30
@@ -190,7 +194,7 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
                            dlo_density_,dlo_r_);
 
     // Hang dlo from corners
-    dlo_.hangFromCorners(1);
+    dlo_.hangFromCorners(num_hang_corners_);
 
     if (p_active_ != prev_active) {
         if (p_active_) {
@@ -214,7 +218,6 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
             // Start timers
             timer_simulate_.start();
             timer_render_.start();
-            // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ I AM HERE @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
             /*
             timer_wrench_pub_.start();

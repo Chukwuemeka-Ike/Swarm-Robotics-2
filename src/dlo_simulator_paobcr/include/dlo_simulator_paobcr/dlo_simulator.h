@@ -130,6 +130,8 @@ private:
 
     Real initial_height_; // initial dlo height from ground (m)
 
+    int num_hang_corners_; // num of corners to hang dlo from (options: 0,1,2)
+
     Real simulation_rate_;
     Real rendering_rate_;
     /*

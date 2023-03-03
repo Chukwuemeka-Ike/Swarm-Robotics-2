@@ -3,13 +3,13 @@ gravity_x: 0.0 # m/s^2
 gravity_y: 0.0 # m/s^2
 gravity_z: -9.81 # m/s^2
 
-dt: 0.005 # seconds. Simulated time per iteration of the dlo simulation.
+dt: 0.002 # seconds. Simulated time per iteration of the dlo simulation.
 set_sim_rate_auto: false  # to set the simulation rate and dt automaticall, do not use
 num_substeps: 60 # Number of substeps per iteration based on 2019 Small Steps XPBD paper.
 num_steps: 1 # experimental only. do not change from 1
 
-dlo_l: 2 # 3.3528 # dlo length in meters
-dlo_r: 0.01 # 0.005 # dlo radius in meters
+dlo_l: 2.25 # 3.3528 # dlo length in meters
+dlo_r: 0.0035 # 0.0035 # dlo radius in meters
 dlo_density: 1000.0 # dlo mass per meter cube (kg/m^3)
 dlo_resolution: 10 # particle resolution per meter 
 
@@ -21,7 +21,9 @@ dlo_twisting_compliance: 1.0 # 2.0 # 0.01
 dlo_bending_compliance_x: 1.0 # 2.0 # 0.01 
 dlo_bending_compliance_y: 1.0 # 2.0 # 0.01 
 
-initial_height: 2.0 # initial dlo height from ground (m)
+initial_height: 1.10 # initial dlo height from ground (m)
+
+num_hang_corners: 1 # num of corners to hang dlo from (options: 0,1,2)
 
 simulation_rate: 90.0
 rendering_rate: 60.0 # Hz, frequency to publish the dlo vertices and edges to RVIZ visualization markers
