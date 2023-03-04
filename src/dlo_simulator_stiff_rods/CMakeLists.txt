@@ -11,6 +11,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -fpermissive ${CMAKE_CXX_FLAGS} -Wfatal-errors\ 
 # or
 # set(CMAKE_CXX_FLAGS "-O2 -O3 -std=c++11 -Wall")
 
+option(BUILD_WITH_OPENMP "Use OpenMP" ON)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -28,6 +30,19 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system chrono)
 find_package(Eigen3)
+
+if(BUILD_WITH_OPENMP)
+    find_package(OpenMP)
+    if(NOT OpenMP_FOUND)
+        message(FATAL_ERROR "\n\n OpenMP is missing!\n\n")
+    else()
+        message(STATUS "OPENMP FOUND")
+        # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -fopenmp")
+        # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+        set(OpenMP_FLAGS ${OpenMP_CXX_FLAGS})  # or if you use C: ${OpenMP_C_FLAGS}
+        set(OpenMP_LIBRARIES gomp)
+    endif()
+endif()
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -99,7 +114,7 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES dlo_simulator_stiff_rods # dlo, maybe?
  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs tf tf2 tf2_ros visualization_msgs eigen_conversions 
- DEPENDS EIGEN3
+ DEPENDS EIGEN3 # OpenMP, maybe?
 )
 
 ###########
@@ -111,6 +126,7 @@ catkin_package(
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${catkin_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${OpenMP_INCLUDE_DIRS})
 
 #
 # Build libs
@@ -121,7 +137,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 # add_dependencies(dlo ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_library(dlo_simulator_stiff_rods src/dlo_simulator.cpp src/dlo.cpp) 
-target_link_libraries(dlo_simulator_stiff_rods ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(dlo_simulator_stiff_rods ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OpenMP_LIBRARIES})
 add_dependencies(dlo_simulator_stiff_rods ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 #

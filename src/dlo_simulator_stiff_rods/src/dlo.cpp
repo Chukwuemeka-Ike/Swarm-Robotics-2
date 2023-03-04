@@ -238,37 +238,44 @@ void Dlo::hangFromCorners(const int &num_corners){
 }
 
 void Dlo::preSolve(const Real &dt, const Eigen::Matrix<Real,3,1> &gravity){
-    // Semi implicit euler (position)
-    for (int i = 0; i< num_particles_; i++){
-        if (inv_mass_[i] > 0){
-            vel_.col(i) += gravity*dt;
-            prev_pos_[i] = pos_[i];
-            pos_[i] += vel_.col(i)*dt;
+    #pragma omp parallel default(shared)
+    {
+        // Semi implicit euler (position)
+        // #pragma omp for schedule(static) 
+        #pragma omp parallel for 
+        for (int i = 0; i< num_particles_; i++){
+            if (inv_mass_[i] > 0){
+                vel_.col(i) += gravity*dt;
+                prev_pos_[i] = pos_[i];
+                pos_[i] += vel_.col(i)*dt;
 
-            // Prevent going below ground
-            Real z = pos_[i](2);
-            if (z < 0.){
-                pos_[i] = prev_pos_[i] ;
-                pos_[i](2) = 0.0;
+                // Prevent going below ground
+                Real z = pos_[i](2);
+                if (z < 0.){
+                    pos_[i] = prev_pos_[i] ;
+                    pos_[i](2) = 0.0;
+                }
             }
         }
-    }
 
-    // Semi implicit euler (rotation)
-    for (int i = 0; i< num_quaternions_; i++){
-        if (!inv_iner_[i].isZero(0)){
-            //assume zero external torque.
-            Eigen::Matrix<Real,3,1> torque = Eigen::Matrix<Real,3,1>::Zero(); 
-            
-            // integration 
-            omega_.col(i) += dt * inv_iner_[i] * (torque - (omega_.col(i).cross(iner_[i]*omega_.col(i))));
+        // Semi implicit euler (rotation)
+        // #pragma omp for schedule(static) 
+        #pragma omp parallel for
+        for (int i = 0; i< num_quaternions_; i++){
+            if (!inv_iner_[i].isZero(0)){
+                //assume zero external torque.
+                Eigen::Matrix<Real,3,1> torque = Eigen::Matrix<Real,3,1>::Zero(); 
+                
+                // integration 
+                omega_.col(i) += dt * inv_iner_[i] * (torque - (omega_.col(i).cross(iner_[i]*omega_.col(i))));
 
-            Eigen::Quaternion<Real> angVelQ(0.0, omega_.col(i)(0), omega_.col(i)(1), omega_.col(i)(2));
+                Eigen::Quaternion<Real> angVelQ(0.0, omega_.col(i)(0), omega_.col(i)(1), omega_.col(i)(2));
 
-            prev_ori_[i] = ori_[i];
-            
-            ori_[i].coeffs() += dt * 0.5 * (angVelQ * ori_[i]).coeffs();
-            ori_[i].normalize();
+                prev_ori_[i] = ori_[i];
+                
+                ori_[i].coeffs() += dt * 0.5 * (angVelQ * ori_[i]).coeffs();
+                ori_[i].normalize();
+            }
         }
     }
 }
@@ -549,17 +556,24 @@ void Dlo::crossProductMatrix(const Eigen::Matrix<Real,3,1> &v, Eigen::Matrix<Rea
 }
 
 void Dlo::postSolve(const Real &dt){
-    // Update linear velocities
-    for (int i = 0; i< num_particles_; i++){
-        if (inv_mass_[i] != 0){
-            vel_.col(i) = (pos_[i] - prev_pos_[i])/dt;
+    #pragma omp parallel default(shared)
+    {
+        // Update linear velocities
+        // #pragma omp for schedule(static) 
+        #pragma omp parallel for 
+        for (int i = 0; i< num_particles_; i++){
+            if (inv_mass_[i] != 0){
+                vel_.col(i) = (pos_[i] - prev_pos_[i])/dt;
+            }
         }
-    }
-    // Update angular velocities
-    for (int i = 0; i< num_quaternions_; i++){
-        if (!inv_iner_[i].isZero(0)){
-            const Eigen::Quaternion<Real> relRot = (ori_[i] * prev_ori_[i].conjugate());
-            omega_.col(i) = 2.0*relRot.vec()/dt;
+        // Update angular velocities
+        // #pragma omp for schedule(static) 
+        #pragma omp parallel for 
+        for (int i = 0; i< num_quaternions_; i++){
+            if (!inv_iner_[i].isZero(0)){
+                const Eigen::Quaternion<Real> relRot = (ori_[i] * prev_ori_[i].conjugate());
+                omega_.col(i) = 2.0*relRot.vec()/dt;
+            }
         }
     }
 }
