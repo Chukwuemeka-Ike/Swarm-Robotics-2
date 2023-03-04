@@ -81,6 +81,7 @@ void Dlo::setStretchBendTwistConstraints(){
         col 1:	connector in segment 1 (local)
         col 2:	connector in segment 0 (global)
         col 3:	connector in segment 1 (global)    
+    - average_segment_lengths_
     */
 
     std::vector<Eigen::Vector2i> quaternion_ids;
@@ -101,25 +102,16 @@ void Dlo::setStretchBendTwistConstraints(){
         int id1 = stretchBendTwist_ids_(1,i);
         
         //
-        // compute rest Darboux vector
-        //
-        
+        // compute rest Darboux vector based on eqn 7
+        //        
         Eigen::Quaternion<Real> rest_darboux_vect = ori_[id0].conjugate() * ori_[id1]; 
-
-        // Eigen::Quaternion<Real> omega_plus, omega_minus;
-        // omega_plus.coeffs()  = rest_darboux_vect.coeffs() + Eigen::Quaternion<Real>(1, 0, 0, 0).coeffs();
-        // omega_minus.coeffs() = rest_darboux_vect.coeffs() - Eigen::Quaternion<Real>(1, 0, 0, 0).coeffs();
-        // if (omega_minus.squaredNorm() > omega_plus.squaredNorm())
-        //     rest_darboux_vect.coeffs() *= -1.0;
-
         Real averageSegmentLength = 0.5*(mesh_.segment_lengths[id0] + mesh_.segment_lengths[id1]);
-
         stretchBendTwist_restDarbouxVectors_.push_back((2./averageSegmentLength)*rest_darboux_vect.vec());
+        average_segment_lengths_.push_back(averageSegmentLength);
 
         //
         // set initial constraint position info 
         //
-
         // transform in local coordinates
         const Eigen::Matrix<Real,3,3> rot0 = ori_[id0].toRotationMatrix();
         const Eigen::Matrix<Real,3,3> rot1 = ori_[id1].toRotationMatrix();
@@ -131,9 +123,9 @@ void Dlo::setStretchBendTwistConstraints(){
         constraintPosInfo.col(2) = rot0 * constraintPosInfo.col(0) + mesh_.vertices[id0];
         constraintPosInfo.col(3) = rot1 * constraintPosInfo.col(1) + mesh_.vertices[id1];
 
-        std::cout << "0: " << constraintPosInfo.col(2) << std::endl;
-        std::cout << "1: " << constraintPosInfo.col(3) << std::endl;
-        std::cout << "------------------------------" << std::endl;
+        // std::cout << "0: " << constraintPosInfo.col(2) << std::endl;
+        // std::cout << "1: " << constraintPosInfo.col(3) << std::endl;
+        // std::cout << "------------------------------" << std::endl;
 
         stretchBendTwist_constraintPosInfo_.push_back(constraintPosInfo);
     }
@@ -287,7 +279,7 @@ void Dlo::solve(const Real &dt){
 
 void Dlo::solveStretchBendTwistConstraints(const Real &dt){
     // 
-    // Init before projection (eqn 24)
+    // Init before projection (alpha tilde, eqn 24)
     // 
 
     Real inv_dt_sqr = static_cast<Real>(1.0)/(dt*dt);
@@ -320,6 +312,10 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         const int& id0 = stretchBendTwist_ids_(0,i);
         const int& id1 = stretchBendTwist_ids_(1,i);
 
+        const Real& averageSegmentLength = average_segment_lengths_[i];
+
+        // bending_and_torsion_compliance *= static_cast<Real>(1.0) / averageSegmentLength; // why?        
+
         // inverse masses of these segments
         const Real& invMass0 = inv_mass_[id0];
         const Real& invMass1 = inv_mass_[id1];
@@ -338,7 +334,7 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         const Eigen::Matrix<Real,3,3> rot0 = q0.toRotationMatrix();
         const Eigen::Matrix<Real,3,3> rot1 = q1.toRotationMatrix();
 
-        // Current constraint pos info
+        // Current constraint pos info needs to be updated
         Eigen::Matrix<Real, 3, 4>& constraintPosInfo = stretchBendTwist_constraintPosInfo_[i];
 
         // update constraint (for eqn 23, upper part)
@@ -357,10 +353,8 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         // Current darboux vector (imaginary part of it)
         Eigen::Matrix<Real,3,1> omega = (q0.conjugate() * q1).vec();   //darboux vector
 
-        Real averageSegmentLength = 0.5*(mesh_.segment_lengths[id0] + mesh_.segment_lengths[id1]);
-
         // Compute bending and torsion part of constraint violation (eqn 23, lower part)
-        Eigen::Matrix<Real,3,1> bendingAndTorsionViolation = (2./averageSegmentLength)*(omega - restDarbouxVector);
+        Eigen::Matrix<Real,3,1> bendingAndTorsionViolation = ((2./averageSegmentLength)*omega) - restDarbouxVector;
 
         // fill right hand side of the linear equation system (Equation (19))
         Eigen::Matrix<Real, 6, 1> rhs;
@@ -504,7 +498,13 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
 			q1.normalize();
 		}
 
+        // infinite norm: maximum absolute value of its elements.
+        // if (rhs.lpNorm<Eigen::Infinity>() < 1.0e-9) break; // Threshold to return
+        
     }
+
+    // std::cout << rhs.transpose() << std::endl;
+    // std::cout << "converged iteration num: " << i << std::endl;
 }
 
 void Dlo::computeMatrixK(const Eigen::Matrix<Real,3,1> &connector, 

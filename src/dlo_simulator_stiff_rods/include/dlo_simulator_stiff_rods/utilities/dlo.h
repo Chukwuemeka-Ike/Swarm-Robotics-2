@@ -124,6 +124,7 @@ private:
     Eigen::Matrix2Xi stretchBendTwist_ids_;
     std::vector<Eigen::Matrix<Real,3,1>> stretchBendTwist_restDarbouxVectors_;
     std::vector<Eigen::Matrix<Real,3,4>> stretchBendTwist_constraintPosInfo_;
+    std::vector<Real> average_segment_lengths_;
 
     Real zero_stretch_stiffness_;
     Real young_modulus_;
