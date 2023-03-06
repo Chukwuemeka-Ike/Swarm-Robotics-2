@@ -17,13 +17,15 @@ Dlo::Dlo(const MeshDLO &mesh,
         const Real &young_modulus, 
         const Real &torsion_modulus, 
         const Real &density,
-        const Real &radius):
+        const Real &radius,
+        const bool &use_direct_kkt_solver):
     mesh_(mesh),
     zero_stretch_stiffness_(zero_stretch_stiffness),
     young_modulus_(young_modulus),
     torsion_modulus_(torsion_modulus),
     density_(density),
-    radius_(radius)
+    radius_(radius),
+    use_direct_kkt_solver_(use_direct_kkt_solver)
 {
     num_particles_ = mesh_.vertices.size();
     num_quaternions_ = mesh_.quaternions.size();
@@ -58,6 +60,16 @@ Dlo::Dlo(const MeshDLO &mesh,
     // std::cout << "omega_:\n" << omega_ << std::endl;
     // std::cout << "inv_iner_:\n" << inv_iner_ << std::endl;
     // std::cout << "iner_:\n" << iner_ << std::endl;
+
+    // Initialize constraint values for each constraint
+    RHS_.assign(num_quaternions_-1,Eigen::Matrix<Real,6,1>::Zero());
+
+    // Initialize 2 jacobians for each constraint
+    bendingAndTorsionJacobians_.resize(num_quaternions_-1);
+	std::vector<Eigen::Matrix<Real,3,3>> sampleJacobians(2);
+	sampleJacobians[0].setZero();
+	sampleJacobians[1].setZero();
+	std::fill(bendingAndTorsionJacobians_.begin(), bendingAndTorsionJacobians_.end(), sampleJacobians);
 
     setMasses();
 
@@ -129,7 +141,86 @@ void Dlo::setStretchBendTwistConstraints(){
 
         stretchBendTwist_constraintPosInfo_.push_back(constraintPosInfo);
     }
+
+    initTree();
 }
+
+// -----------------------------------------------------------------
+void Dlo::initTree(){
+    // initLists;
+    root_ = new Node;
+    forward_ = new std::list<Node*>;
+    backward_ = new std::list<Node*>;
+
+    initNodes();
+}
+
+
+void Dlo::initNodes() {
+    // select the first segment node as root
+    // then starting from this node, all edges (joints ie constraints) are followed
+    // and the children and parent nodes are saved
+    root_->parent = NULL;
+    root_->isconstraint = false;
+    root_->index = 0;
+
+    root_->D.setZero();
+    root_->Dinv.setZero();
+    root_->J.setZero();
+
+    initSegmentNode(root_);
+    
+    orderMatrixH(root_);
+}
+
+void Dlo::initSegmentNode(Node *n){
+    // four our simple single branch rod the tree is simple to create
+    // because its a simple doubly linked list
+    // For each constraint:
+    for (int i = 0; i < stretchBendTwist_restDarbouxVectors_.size(); i++){
+        // IDs 
+        const int& id0 = stretchBendTwist_ids_(0,i);
+        const int& id1 = stretchBendTwist_ids_(1,i);
+
+        // Note that i is the id of the constraint
+        Node * constraintNode = new Node();
+        constraintNode->index = i;
+        constraintNode->isconstraint = true;
+        constraintNode->parent = n;
+        constraintNode->parent->index = id0;
+
+        constraintNode->D.setZero();
+        constraintNode->Dinv.setZero();
+        constraintNode->J.setZero();
+        constraintNode->soln.setZero();
+
+        n->children.push_back(constraintNode);
+
+        Node * segmentNode = new Node();
+        segmentNode->isconstraint = false;
+        segmentNode->parent = constraintNode;
+        segmentNode->index = id1;
+
+        segmentNode->D.setZero();
+        segmentNode->Dinv.setZero();
+        segmentNode->J.setZero();
+        segmentNode->soln.setZero();
+
+        constraintNode->children.push_back(segmentNode);
+        
+        n = segmentNode;
+    }
+}
+
+void Dlo::orderMatrixH(Node *n){
+    // To store globally
+    for (unsigned int i = 0; i < n->children.size(); i++)
+		orderMatrixH(n->children[i]);
+	forward_->push_back(n);
+	backward_->push_front(n);
+}
+
+// -----------------------------------------------------------------
 
 void Dlo::setMasses(){
     /* 
@@ -262,7 +353,8 @@ void Dlo::preSolve(const Real &dt, const Eigen::Matrix<Real,3,1> &gravity){
         // #pragma omp for schedule(static) 
         #pragma omp parallel for
         for (int i = 0; i< num_quaternions_; i++){
-            if (!inv_iner_[i].isZero(0)){
+            // if (!inv_iner_[i].isZero(0)){
+            if (!inv_mass_[i]!= 0){
                 //assume zero external torque.
                 Eigen::Matrix<Real,3,1> torque = Eigen::Matrix<Real,3,1>::Zero(); 
                 
@@ -285,10 +377,7 @@ void Dlo::solve(const Real &dt){
 }
 
 void Dlo::solveStretchBendTwistConstraints(const Real &dt){
-    // 
-    // Init before projection (alpha tilde, eqn 24)
-    // 
-
+    // Inits before projection (alpha tilde, eqn 24)
     Real inv_dt_sqr = static_cast<Real>(1.0)/(dt*dt);
     // compute compliance parameter of the stretch constraint part
     Eigen::Matrix<Real,3,1> stretch_compliance; // upper diagonal of eqn 24
@@ -312,7 +401,9 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         inv_dt_sqr / bendingStiffness,
         inv_dt_sqr / torsionStiffness;
 
+    max_error_ = 0.0;
 
+    // updates on the constraints
     // For each constraint
     for (int i = 0; i < stretchBendTwist_restDarbouxVectors_.size(); i++){
         // IDs 
@@ -327,7 +418,7 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         const Real& invMass0 = inv_mass_[id0];
         const Real& invMass1 = inv_mass_[id1];
 
-        // inverse inertia matrices of these segments
+        // inverse inertia matrices of these segments (TODO: these needs to be rotated to world frame)
         const Eigen::Matrix<Real,3,3>& inertiaInverseW0 = inv_iner_[id0];
         const Eigen::Matrix<Real,3,3>& inertiaInverseW1 = inv_iner_[id1];
 
@@ -364,14 +455,16 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         Eigen::Matrix<Real,3,1> bendingAndTorsionViolation = ((2./averageSegmentLength)*omega) - restDarbouxVector;
 
         // fill right hand side of the linear equation system (Equation (19))
-        Eigen::Matrix<Real, 6, 1> rhs;
+        Eigen::Matrix<Real, 6, 1>& rhs= RHS_[i];
         rhs.block<3, 1>(0, 0) = -stretchViolation;
         rhs.block<3, 1>(3, 0) = -bendingAndTorsionViolation;
 
-
-        // compute matrix of the linear equation system (using Equations (25), (26), and (28) in Equation (19))
-	    Eigen::Matrix<Real, 6, 6> JMJT = Eigen::Matrix<Real, 6, 6>::Zero(); // Initialize place holder for J*M^-1*J^T
-
+        // compute max error
+		for (unsigned char j(0); j < 6; ++j)
+		{
+			max_error_ = std::max(max_error_, std::abs(rhs[j]));
+		}
+        
         // compute G matrices (Equation (27))
         Eigen::Matrix<Real, 4, 3> G0, G1;
         // w component at index 3
@@ -403,115 +496,377 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         jOmega1 *= static_cast<Real>(2.0) / averageSegmentLength;
 
         // Lower right part of eqn 25
-        Eigen::Matrix<Real, 3, 3> jOmegaG0 = jOmega0*G0;
+        Eigen::Matrix<Real, 3, 3> & jOmegaG0 = bendingAndTorsionJacobians_[i][0];
+        jOmegaG0 = jOmega0*G0;
+        
 
         // Lower right part of eqn 26
-        Eigen::Matrix<Real, 3, 3> jOmegaG1 = jOmega1*G1;
+        Eigen::Matrix<Real, 3, 3> & jOmegaG1 = bendingAndTorsionJacobians_[i][1];
+        jOmegaG1 = jOmega1*G1;
 
-        // compute stretch block
-        Eigen::Matrix<Real,3,3> K1, K2;
-        computeMatrixK(connector0, invMass0, p0, inertiaInverseW0, K1);
-        computeMatrixK(connector1, invMass1, p1, inertiaInverseW1, K2);
-        JMJT.block<3, 3>(0, 0) = K1 + K2;
+        if (!use_direct_kkt_solver_){
+            // Start actual solving from here -------
+            // compute matrix of the linear equation system (using Equations (25), (26), and (28) in Equation (19))
+            Eigen::Matrix<Real, 6, 6> JMJT = Eigen::Matrix<Real, 6, 6>::Zero(); // Initialize place holder for J*M^-1*J^T
 
-
-        // compute coupling blocks
-        const Eigen::Matrix<Real,3,1> ra = connector0 - p0;
-        const Eigen::Matrix<Real,3,1> rb = connector1 - p1;
-
-        Eigen::Matrix<Real,3,3> ra_crossT, rb_crossT;
-        crossProductMatrix(-ra, ra_crossT); // use -ra to get the transpose
-        crossProductMatrix(-rb, rb_crossT); // use -rb to get the transpose
+            // compute stretch block
+            Eigen::Matrix<Real,3,3> K1, K2;
+            computeMatrixK(connector0, invMass0, p0, inertiaInverseW0, K1);
+            computeMatrixK(connector1, invMass1, p1, inertiaInverseW1, K2);
+            JMJT.block<3, 3>(0, 0) = K1 + K2;
 
 
-        Eigen::Matrix<Real,3,3> offdiag(Eigen::Matrix<Real,3,3>::Zero());
-        if (invMass0 != 0.0)
-        {
-            offdiag = jOmegaG0 * inertiaInverseW0 * ra_crossT * (-1);
+            // compute coupling blocks
+            const Eigen::Matrix<Real,3,1> ra = connector0 - p0;
+            const Eigen::Matrix<Real,3,1> rb = connector1 - p1;
+
+            Eigen::Matrix<Real,3,3> ra_crossT, rb_crossT;
+            crossProductMatrix(-ra, ra_crossT); // use -ra to get the transpose
+            crossProductMatrix(-rb, rb_crossT); // use -rb to get the transpose
+
+
+            Eigen::Matrix<Real,3,3> offdiag(Eigen::Matrix<Real,3,3>::Zero());
+            if (invMass0 != 0.0)
+            {
+                offdiag = jOmegaG0 * inertiaInverseW0 * ra_crossT * (-1);
+            }
+
+            if (invMass1 != 0.0)
+            {
+                offdiag += jOmegaG1 * inertiaInverseW1 * rb_crossT;
+            }
+            JMJT.block<3, 3>(3, 0) = offdiag;
+            JMJT.block<3, 3>(0, 3) = offdiag.transpose();
+
+            // compute bending and torsion block
+            Eigen::Matrix<Real,3,3> MInvJT0 = inertiaInverseW0 * jOmegaG0.transpose();
+            Eigen::Matrix<Real,3,3> MInvJT1 = inertiaInverseW1 * jOmegaG1.transpose();
+
+            Eigen::Matrix<Real,3,3> JMJTOmega(Eigen::Matrix<Real,3,3>::Zero());
+            if (invMass0 != 0.0)
+            {
+                JMJTOmega = jOmegaG0*MInvJT0;
+            }
+
+            if (invMass1 != 0.0)
+            {
+                JMJTOmega += jOmegaG1*MInvJT1;
+            }
+            JMJT.block<3, 3>(3, 3) = JMJTOmega;
+
+            // add compliance
+            JMJT(0, 0) += stretch_compliance(0);
+            JMJT(1, 1) += stretch_compliance(1);
+            JMJT(2, 2) += stretch_compliance(2);
+            JMJT(3, 3) += bending_and_torsion_compliance(0);
+            JMJT(4, 4) += bending_and_torsion_compliance(1);
+            JMJT(5, 5) += bending_and_torsion_compliance(2);
+
+            // solve linear equation system (Equation 19)
+            Eigen::Matrix<Real,6,1> deltaLambda = JMJT.ldlt().solve(rhs);
+
+            // compute position and orientation updates (using Equations (25), (26), and (28) in Equation (20))
+            Eigen::Matrix<Real,3,1> deltaLambdaStretch = deltaLambda.block<3, 1>(0, 0);
+            Eigen::Matrix<Real,3,1> deltaLambdaBendingAndTorsion = deltaLambda.block<3, 1>(3, 0);
+
+            // Correction vectors place holders ----------------------------
+            Eigen::Matrix<Real,3,1> dp0;
+            Eigen::Matrix<Real,3,1> dp1;
+            Eigen::Quaternion<Real> dq0;
+            Eigen::Quaternion<Real> dq1;
+
+            dp0.setZero();
+            dp1.setZero();
+            dq0.coeffs().setZero();
+            dq1.coeffs().setZero();
+
+            if (invMass0 != 0.)
+            {
+                dp0 += invMass0 * deltaLambdaStretch;
+                dq0.coeffs() += G0 * (inertiaInverseW0 * ra_crossT * (-1 * deltaLambdaStretch) + MInvJT0 * deltaLambdaBendingAndTorsion);
+            }
+
+            if (invMass1 != 0.)
+            {
+                dp1 -= invMass1 * deltaLambdaStretch;
+                dq1.coeffs() += G1 * (inertiaInverseW1 * rb_crossT * deltaLambdaStretch + MInvJT1 * deltaLambdaBendingAndTorsion);
+            }
+
+            // Now apply the corrections -----------------------------
+            if (invMass0 != 0.0)
+            {
+                p0 += dp0;
+                q0.coeffs() += dq0.coeffs();
+                q0.normalize();
+            }
+            if (invMass1 != 0.0)
+            {
+                p1 += dp1;
+                q1.coeffs() += dq1.coeffs();
+                q1.normalize();
+            }
         }
-
-        if (invMass1 != 0.0)
-        {
-            offdiag += jOmegaG1 * inertiaInverseW1 * rb_crossT;
-        }
-        JMJT.block<3, 3>(3, 0) = offdiag;
-        JMJT.block<3, 3>(0, 3) = offdiag.transpose();
-
-        // compute bending and torsion block
-        Eigen::Matrix<Real,3,3> MInvJT0 = inertiaInverseW0 * jOmegaG0.transpose();
-        Eigen::Matrix<Real,3,3> MInvJT1 = inertiaInverseW1 * jOmegaG1.transpose();
-
-        Eigen::Matrix<Real,3,3> JMJTOmega(Eigen::Matrix<Real,3,3>::Zero());
-        if (invMass0 != 0.0)
-        {
-            JMJTOmega = jOmegaG0*MInvJT0;
-        }
-
-        if (invMass1 != 0.0)
-        {
-            JMJTOmega += jOmegaG1*MInvJT1;
-        }
-        JMJT.block<3, 3>(3, 3) = JMJTOmega;
-
-        // add compliance
-        JMJT(0, 0) += stretch_compliance(0);
-        JMJT(1, 1) += stretch_compliance(1);
-        JMJT(2, 2) += stretch_compliance(2);
-        JMJT(3, 3) += bending_and_torsion_compliance(0);
-        JMJT(4, 4) += bending_and_torsion_compliance(1);
-        JMJT(5, 5) += bending_and_torsion_compliance(2);
-
-        // solve linear equation system (Equation 19)
-        Eigen::Matrix<Real,6,1> deltaLambda = JMJT.ldlt().solve(rhs);
-
-        // compute position and orientation updates (using Equations (25), (26), and (28) in Equation (20))
-        Eigen::Matrix<Real,3,1> deltaLambdaStretch = deltaLambda.block<3, 1>(0, 0);
-        Eigen::Matrix<Real,3,1> deltaLambdaBendingAndTorsion = deltaLambda.block<3, 1>(3, 0);
-
-        // Correction vectors place holders
-        Eigen::Matrix<Real,3,1> dp0;
-        Eigen::Matrix<Real,3,1> dp1;
-        Eigen::Quaternion<Real> dq0;
-        Eigen::Quaternion<Real> dq1;
-
-        dp0.setZero();
-        dp1.setZero();
-        dq0.coeffs().setZero();
-        dq1.coeffs().setZero();
-
-        if (invMass0 != 0.)
-        {
-            dp0 += invMass0 * deltaLambdaStretch;
-            dq0.coeffs() += G0 * (inertiaInverseW0 * ra_crossT * (-1 * deltaLambdaStretch) + MInvJT0 * deltaLambdaBendingAndTorsion);
-        }
-
-        if (invMass1 != 0.)
-        {
-            dp1 -= invMass1 * deltaLambdaStretch;
-            dq1.coeffs() += G1 * (inertiaInverseW1 * rb_crossT * deltaLambdaStretch + MInvJT1 * deltaLambdaBendingAndTorsion);
-        }
-
-        // Now apply the corrections
-		if (invMass0 != 0.0)
-		{
-            p0 += dp0;
-			q0.coeffs() += dq0.coeffs();
-			q0.normalize();
-		}
-        if (invMass1 != 0.0)
-		{
-            p1 += dp1;
-			q1.coeffs() += dq1.coeffs();
-			q1.normalize();
-		}
-
-        // infinite norm: maximum absolute value of its elements.
-        // if (rhs.lpNorm<Eigen::Infinity>() < 1.0e-9) break; // Threshold to return
-        
     }
 
-    // std::cout << rhs.transpose() << std::endl;
-    // std::cout << "converged iteration num: " << i << std::endl;
+    if (use_direct_kkt_solver_){
+        // Factor procedure
+        factor(stretch_compliance, bending_and_torsion_compliance);
+        solver();
+    }
+}
+
+void Dlo::solver(){
+    std::list<Node*>::iterator nodeIter;
+	for (nodeIter = forward_->begin(); nodeIter != forward_->end(); nodeIter++)
+	{
+		Node *node = *nodeIter;
+		if (node->isconstraint)
+		{
+			node->soln = -RHS_[node->index];
+		}
+		else
+		{
+			node->soln.setZero();
+		}
+		std::vector <Node*> &children = node->children;
+		for (size_t i = 0; i < children.size(); ++i)
+		{
+			Eigen::Matrix<Real,6,6> cJT = children[i]->J.transpose();
+			Eigen::Matrix<Real,6,1> &csoln = children[i]->soln;
+			Eigen::Matrix<Real,6,1> v = cJT * csoln;
+			node->soln = node->soln - v;
+		}
+	}
+
+    for (nodeIter = backward_->begin(); nodeIter != backward_->end(); nodeIter++)
+	{
+		Node *node = *nodeIter;
+
+		bool noZeroDinv(true);
+		if (!node->isconstraint)
+		{
+            const int & ind = node->index;
+            Real &inv_m = inv_mass_[ind];
+			noZeroDinv = (inv_m != 0.0); // segment->isDynamic();
+		}
+		if (noZeroDinv) // if DInv == 0 child value is 0 and node->soln is not altered
+		{
+			node->soln = node->DLDLT.solve(node->soln);
+
+			if (node->parent != NULL)
+			{
+				node->soln -= node->J * node->parent->soln;
+			}
+		}
+		else
+		{
+			node->soln.setZero(); // segment of node is not dynamic
+		}
+	}
+
+    // compute position and orientation updates
+	for (nodeIter = forward_->begin(); nodeIter != forward_->end(); nodeIter++)
+	{
+		Node *node = *nodeIter;
+		if (!node->isconstraint)
+		{
+			const int & ind = node->index;
+            Real &inv_m = inv_mass_[ind];
+
+			if (inv_m == 0.0)
+			{
+				break;
+			}
+
+			const Eigen::Matrix<Real,6,1> & soln(node->soln);
+			Eigen::Matrix<Real,3,1> deltaXSoln = Eigen::Matrix<Real,3,1>(-soln[0], -soln[1], -soln[2]);
+			// corr_x[ind] = deltaXSoln;
+
+            // Apply the position solution
+            pos_[ind] += deltaXSoln;
+
+			Eigen::Matrix<Real, 4, 3> G;
+            Eigen::Quaternion<Real>& q0 = ori_[ind];
+            G <<
+            static_cast<Real>(0.5)*q0.w(), static_cast<Real>(0.5)*q0.z(), -static_cast<Real>(0.5)*q0.y(),
+            -static_cast<Real>(0.5)*q0.z(), static_cast<Real>(0.5)*q0.w(), static_cast<Real>(0.5)*q0.x(),
+            static_cast<Real>(0.5)*q0.y(), -static_cast<Real>(0.5)*q0.x(), static_cast<Real>(0.5)*q0.w(),
+            -static_cast<Real>(0.5)*q0.x(), -static_cast<Real>(0.5)*q0.y(), -static_cast<Real>(0.5)*q0.z();
+
+			Eigen::Quaternion<Real> deltaQSoln;
+			deltaQSoln.coeffs() = G * Eigen::Matrix<Real,3,1>(-soln[3], -soln[4], -soln[5]);
+			// corr_q[ind] = deltaQSoln;
+
+            // Apply the orientation solution
+            ori_[ind].coeffs() += deltaQSoln.coeffs();
+            ori_[ind].normalize();
+		}
+	}
+}
+
+void Dlo::factor(const Eigen::Matrix<Real,3,1> &stretch_compliance,
+                const Eigen::Matrix<Real,3,1> &bending_and_torsion_compliance){
+    std::list<Node*>::iterator nodeIter;
+	for (nodeIter = forward_->begin(); nodeIter != forward_->end(); nodeIter++)
+	{
+		Node *node = *nodeIter;
+		// compute system matrix diagonal
+		if (node->isconstraint){
+			//insert compliance
+			node->D.setZero();
+
+			node->D(0, 0) -= stretch_compliance[0];
+			node->D(1, 1) -= stretch_compliance[1];
+			node->D(2, 2) -= stretch_compliance[2];
+
+			node->D(3, 3) -= bending_and_torsion_compliance[0];
+			node->D(4, 4) -= bending_and_torsion_compliance[1];
+			node->D(5, 5) -= bending_and_torsion_compliance[2];
+		}
+		else{
+			// getMassMatrix to node->D
+            Eigen::Matrix<Real, 6, 6> & M = node->D;
+
+            const int & ind = node->index;
+            Real &inv_m = inv_mass_[ind];
+
+            if (inv_m == 0.0) {
+                M = Eigen::Matrix<Real, 6, 6>::Identity();
+            } else {
+                Real mass = 1.0/inv_m;
+                
+                const Eigen::Matrix<Real,3,3> & inertiaLocal = iner_[ind];  // local inertia
+                Eigen::Matrix<Real,3,3> rotationMatrix = ori_[ind].toRotationMatrix();
+                Eigen::Matrix<Real,3,3> inertia = rotationMatrix * inertiaLocal * rotationMatrix.transpose();
+                
+                // Upper half
+                for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 6; j++)
+                if (i == j)
+                    M(i, j) = mass;
+                else
+                    M(i, j) = 0.0;
+
+                // lower left
+                for (int i = 3; i < 6; i++)
+                for (int j = 0; j < 3; j++)
+                    M(i, j) = 0.0;
+
+                // lower right
+                for (int i = 3; i < 6; i++)
+                for (int j = 3; j < 6; j++)
+                    M(i, j) = inertia(i - 3, j - 3);
+            }
+
+		}
+
+		// compute Jacobian
+		if (node->parent != NULL)
+		{
+			if (node->isconstraint)
+			{
+				//compute J 
+                const int & constraint_ind = node->index;
+                const int & segment_ind =  node->parent->index;
+
+				Real sign = 1;
+				int segmentIndex = 0;
+				if (segment_ind == stretchBendTwist_ids_(1,constraint_ind))
+				{
+					segmentIndex = 1;
+					sign = -1;
+				}
+
+				const Eigen::Matrix<Real, 3, 4> &constraintInfo = stretchBendTwist_constraintPosInfo_[constraint_ind];
+				const Eigen::Matrix<Real,3,1> r = constraintInfo.col(2 + segmentIndex) - pos_[segment_ind];
+
+				Eigen::Matrix<Real,3,3> r_cross;
+				Real crossSign(-static_cast<Real>(1.0)*sign);
+				crossProductMatrix(crossSign*r, r_cross);
+
+				Eigen::DiagonalMatrix<Real, 3> upperLeft(sign, sign, sign);
+				node->J.block<3, 3>(0, 0) = upperLeft;
+
+				Eigen::Matrix<Real,3,3> lowerLeft(Eigen::Matrix<Real,3,3>::Zero());
+				node->J.block<3, 3>(3, 0) = lowerLeft;
+
+				node->J.block<3, 3>(0, 3) = r_cross;
+
+				Eigen::Matrix<Real,3,3> &lowerRight(bendingAndTorsionJacobians_[constraint_ind][segmentIndex]);
+				node->J.block<3, 3>(3, 3) = lowerRight;
+			}
+			else
+			{
+				//compute JT
+				const int & constraint_ind = node->parent->index;
+                const int & segment_ind = node->index;
+
+				Real sign = 1;
+				int segmentIndex = 0;
+				if (segment_ind == stretchBendTwist_ids_(1,constraint_ind))
+				{
+					segmentIndex = 1;
+					sign = -1;
+				}
+
+				const Eigen::Matrix<Real, 3, 4> &constraintInfo = stretchBendTwist_constraintPosInfo_[constraint_ind];
+				const Eigen::Matrix<Real,3,1> r = constraintInfo.col(2 + segmentIndex) - pos_[segment_ind];
+				
+                Eigen::Matrix<Real,3,3> r_crossT;
+				crossProductMatrix(sign*r, r_crossT);
+
+				Eigen::DiagonalMatrix<Real, 3> upperLeft(sign, sign, sign);
+				node->J.block<3, 3>(0, 0) = upperLeft;
+
+				node->J.block<3, 3>(3, 0) = r_crossT;
+
+				Eigen::Matrix<Real,3,3> upperRight(Eigen::Matrix<Real,3,3>::Zero());
+				node->J.block<3, 3>(0, 3) = upperRight;
+
+				Eigen::Matrix<Real,3,3> lowerRight(bendingAndTorsionJacobians_[constraint_ind][segmentIndex].transpose());
+				node->J.block<3, 3>(3, 3) = lowerRight;
+			}
+		}
+	}
+
+    for (nodeIter = forward_->begin(); nodeIter != forward_->end(); nodeIter++)
+	{
+		Node *node = *nodeIter;
+		std::vector <Node*> children = node->children;
+		for (size_t i = 0; i < children.size(); i++)
+		{
+			Eigen::Matrix<Real,6,6> JT = (children[i]->J).transpose();
+			Eigen::Matrix<Real,6,6> &D = children[i]->D;
+			Eigen::Matrix<Real,6,6> &J = children[i]->J;
+			Eigen::Matrix<Real,6,6> JTDJ = ((JT * D) * J);
+			node->D = node->D - JTDJ;
+		}
+		bool chk = false;
+		if (!node->isconstraint)
+		{
+            const int & ind = node->index;
+            Real &inv_m = inv_mass_[ind];
+
+            if (inv_m == 0.0)
+			{
+				node->Dinv.setZero();
+				chk = true;
+			}
+		}
+
+		node->DLDLT.compute(node->D); // result reused in solve()
+		if (node->parent != NULL)
+		{
+			if (!chk)
+			{
+				node->J = node->DLDLT.solve(node->J);
+			}
+			else
+			{
+				node->J.setZero();
+			}
+		}
+	}
 }
 
 void Dlo::computeMatrixK(const Eigen::Matrix<Real,3,1> &connector, 
@@ -570,7 +925,8 @@ void Dlo::postSolve(const Real &dt){
         // #pragma omp for schedule(static) 
         #pragma omp parallel for 
         for (int i = 0; i< num_quaternions_; i++){
-            if (!inv_iner_[i].isZero(0)){
+            // if (!inv_iner_[i].isZero(0)){
+            if (!inv_mass_[i]!= 0){
                 const Eigen::Quaternion<Real> relRot = (ori_[i] * prev_ori_[i].conjugate());
                 omega_.col(i) = 2.0*relRot.vec()/dt;
             }

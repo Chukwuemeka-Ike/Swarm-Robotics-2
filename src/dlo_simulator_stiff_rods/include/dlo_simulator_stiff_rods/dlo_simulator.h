@@ -131,6 +131,8 @@ private:
 
     int num_hang_corners_; // num of corners to hang dlo from (options: 0,1,2)
 
+    bool use_direct_kkt_solver_;
+
     Real simulation_rate_;
     Real rendering_rate_;
     /*

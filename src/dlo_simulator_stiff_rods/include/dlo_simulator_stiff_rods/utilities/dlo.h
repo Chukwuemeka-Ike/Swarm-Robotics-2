@@ -9,6 +9,7 @@
 #include <cmath>
 #include <numeric>
 #include <vector>
+#include <list>
 #include <unordered_map> 
 #include <algorithm>    // std::sort
 
@@ -42,6 +43,26 @@ struct MeshDLO
     std::vector<Real> segment_lengths;
 };
 
+/** Node in the simulated tree structure */
+struct Node {
+    Node() {
+        object = NULL; D = Dinv = J = Eigen::Matrix<Real, 6, 6>::Zero(); parent = NULL;
+        soln.setZero(); index = 0;
+    };
+    Node *parent;
+    bool isconstraint;
+    int index;
+
+    void *object;
+    
+    Eigen::Matrix<Real, 6, 6> D, Dinv, J;
+    
+    std::vector <Node*> children;
+    
+    Eigen::Matrix<Real, 6, 1> soln;
+    Eigen::LDLT<Eigen::Matrix<Real, 6, 6>> DLDLT;
+};
+
 class Dlo
 {
 public:
@@ -51,7 +72,8 @@ public:
         const Real &young_modulus, 
         const Real &torsion_modulus, 
         const Real &density,
-        const Real &radius);
+        const Real &radius,
+        const bool &use_direct_kkt_solver);
     ~Dlo();
 
     void preSolve(const Real &dt, const Eigen::Matrix<Real,3,1> &gravity);
@@ -123,14 +145,42 @@ private:
     std::vector<Eigen::Matrix<Real,3,3>> inv_iner_;
     std::vector<Eigen::Matrix<Real,3,3>> iner_;
 
-    Eigen::Matrix2Xi stretchBendTwist_ids_;
+    Eigen::Matrix2Xi stretchBendTwist_ids_; // stores segment ids of each constraint
     std::vector<Eigen::Matrix<Real,3,1>> stretchBendTwist_restDarbouxVectors_;
     std::vector<Eigen::Matrix<Real,3,4>> stretchBendTwist_constraintPosInfo_;
     std::vector<Real> average_segment_lengths_;
 
+    std::vector<Eigen::Matrix<Real,6,1>> RHS_;
+    std::vector<std::vector<Eigen::Matrix<Real,3,3>>> bendingAndTorsionJacobians_;
+    
+
     Real zero_stretch_stiffness_;
     Real young_modulus_;
     Real torsion_modulus_;
+
+
+    // -----------------------------------------------------------------
+    // BEGIN: Parameters and functions for Tree structured linear time direct solver
+    Node* root_;
+    std::list<Node*> * forward_; // from leave to the root
+    std::list<Node*> * backward_; // from root to the leaves
+
+    Real max_error_;
+
+    void initTree();
+    void initNodes();
+    void initSegmentNode(Node *n);
+
+    void orderMatrixH(Node *n);
+
+    void factor(const Eigen::Matrix<Real,3,1> &stretch_compliance,
+                const Eigen::Matrix<Real,3,1> &bending_and_torsion_compliance);
+
+    void solver();
+
+    bool use_direct_kkt_solver_;
+    // END: Parameters and functions for Tree structured linear time direct solver
+    // -----------------------------------------------------------------
 
     std::vector<int> attached_ids_; // ids of robot attached particles
     // int grab_id_;

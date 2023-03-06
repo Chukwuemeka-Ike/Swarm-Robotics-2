@@ -72,6 +72,8 @@ DloSimulator::~DloSimulator() {
 
     nh_local_.deleteParam("num_hang_corners");
 
+    nh_local_.deleteParam("use_direct_kkt_solver");
+
     nh_local_.deleteParam("simulation_rate");
     nh_local_.deleteParam("rendering_rate");
     /*
@@ -130,6 +132,8 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
     nh_local_.param<Real>("initial_height", initial_height_, 1.0);
 
     nh_local_.param<int>("num_hang_corners", num_hang_corners_, 1);
+
+    nh_local_.param<bool>("use_direct_kkt_solver", use_direct_kkt_solver_, false);
     
     nh_local_.param<Real>("simulation_rate", simulation_rate_, 90.0); 
     nh_local_.param<Real>("rendering_rate", rendering_rate_, 30.0);
@@ -180,7 +184,8 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
                            dlo_zero_stretch_stiffness_, 
                            dlo_young_modulus_, 
                            dlo_torsion_modulus_, 
-                           dlo_density_,dlo_r_);
+                           dlo_density_,dlo_r_,
+                           use_direct_kkt_solver_);
 
     // Hang dlo from corners
     dlo_.hangFromCorners(num_hang_corners_);
