@@ -449,10 +449,10 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         Eigen::Matrix<Real,3,1>& restDarbouxVector = stretchBendTwist_restDarbouxVectors_[i]; 
 
         // Current darboux vector (imaginary part of it)
-        Eigen::Matrix<Real,3,1> omega = (q0.conjugate() * q1).vec();   //darboux vector
+        Eigen::Matrix<Real,3,1> omega = (2./averageSegmentLength)*((q0.conjugate() * q1).vec());   //darboux vector
 
         // Compute bending and torsion part of constraint violation (eqn 23, lower part)
-        Eigen::Matrix<Real,3,1> bendingAndTorsionViolation = ((2./averageSegmentLength)*omega) - restDarbouxVector;
+        Eigen::Matrix<Real,3,1> bendingAndTorsionViolation = (omega) - restDarbouxVector;
 
         // fill right hand side of the linear equation system (Equation (19))
         Eigen::Matrix<Real, 6, 1>& rhs= RHS_[i];

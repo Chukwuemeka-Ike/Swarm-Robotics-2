@@ -135,6 +135,16 @@ Therefore, this command does not launch the Gazebo client GUI to save computatio
 <!-- TODO: ADD image here -->
 ![Empty World with ground truth](./.imgs/empty_world_multi_ground_truth.png)
 
+### Running the simulation in Demonstration Floor - Highbay
+
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
+```
+roslaunch dingo_gazebo empty_highbay_multi.launch
+```
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
+<!-- TODO: ADD image here -->
+![View in Highbay](./.imgs/empty_highbay_multi.png)
+
 ### Running the simulation in Anchor Industries Representative Plant Floor
 
 **!!!IN PROGRESS, NOT DONE YET!!!**
@@ -145,17 +155,5 @@ roslaunch dingo_gazebo plant_floor_multi.launch
 ```
 Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
 <!-- TODO: ADD image here -->
-
-### Running the simulation in Demonstration Floor
-
-**!!!IN PROGRESS, NOT DONE YET!!!**
-
-This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
-```
-roslaunch dingo_gazebo demo_floor_multi.launch
-```
-Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
-<!-- TODO: ADD image here -->
-
 
 </details>
