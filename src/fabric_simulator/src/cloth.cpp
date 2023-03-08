@@ -15,7 +15,7 @@ Cloth::Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &densi
     bending_compliance_(bending_compliance),
     density_(density)
 {
-    stretching_compliance_ = 0.0; // 1.0/100000 ; //0.0;
+    stretching_compliance_ = 1.0e-9; // 0.0; // 1.0/100000 ; //0.0;
 
     num_particles_ = mesh_.vertices.rows();
     std::cout << "num particles: " << num_particles_ << std::endl;

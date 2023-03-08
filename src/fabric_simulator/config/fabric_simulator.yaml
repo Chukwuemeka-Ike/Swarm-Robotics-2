@@ -3,18 +3,18 @@ gravity_x: 0.0 # m/s^2
 gravity_y: 0.0 # m/s^2
 gravity_z: -9.81 # m/s^2
 
-dt: 0.01 # seconds. Simulated time per iteration of the fabric simulatiob.
+dt: 0.002 # seconds. Simulated time per iteration of the fabric simulatiob.
 set_sim_rate_auto: false  # to set the simulation rate and dt automaticall, do not use
 num_substeps: 3 # Number of substeps per iteration based on 2019 Small Steps XPBD paper.
 num_steps: 1 # experimental only. do not change from 1
 
-fabric_x: 2.0 # fabric x size in meters
-fabric_y: 2.0 # fabric y size in meters
+fabric_x: 2.5 # fabric x size in meters
+fabric_y: 2.5 # fabric y size in meters
 fabric_density: 1.0 # fabric mass per meter square (kg/m^2)
-fabric_resolution: 7 # particle resolution per meter 
+fabric_resolution: 15 # particle resolution per meter 
 fabric_bending_compliance: 0.01 # Note, fabric stretching compliance assumed to be 0.0 already.
 initial_height: 0.8 # initial fabric height from ground (m)
-simulation_rate: 90.0
+simulation_rate: 600.0
 rendering_rate: 30.0 # Hz, frequency to publish the fabric vertices and edges to RVIZ visualization markers
 
 wrench_pub_rate: 100.0 # Hz, frequency to publish the fabric forces at the attachment points

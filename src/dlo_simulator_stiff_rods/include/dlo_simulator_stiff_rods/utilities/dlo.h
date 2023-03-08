@@ -24,7 +24,7 @@
 
 #include <omp.h>
 
-// #define USE_DOUBLE // comment out if you would like to use float.
+#define USE_DOUBLE // comment out if you would like to use float.
 
 #ifdef USE_DOUBLE
 typedef double Real;
