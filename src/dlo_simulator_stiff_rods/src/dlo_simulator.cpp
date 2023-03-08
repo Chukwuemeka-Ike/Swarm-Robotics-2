@@ -368,6 +368,7 @@ void DloSimulator::simulate(const ros::TimerEvent& e){
             dlo_.postSolve(sdt);
         }
     }
+    std::cout << "Max error: " << dlo_.getMaxError() << std::endl;
     // -------------------------------
 
     // // To debug force readings from hanged corners (use inly when robots are not attached)

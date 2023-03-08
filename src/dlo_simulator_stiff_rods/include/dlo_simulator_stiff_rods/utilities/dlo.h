@@ -97,6 +97,8 @@ public:
 
     std::vector<Eigen::Quaternion<Real>> *getOriPtr();
     std::vector<Real> *getSegmentLengthsPtr();
+
+    Real getMaxError();
     
 
     std::vector<int> *getAttachedIdsPtr();    
