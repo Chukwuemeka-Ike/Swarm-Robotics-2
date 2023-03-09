@@ -19,7 +19,7 @@ DloSimulator::DloSimulator(ros::NodeHandle &nh, ros::NodeHandle &nh_local, boost
 
     is_auto_sim_rate_set_ = false; 
 
-    /*
+    
     is_rob_01_attached_ = false;
     is_rob_02_attached_ = false;
     is_rob_03_attached_ = false;
@@ -29,7 +29,7 @@ DloSimulator::DloSimulator(ros::NodeHandle &nh, ros::NodeHandle &nh_local, boost
     rob_02_attached_id_ = -1;
     rob_03_attached_id_ = -1;
     rob_04_attached_id_ = -1;
-
+    /*
     rob_01_attached_force_.setZero();
     rob_02_attached_force_.setZero();
     rob_03_attached_force_.setZero();
@@ -82,12 +82,12 @@ DloSimulator::~DloSimulator() {
     nh_local_.deleteParam("dlo_points_topic_name");
     nh_local_.deleteParam("dlo_points_frame_id");
     
-    /*
     nh_local_.deleteParam("odom_01_topic_name");
     nh_local_.deleteParam("odom_02_topic_name");
     nh_local_.deleteParam("odom_03_topic_name");
     nh_local_.deleteParam("odom_04_topic_name");
 
+    /*
     nh_local_.deleteParam("wrench_01_topic_name");
     nh_local_.deleteParam("wrench_02_topic_name");
     nh_local_.deleteParam("wrench_03_topic_name");
@@ -143,12 +143,13 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
     nh_local_.param<std::string>("dlo_points_topic_name", dlo_points_topic_name_, std::string("dlo_points"));
     nh_local_.param<std::string>("dlo_points_frame_id", dlo_points_frame_id_, std::string("map"));
 
-    /*
+    
     nh_local_.param<std::string>("odom_01_topic_name", odom_01_topic_name_, std::string("d1/ground_truth/dlo_mount/odom"));
     nh_local_.param<std::string>("odom_02_topic_name", odom_02_topic_name_, std::string("d2/ground_truth/dlo_mount/odom"));
     nh_local_.param<std::string>("odom_03_topic_name", odom_03_topic_name_, std::string("d3/ground_truth/dlo_mount/odom"));
     nh_local_.param<std::string>("odom_04_topic_name", odom_04_topic_name_, std::string("d4/ground_truth/dlo_mount/odom"));
-
+    
+    /*
     nh_local_.param<std::string>("wrench_01_topic_name", wrench_01_topic_name_, std::string("d1/dlo_wrench_stamped"));
     nh_local_.param<std::string>("wrench_02_topic_name", wrench_02_topic_name_, std::string("d2/dlo_wrench_stamped"));
     nh_local_.param<std::string>("wrench_03_topic_name", wrench_03_topic_name_, std::string("d3/dlo_wrench_stamped"));
@@ -195,13 +196,13 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
             // Create visualization marker publisher
             pub_dlo_points_ = nh_.advertise<visualization_msgs::Marker>(dlo_points_topic_name_, 1);
 
-            /*
             // Create subscribers
             sub_odom_01_ = nh_.subscribe(odom_01_topic_name_, 1, &DloSimulator::odometryCb_01, this);
             sub_odom_02_ = nh_.subscribe(odom_02_topic_name_, 1, &DloSimulator::odometryCb_02, this);
             sub_odom_03_ = nh_.subscribe(odom_03_topic_name_, 1, &DloSimulator::odometryCb_03, this);
             sub_odom_04_ = nh_.subscribe(odom_04_topic_name_, 1, &DloSimulator::odometryCb_04, this);
 
+            /*
             // Create publishers
             pub_wrench_stamped_01_ = nh_.advertise<geometry_msgs::WrenchStamped>(wrench_01_topic_name_, 1);
             pub_wrench_stamped_02_ = nh_.advertise<geometry_msgs::WrenchStamped>(wrench_02_topic_name_, 1);
@@ -218,18 +219,17 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
             */
         }
         else {
-            // Send empty message?
+            // Send empty message?/*
 
             // Stop publishers
             pub_dlo_points_.shutdown();
 
-            /*
             // Stop subscribers
             sub_odom_01_.shutdown();
             sub_odom_02_.shutdown();
             sub_odom_03_.shutdown();
             sub_odom_04_.shutdown();
-
+            /*
             // Stop publishers
             pub_wrench_stamped_01_.shutdown();
             pub_wrench_stamped_02_.shutdown();
@@ -259,7 +259,6 @@ void DloSimulator::reset(){
 
     is_auto_sim_rate_set_ = false; 
 
-    /*
     is_rob_01_attached_ = false;
     is_rob_02_attached_ = false;
     is_rob_03_attached_ = false;
@@ -270,6 +269,7 @@ void DloSimulator::reset(){
     rob_03_attached_id_ = -1;
     rob_04_attached_id_ = -1;
 
+    /*
     rob_01_attached_force_.setZero();
     rob_02_attached_force_.setZero();
     rob_03_attached_force_.setZero();
@@ -542,13 +542,19 @@ void DloSimulator::drawRvizRod(const std::vector<Eigen::Matrix<Real,3,1>> *poses
     publishRvizLines(dloRVIZEdges);
 }
 
-/*
+
 void DloSimulator::odometryCb_01(const nav_msgs::Odometry::ConstPtr odom_msg){
-    Real x = odom_msg->pose.pose.position.x;
-    Real y = odom_msg->pose.pose.position.y;
-    Real z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
+    const Real & x = odom_msg->pose.pose.position.x;
+    const Real & y = odom_msg->pose.pose.position.y;
+    const Real & z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
+
+    const Real & qw = odom_msg->pose.pose.orientation.w;
+    const Real & qx = odom_msg->pose.pose.orientation.x;
+    const Real & qy = odom_msg->pose.pose.orientation.y;
+    const Real & qz = odom_msg->pose.pose.orientation.z;
     
     Eigen::Matrix<Real,3,1> pos(x, y, z);
+    Eigen::Quaternion<Real> ori(qw,qx,qy,qz);
 
     if (!is_rob_01_attached_)
     {
@@ -564,16 +570,22 @@ void DloSimulator::odometryCb_01(const nav_msgs::Odometry::ConstPtr odom_msg){
     else
     {
         // tell sim object to update its position
-            dlo_.updateAttachedPose(rob_01_attached_id_, pos);
+            dlo_.updateAttachedPose(rob_01_attached_id_, pos, ori);
     }
 }
 
 void DloSimulator::odometryCb_02(const nav_msgs::Odometry::ConstPtr odom_msg){
-    Real x = odom_msg->pose.pose.position.x;
-    Real y = odom_msg->pose.pose.position.y;
-    Real z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
+    const Real & x = odom_msg->pose.pose.position.x;
+    const Real & y = odom_msg->pose.pose.position.y;
+    const Real & z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
+
+    const Real & qw = odom_msg->pose.pose.orientation.w;
+    const Real & qx = odom_msg->pose.pose.orientation.x;
+    const Real & qy = odom_msg->pose.pose.orientation.y;
+    const Real & qz = odom_msg->pose.pose.orientation.z;
     
     Eigen::Matrix<Real,3,1> pos(x, y, z);
+    Eigen::Quaternion<Real> ori(qw,qx,qy,qz);
 
     if (!is_rob_02_attached_)
     {
@@ -589,16 +601,22 @@ void DloSimulator::odometryCb_02(const nav_msgs::Odometry::ConstPtr odom_msg){
     else
     {
         // tell sim object to update its position
-            dlo_.updateAttachedPose(rob_02_attached_id_, pos);
+            dlo_.updateAttachedPose(rob_02_attached_id_, pos, ori);
     }
 }
 
 void DloSimulator::odometryCb_03(const nav_msgs::Odometry::ConstPtr odom_msg){
-    Real x = odom_msg->pose.pose.position.x;
-    Real y = odom_msg->pose.pose.position.y;
-    Real z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
-    
+    const Real & x = odom_msg->pose.pose.position.x;
+    const Real & y = odom_msg->pose.pose.position.y;
+    const Real & z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
+
+    const Real & qw = odom_msg->pose.pose.orientation.w;
+    const Real & qx = odom_msg->pose.pose.orientation.x;
+    const Real & qy = odom_msg->pose.pose.orientation.y;
+    const Real & qz = odom_msg->pose.pose.orientation.z;
+
     Eigen::Matrix<Real,3,1> pos(x, y, z);
+    Eigen::Quaternion<Real> ori(qw,qx,qy,qz);
 
     if (!is_rob_03_attached_)
     {
@@ -614,16 +632,22 @@ void DloSimulator::odometryCb_03(const nav_msgs::Odometry::ConstPtr odom_msg){
     else
     {
         // tell sim object to update its position
-            dlo_.updateAttachedPose(rob_03_attached_id_, pos);
+            dlo_.updateAttachedPose(rob_03_attached_id_, pos, ori);
     }
 }
 
 void DloSimulator::odometryCb_04(const nav_msgs::Odometry::ConstPtr odom_msg){
-    Real x = odom_msg->pose.pose.position.x;
-    Real y = odom_msg->pose.pose.position.y;
-    Real z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
+    const Real & x = odom_msg->pose.pose.position.x;
+    const Real & y = odom_msg->pose.pose.position.y;
+    const Real & z = odom_msg->pose.pose.position.z + dlo_rob_z_offset_;
+
+    const Real & qw = odom_msg->pose.pose.orientation.w;
+    const Real & qx = odom_msg->pose.pose.orientation.x;
+    const Real & qy = odom_msg->pose.pose.orientation.y;
+    const Real & qz = odom_msg->pose.pose.orientation.z;
     
     Eigen::Matrix<Real,3,1> pos(x, y, z);
+    Eigen::Quaternion<Real> ori(qw,qx,qy,qz);
 
     if (!is_rob_04_attached_)
     {
@@ -639,10 +663,11 @@ void DloSimulator::odometryCb_04(const nav_msgs::Odometry::ConstPtr odom_msg){
     else
     {
         // tell sim object to update its position
-            dlo_.updateAttachedPose(rob_04_attached_id_, pos);
+            dlo_.updateAttachedPose(rob_04_attached_id_, pos, ori);
     }
 }
 
+/*
 void DloSimulator::readAttachedRobotForces(){
     Eigen::Matrix<Real,Eigen::Dynamic,3> *for_ptr = dlo_.getForPtr();
 

@@ -66,15 +66,15 @@ private:
     void render(const ros::TimerEvent& e);
     /*
     void publishWrenches(const ros::TimerEvent& e);
+    */
 
     // Odometry callback functions
     void odometryCb_01(const nav_msgs::Odometry::ConstPtr odom_msg);
     void odometryCb_02(const nav_msgs::Odometry::ConstPtr odom_msg);
     void odometryCb_03(const nav_msgs::Odometry::ConstPtr odom_msg);
     void odometryCb_04(const nav_msgs::Odometry::ConstPtr odom_msg);
-    */
+    
     // Service functions
-    //   void initialize() { std_srvs::Empty empt; updateParams(empt.request, empt.response); }
     bool updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res);
     void reset();
     void initialize() { std_srvs::Empty empt; updateParams(empt.request, empt.response); }
@@ -92,12 +92,12 @@ private:
     ros::Publisher pub_wrench_stamped_04_;
     */
     ros::ServiceServer params_srv_;
-    /*
+    
     ros::Subscriber sub_odom_01_;
     ros::Subscriber sub_odom_02_;
     ros::Subscriber sub_odom_03_;
     ros::Subscriber sub_odom_04_;
-    */
+    
     ros::Timer timer_render_;
     ros::Timer timer_simulate_;
     /*
@@ -140,12 +140,13 @@ private:
     */
     std::string dlo_points_topic_name_;
     std::string dlo_points_frame_id_;
-    /*
+    
     std::string odom_01_topic_name_;
     std::string odom_02_topic_name_;
     std::string odom_03_topic_name_;
     std::string odom_04_topic_name_;
 
+    /*
     std::string wrench_01_topic_name_;
     std::string wrench_02_topic_name_;
     std::string wrench_03_topic_name_;
@@ -162,7 +163,7 @@ private:
     Eigen::Matrix<Real,3,1> gravity_;
 
     bool is_auto_sim_rate_set_;
-    /*
+    
     bool is_rob_01_attached_;
     bool is_rob_02_attached_;
     bool is_rob_03_attached_;
@@ -173,6 +174,7 @@ private:
     int rob_03_attached_id_;
     int rob_04_attached_id_;
 
+    /*
     Eigen::Matrix<Real,3,1> rob_01_attached_force_;
     Eigen::Matrix<Real,3,1> rob_02_attached_force_;
     Eigen::Matrix<Real,3,1> rob_03_attached_force_;

@@ -113,18 +113,13 @@ void Dlo::setStretchBendTwistConstraints(){
         int id0 = stretchBendTwist_ids_(0,i);
         int id1 = stretchBendTwist_ids_(1,i);
         
-        //
-        // compute rest Darboux vector based on eqn 7
-        //        
+        // compute rest Darboux vector based on eqn 7    
         Eigen::Quaternion<Real> rest_darboux_vect = ori_[id0].conjugate() * ori_[id1]; 
         Real averageSegmentLength = 0.5*(mesh_.segment_lengths[id0] + mesh_.segment_lengths[id1]);
         stretchBendTwist_restDarbouxVectors_.push_back((2./averageSegmentLength)*rest_darboux_vect.vec());
         average_segment_lengths_.push_back(averageSegmentLength);
 
-        //
         // set initial constraint position info 
-        //
-        // transform in local coordinates
         const Eigen::Matrix<Real,3,3> rot0 = ori_[id0].toRotationMatrix();
         const Eigen::Matrix<Real,3,3> rot1 = ori_[id1].toRotationMatrix();
 
@@ -134,10 +129,6 @@ void Dlo::setStretchBendTwistConstraints(){
         constraintPosInfo.col(1) = Eigen::Matrix<Real,3,1>(0,0,-0.5*mesh_.segment_lengths[id1]);
         constraintPosInfo.col(2) = rot0 * constraintPosInfo.col(0) + mesh_.vertices[id0];
         constraintPosInfo.col(3) = rot1 * constraintPosInfo.col(1) + mesh_.vertices[id1];
-
-        // std::cout << "0: " << constraintPosInfo.col(2) << std::endl;
-        // std::cout << "1: " << constraintPosInfo.col(3) << std::endl;
-        // std::cout << "------------------------------" << std::endl;
 
         stretchBendTwist_constraintPosInfo_.push_back(constraintPosInfo);
     }
@@ -533,7 +524,6 @@ void Dlo::hangFromCorners(const int &num_corners){
     // if num_corners = 2: Fix from 2 (all) corners
     // if num_corners = else: Fix all corners
 
-
     Real min_x = std::numeric_limits<Real>::infinity();
     Real max_x = -std::numeric_limits<Real>::infinity();
     Real min_y = std::numeric_limits<Real>::infinity();
@@ -643,7 +633,6 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
 		inv_dt_sqr / (zero_stretch_stiffness_),
 		inv_dt_sqr / (zero_stretch_stiffness_),
 		inv_dt_sqr / (zero_stretch_stiffness_);
-
 
     // compute compliance parameter of the bending and torsion constraint part
     Eigen::Matrix<Real,3,1> bending_and_torsion_compliance_fixed; //lower diagonal of eqn 24
@@ -858,6 +847,7 @@ void Dlo::computeMatrixK(const Eigen::Matrix<Real,3,1> &connector,
                         const Eigen::Matrix<Real,3,1> &x, 
                         const Eigen::Matrix<Real,3,3> &inertiaInverseW, 
                         Eigen::Matrix<Real,3,3> &K) {
+    // This function computes the upper left block of J*M^-1*J.T directly.
 	if (invMass != 0.0)
 	{
         // vector from center of mass to conneting point in world frame
@@ -923,13 +913,15 @@ void Dlo::resetForces(){
     // Also Reset accumulated forces for the next iteration
     for_.setZero();
 }
+*/
 
 // Find the nearest 3D position vector col id in the given matrix
-int Dlo::findNearestPositionVectorId(const Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic>& matrix, const Eigen::Matrix<Real,3,1>& pos) {
+int Dlo::findNearestPositionVectorId(const std::vector<Eigen::Matrix<Real,3,1>>& matrix, 
+                                     const Eigen::Matrix<Real,3,1>& pos) {
   int nearestId = -1;
   Real minDistance = std::numeric_limits<Real>::max();
-  for (int i = 0; i < matrix.cols(); ++i) {
-    Eigen::Matrix<Real,3,1> currentPos = matrix.col(i);
+  for (int i = 0; i < matrix.size(); ++i) {
+    const Eigen::Matrix<Real,3,1>& currentPos = matrix[i];
     Real currentDistance = (currentPos - pos).norm();
     if (currentDistance < minDistance) {
       nearestId = i;
@@ -943,16 +935,19 @@ int Dlo::attachNearest(const Eigen::Matrix<Real,3,1> &pos){
     int id = findNearestPositionVectorId(pos_,pos);
     // Make that particle stationary
     if (id >= 0){
-        inv_mass_(id) = 0.0;
+        inv_mass_[id] = 0.0;
         attached_ids_.push_back(id); // add fixed particle id to the attached_ids_ vector
     }
     return id;
 }
 
-void Dlo::updateAttachedPose(const int &id, const Eigen::Matrix<Real,3,1> &pos){
-    pos_.col(id) = pos;
+void Dlo::updateAttachedPose(const int &id, 
+                             const Eigen::Matrix<Real,3,1> &pos, 
+                             const Eigen::Quaternion<Real> &ori ){
+    pos_[id] = pos;
+    ori_[id] = ori;
 }
-*/
+
 
 std::vector<Eigen::Matrix<Real,3,1>> *Dlo::getPosPtr(){
     return &pos_;

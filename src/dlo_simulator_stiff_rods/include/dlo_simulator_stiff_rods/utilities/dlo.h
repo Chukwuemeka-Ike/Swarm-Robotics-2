@@ -82,10 +82,13 @@ public:
 
     void hangFromCorners(const int &num_corners);
 
-    /*
+    
     int attachNearest(const Eigen::Matrix<Real,3,1> &pos);
-    void updateAttachedPose(const int &id, const Eigen::Matrix<Real,3,1> &pos);
+    void updateAttachedPose(const int &id, 
+                            const Eigen::Matrix<Real,3,1> &pos, 
+                            const Eigen::Quaternion<Real> &ori);
 
+    /*
     void resetForces();
     */
 
@@ -108,9 +111,10 @@ private:
     void setStretchBendTwistConstraints();
     void setMasses();
 
-    /*
-    int findNearestPositionVectorId(const Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic>& matrix, const Eigen::Matrix<Real,3,1>& pos);
-    */
+
+    int findNearestPositionVectorId(const std::vector<Eigen::Matrix<Real,3,1>>& matrix, 
+                                    const Eigen::Matrix<Real,3,1>& pos);
+    
 
     void solveStretchBendTwistConstraints(const Real &dt);
     void computeMatrixK(const Eigen::Matrix<Real,3,1> &connector, 
@@ -147,7 +151,8 @@ private:
     std::vector<Eigen::Matrix<Real,3,3>> inv_iner_;
     std::vector<Eigen::Matrix<Real,3,3>> iner_;
 
-    Eigen::Matrix2Xi stretchBendTwist_ids_; // stores segment ids of each constraint
+    // Zero-stretch bending twisting constraint info
+    Eigen::Matrix2Xi stretchBendTwist_ids_; // stores segment id pair of each constraint
     std::vector<Eigen::Matrix<Real,3,1>> stretchBendTwist_restDarbouxVectors_;
     std::vector<Eigen::Matrix<Real,3,4>> stretchBendTwist_constraintPosInfo_;
     std::vector<Real> average_segment_lengths_;
