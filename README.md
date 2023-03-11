@@ -56,6 +56,7 @@ catkin_make -DCMAKE_BUILD_TYPE=Release;
 source devel/setup.bash;
 ```
 
+
 ### In your `~/.bashrc` file, add these:
 ```
 source ~/catkin_ws_swarm2/devel/setup.bash
