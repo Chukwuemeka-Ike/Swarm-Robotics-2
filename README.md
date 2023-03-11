@@ -151,7 +151,7 @@ roslaunch dingo_gazebo highbay_multi.launch
 ```
 ![View in Highbay](./.imgs/highbay_multi.png)
 
-### Running the simulation in  Demonstration Floor - Highbay with ground truth
+### Running the simulation in Demonstration Floor - Highbay with ground truth
 This command launches the simulation with ground truth reported TF frames to RVIZ. Again, launching the corresponding RVIZ and the rqt_ez_publisher is embedded all together. 
 ```
 roslaunch swarm2_launch multi_dingo_sim_with_rviz_and_ez_publisher_highbay.launch
@@ -159,7 +159,7 @@ roslaunch swarm2_launch multi_dingo_sim_with_rviz_and_ez_publisher_highbay.launc
 Note that RVIZ TF frames are reported by `message_to_tf` package that uses the _ground truth_ data coming from `gazebo_ros_p3d` plugin, hence it is exact representation of the Gazebo World.
 Therefore, this command does not launch the Gazebo client GUI to save computational power, but could be re-enabled with gui parameter set to true in the launch file.
 <!-- TODO: ADD image here -->
-![Empty World with ground truth](./.imgs/highbay_multi_ground_truth.png)
+![Highbay World with ground truth](./.imgs/highbay_multi_ground_truth.png)
 
 ### Running the simulation in Anchor Industries Representative Plant Floor
 
