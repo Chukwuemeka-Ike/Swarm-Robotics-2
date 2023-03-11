@@ -56,3 +56,4 @@ src/dingo
 src/dingo_desktop
 src/dingo_simulator
 src/AssistiveRobot-SimulationFiles
+src/RVizMeshVisualizer

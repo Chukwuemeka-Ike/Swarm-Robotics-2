@@ -41,24 +41,23 @@ sudo apt-get install ros-melodic-rqt-ez-publisher
 
 ### Default Gazebo Simulation Building Steps
 ```
-cd ~
-mkdir catkin_ws_swarm2
+cd;
+mkdir catkin_ws_swarm2;
+cd catkin_ws_swarm2;
+rm -rf {*,.*};
 
-cd catkin_ws_swarm2
-mkdir src
-catkin_init_workspace src
-
-cd src
-git clone https://github.com/burakaksoy/Swarm-Robotics-2.git
-git clone -b melodic-devel https://github.com/burakaksoy/dingo.git
-git clone https://github.com/burakaksoy/dingo_simulator.git
-git clone https://github.com/burakaksoy/dingo_desktop.git
-git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git
+git clone https://github.com/burakaksoy/Swarm-Robotics-2.git .;
+cd src;
+git clone -b melodic-devel https://github.com/burakaksoy/dingo.git;
+git clone https://github.com/burakaksoy/dingo_simulator.git;
+git clone https://github.com/burakaksoy/dingo_desktop.git;
+git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git;
+git clone https://github.com/burakaksoy/RVizMeshVisualizer.git;
 
 
-cd ..
-catkin_make
-source devel/setup.bash
+cd ..;
+catkin_make -DCMAKE_BUILD_TYPE=Release;
+source devel/setup.bash;
 ```
 
 #### In your `~/.bashrc` file, add these:
