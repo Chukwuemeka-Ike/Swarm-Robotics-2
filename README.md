@@ -21,14 +21,10 @@ Simply run
 ```
 ./TODO
 ```
-
-## Steps for Gazebo Simulation of Single Dingo-O robot
 <details> 
     <summary>Click to expand</summary>
 
-(Reference: http://www.clearpathrobotics.com/assets/guides/melodic/dingo/simulation.html)
-
-### Install some dependencies of Dingo Gazebo Simulation
+## Install some dependencies of Dingo Gazebo Simulation and Others
 ```
 sudo apt-get install ros-melodic-lms1xx # ROS driver for the SICK LMS1xx line of LIDARs.
 sudo apt-get install ros-melodic-velodyne-simulator # Metapackage of Velodyne LIDAR simulation component
@@ -39,7 +35,7 @@ sudo apt-get install ros-melodic-ridgeback-control
 sudo apt-get install ros-melodic-rqt-ez-publisher
 ```
 
-### Default Gazebo Simulation Building Steps
+## Building Steps
 ```
 cd;
 mkdir catkin_ws_swarm2;
@@ -60,7 +56,7 @@ catkin_make -DCMAKE_BUILD_TYPE=Release;
 source devel/setup.bash;
 ```
 
-#### In your `~/.bashrc` file, add these:
+### In your `~/.bashrc` file, add these:
 ```
 source ~/catkin_ws_swarm2/devel/setup.bash
 
@@ -68,8 +64,17 @@ export GAZEBO_MODEL_PATH=~/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/l
 export GAZEBO_RESOURCE_PATH=~/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/lab_gazebo/worlds
 ```
 
-### Running the simulation
-#### Gazebo simulation:
+</details> 
+
+# Steps for Gazebo Simulation of Single Dingo-O robot
+<details> 
+    <summary>Click to expand</summary>
+
+Assuming that you already did the dependancy installations and building in [**Setting up the system**](#setting-up-the-system) section.
+
+(Reference: http://www.clearpathrobotics.com/assets/guides/melodic/dingo/simulation.html)
+## Running the simulation
+### Gazebo simulation:
 ```
 roslaunch dingo_gazebo empty_world.launch x:=0. y:=0. yaw:=0. config:=front_laser
 ```
@@ -85,12 +90,12 @@ export DINGO_IMU_MICROSTRAIN=1
 roslaunch dingo_gazebo empty_world.launch x:=1. y:=0. yaw:=0.
 ```
 
-#### Corresponding RVIZ:
+### Corresponding RVIZ:
 ```
 roslaunch dingo_viz view_robot.launch
 ```
 
-#### To send simple velocity commands to the robot you can use rqt_ez_publisher:
+### To send simple velocity commands to the robot you can use rqt_ez_publisher:
 ```
 rosrun rqt_ez_publisher rqt_ez_publisher
 ```
@@ -98,14 +103,14 @@ and send messages to `\cmd_vel` topic.
 
 </details> 
 
-## Steps for Gazebo Simulation of Multiple Dingo-O robots
+# Steps for Gazebo Simulation of Multiple Dingo-O robots
 
 <details>
     <summary>Click to expand</summary>
 
-Assuming that you already did the dependancy installations and building in [**Steps for Gazebo Simulation of (Single) Dingo-O robot**](#steps-for-gazebo-simulation-of-single-dingo-o-robot) section.
+Assuming that you already did the dependancy installations and building in [**Setting up the system**](#setting-up-the-system) section.
 
-### Running the simulation in Empty World
+## Running the simulation in Empty World
 This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
 ```
 roslaunch dingo_gazebo empty_world_multi.launch
@@ -114,7 +119,7 @@ Note that RVIZ TF frames are reported by `robot_localization` package that uses 
 <!-- TODO: ADD image here -->
 ![View in empty world](./.imgs/empty_world_multi.png)
 
-### Running the simulation in CII 8th Floor Lab
+## Running the simulation in CII 8th Floor Lab
 This is an example lab environment to visualize the scales of Dingo robots.
 This command launches the corresponding RVIZ and the rqt_ez_publisher all together in CII 8th floor lab.
 ```
@@ -124,7 +129,7 @@ Note that RVIZ TF frames are reported by `robot_localization` package that uses 
 <!-- TODO: ADD image here -->
 ![View in CII 8th Floor Lab](./.imgs/empty_lab_multi.png)
 
-### Running the simulation in Empty World with ground truth
+## Running the simulation in Empty World with ground truth
 This command launches the simulation with ground truth reported TF frames to RVIZ. Again, launching the corresponding RVIZ and the rqt_ez_publisher is embedded all together. 
 ```
 roslaunch dingo_gazebo empty_world_multi_ground_truth.launch
@@ -134,7 +139,7 @@ Therefore, this command does not launch the Gazebo client GUI to save computatio
 <!-- TODO: ADD image here -->
 ![Empty World with ground truth](./.imgs/empty_world_multi_ground_truth.png)
 
-### Running the simulation in Demonstration Floor - Highbay
+## Running the simulation in Demonstration Floor - Highbay
 
 This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
 ```
@@ -150,7 +155,7 @@ roslaunch dingo_gazebo highbay_multi.launch
 ```
 ![View in Highbay](./.imgs/highbay_multi.png)
 
-### Running the simulation in Demonstration Floor - Highbay with ground truth
+## Running the simulation in Demonstration Floor - Highbay with ground truth
 This command launches the simulation with ground truth reported TF frames to RVIZ. Again, launching the corresponding RVIZ and the rqt_ez_publisher is embedded all together. 
 ```
 roslaunch swarm2_launch multi_dingo_sim_with_rviz_and_ez_publisher_highbay.launch
@@ -160,7 +165,7 @@ Therefore, this command does not launch the Gazebo client GUI to save computatio
 <!-- TODO: ADD image here -->
 ![Highbay World with ground truth](./.imgs/highbay_multi_ground_truth.png)
 
-### Running the simulation in Anchor Industries Representative Plant Floor
+## Running the simulation in Anchor Industries Representative Plant Floor
 
 **!!!IN PROGRESS, NOT DONE YET!!!**
 
