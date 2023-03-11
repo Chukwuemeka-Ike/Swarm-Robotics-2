@@ -17,3 +17,14 @@ with
 ```
 fuel.ignitionrobotics.org
 ```
+
+## Gazebo does not shutdown properly when you exit?
+Try couple of times:
+``` bash
+killall gzclient && killall gzserver && killall rosmaster
+```
+You can also add it to your `~/.bashrc` as an alias named `killg`:
+``` bash
+# TO KILL GAZEBO CLIENT AND SERVER:
+alias killg='killall gzclient && killall gzserver && killall rosmaster'
+```
