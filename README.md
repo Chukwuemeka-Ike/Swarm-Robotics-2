@@ -165,6 +165,14 @@ Note that RVIZ TF frames are reported by `message_to_tf` package that uses the _
 Therefore, this command does not launch the Gazebo client GUI to save computational power, but could be re-enabled with gui parameter set to true in the launch file.
 <!-- TODO: ADD image here -->
 ![Highbay World with ground truth](./.imgs/highbay_multi_ground_truth.png)
+**Note that above, the world in Gazebo is visualized at RViz! This is only a static image of the world exported as a COLLADA (.dae) file and imported to RViz using `RVizMeshVisualizer`. If you make changes to the world file, update the mesh file following the steps in [here](https://github.com/burakaksoy/AssistiveRobot-SimulationFiles/tree/master/lab_gazebo#to-export-world-files-to-a-single-collada-dea).**
+**For example, for the Highbay world, if you have already did the installation steps in the link above, run:**
+``` bash
+cd ~/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/lab_gazebo/worlds;
+ign gazebo -v 4 -s -r --iterations 1 highbay_swarm.world
+```
+**This will update the mesh file corresponding to the `highbay_swarm.world`.**
+
 
 ## Running the simulation in Anchor Industries Representative Plant Floor
 
