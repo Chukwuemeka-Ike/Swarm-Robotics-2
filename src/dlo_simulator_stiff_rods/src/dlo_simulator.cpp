@@ -361,14 +361,19 @@ void DloSimulator::simulate(const ros::TimerEvent& e){
     // Small steps implementation
     // -------------------------------
     for (int i = 0; i< num_steps_; i++){
-        for (int j = 0; j < num_substeps_; j++){
+        int j;
+        for (j = 0; j < num_substeps_; j++){
             
             dlo_.preSolve(sdt,gravity_);
             dlo_.solve(sdt);
             dlo_.postSolve(sdt);
+
+            // if (dlo_.getMaxError() < 1.0e-2){
+            //     break;
+            // }
         }
+        // std::cout << "itr: " << j << ",Max error: " << dlo_.getMaxError() << std::endl;
     }
-    std::cout << "Max error: " << dlo_.getMaxError() << std::endl;
     // -------------------------------
 
     // // To debug force readings from hanged corners (use inly when robots are not attached)

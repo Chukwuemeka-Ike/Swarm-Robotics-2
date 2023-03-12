@@ -299,6 +299,12 @@ void Dlo::solver(){
             // Apply the orientation solution
             ori_[ind].coeffs() += deltaQSoln.coeffs();
             ori_[ind].normalize();
+
+            // // compute max error
+            // for (unsigned char j(0); j < 6; ++j)
+            // {
+            //     max_error_ = std::max(max_error_, std::abs(RHS_[ind][j]/soln[j]));
+            // }    
 		}
 	}
 }
@@ -706,12 +712,6 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         Eigen::Matrix<Real, 6, 1>& rhs= RHS_[i];
         rhs.block<3, 1>(0, 0) = - (connector0 - connector1); // stretchViolation;
         rhs.block<3, 1>(3, 0) = - (omega - restDarbouxVector); // bendingAndTorsionViolation;
-
-        // compute max error
-		for (unsigned char j(0); j < 6; ++j)
-		{
-			max_error_ = std::max(max_error_, std::abs(rhs[j]));
-		}
         
         // compute G matrices (Equation (27))
         Eigen::Matrix<Real, 4, 3> G0, G1;
@@ -832,6 +832,12 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
                 q1.coeffs() += G1 * (inertiaInverseW1 * rb_crossT * deltaLambdaStretch + MInvJT1 * deltaLambdaBendingAndTorsion);
                 q1.normalize();
             }
+
+            // // compute max error
+            // for (unsigned char j(0); j < 6; ++j)
+            // {
+            //     max_error_ = std::max(max_error_, std::abs(rhs[j]/deltaLambda[j]));
+            // }            
         }
     }
 

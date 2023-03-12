@@ -19,7 +19,7 @@ dlo_torsion_modulus: 10.0e+9 # G, Shear modulus in classical phsysics. (unit: Pa
 
 initial_height: 1.10 # initial dlo height from ground (m)
 
-num_hang_corners: 0 # num of corners to hang dlo from (options: 0,1,2)
+num_hang_corners: 1 # num of corners to hang dlo from (options: 0,1,2)
 
 use_direct_kkt_solver: false # parameter to select direct KKT/GS or GS (default: false)
 # KKT/GS is more efficient however cannot handle more than one fixed points 
