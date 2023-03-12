@@ -18,14 +18,16 @@ Dlo::Dlo(const MeshDLO &mesh,
         const Real &torsion_modulus, 
         const Real &density,
         const Real &radius,
-        const bool &use_direct_kkt_solver):
+        const bool &use_direct_kkt_solver,
+        const bool &use_zero_stretch_stiffness):
     mesh_(mesh),
     zero_stretch_stiffness_(zero_stretch_stiffness),
     young_modulus_(young_modulus),
     torsion_modulus_(torsion_modulus),
     density_(density),
     radius_(radius),
-    use_direct_kkt_solver_(use_direct_kkt_solver)
+    use_direct_kkt_solver_(use_direct_kkt_solver),
+    use_zero_stretch_stiffness_(use_zero_stretch_stiffness)
 {
     num_particles_ = mesh_.vertices.size();
     num_quaternions_ = mesh_.quaternions.size();
@@ -629,10 +631,20 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
     // compute compliance parameter of the stretch constraint part
     Eigen::Matrix<Real,3,1> stretch_compliance; // upper diagonal of eqn 24
 
-    stretch_compliance <<
-		inv_dt_sqr / (zero_stretch_stiffness_),
-		inv_dt_sqr / (zero_stretch_stiffness_),
-		inv_dt_sqr / (zero_stretch_stiffness_);
+    if (use_zero_stretch_stiffness_){
+        stretch_compliance <<
+            inv_dt_sqr / (zero_stretch_stiffness_),
+            inv_dt_sqr / (zero_stretch_stiffness_),
+            inv_dt_sqr / (zero_stretch_stiffness_);
+    }
+    else{
+        // Calculate Stretch compliance based on E,G and dlo_r
+        Real area(static_cast<Real>(M_PI) * std::pow(radius_, static_cast<Real>(2.0)));
+        stretch_compliance <<
+            inv_dt_sqr / (zero_stretch_stiffness_*torsion_modulus_*area),
+            inv_dt_sqr / (zero_stretch_stiffness_*torsion_modulus_*area),
+            inv_dt_sqr / (zero_stretch_stiffness_*young_modulus_*area);
+    }
 
     // compute compliance parameter of the bending and torsion constraint part
     Eigen::Matrix<Real,3,1> bending_and_torsion_compliance_fixed; //lower diagonal of eqn 24

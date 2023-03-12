@@ -127,6 +127,8 @@ private:
     Real dlo_young_modulus_;
     Real dlo_torsion_modulus_;
 
+    bool use_zero_stretch_stiffness_;
+
     Real initial_height_; // initial dlo height from ground (m)
 
     int num_hang_corners_; // num of corners to hang dlo from (options: 0,1,2)

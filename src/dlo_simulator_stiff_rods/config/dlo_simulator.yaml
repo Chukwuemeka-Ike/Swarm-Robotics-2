@@ -17,6 +17,11 @@ dlo_zero_stretch_stiffness: 1.0e+14
 dlo_young_modulus: 30.0e+9 # E, elasticity modulus (unit: Pa?)
 dlo_torsion_modulus: 10.0e+9 # G, Shear modulus in classical phsysics. (unit: Pa?)
 
+use_zero_stretch_stiffness: true
+# use_zero_stretch_stiffness: (default: true)
+# If set to false, stretch/shear matrix will be calculated based on E,G and dlo_r 
+# and dlo_zero_stretch_stiffness parameter will be used as a scalar multiplier
+
 initial_height: 1.10 # initial dlo height from ground (m)
 
 num_hang_corners: 1 # num of corners to hang dlo from (options: 0,1,2)

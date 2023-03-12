@@ -68,6 +68,8 @@ DloSimulator::~DloSimulator() {
     nh_local_.deleteParam("dlo_young_modulus");
     nh_local_.deleteParam("dlo_torsion_modulus");
 
+    nh_local_.deleteParam("use_zero_stretch_stiffness");
+
     nh_local_.deleteParam("initial_height");
 
     nh_local_.deleteParam("num_hang_corners");
@@ -129,6 +131,8 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
     nh_local_.param<Real>("dlo_young_modulus", dlo_young_modulus_, 0.01);
     nh_local_.param<Real>("dlo_torsion_modulus", dlo_torsion_modulus_, 0.01);
 
+    nh_local_.param<bool>("use_zero_stretch_stiffness", use_zero_stretch_stiffness_, true);
+
     nh_local_.param<Real>("initial_height", initial_height_, 1.0);
 
     nh_local_.param<int>("num_hang_corners", num_hang_corners_, 1);
@@ -186,7 +190,8 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
                            dlo_young_modulus_, 
                            dlo_torsion_modulus_, 
                            dlo_density_,dlo_r_,
-                           use_direct_kkt_solver_);
+                           use_direct_kkt_solver_,
+                           use_zero_stretch_stiffness_);
 
     // Hang dlo from corners
     dlo_.hangFromCorners(num_hang_corners_);
@@ -413,11 +418,22 @@ void DloSimulator::render(const ros::TimerEvent& e){
     // // With some kind of self lock to prevent collision with simulation
     boost::recursive_mutex::scoped_lock lock(mtx_);
 
+    // Render segment center points
     const std::vector<Eigen::Matrix<Real,3,1>> *pos_ptr = dlo_.getPosPtr();
     drawRviz(pos_ptr);
-    // const Eigen::Matrix2Xi *stretching_ids_ptr = dlo_.getStretchBendTwistIdsPtr();
-    // drawRvizWireframe(pos_ptr,stretching_ids_ptr);
 
+    // if (use_zero_stretch_stiffness_){
+    //     // Render each line segment seperately based on their orientation and lenght
+    //     const std::vector<Eigen::Quaternion<Real>> *ori_ptr = dlo_.getOriPtr();
+    //     const std::vector<Real> *len_ptr = dlo_.getSegmentLengthsPtr();
+    //     drawRvizRod(pos_ptr,ori_ptr,len_ptr);
+    // } else {
+    //     // Render connections of segment centers
+    //     const Eigen::Matrix2Xi *stretching_ids_ptr = dlo_.getStretchBendTwistIdsPtr();
+    //     drawRvizWireframe(pos_ptr,stretching_ids_ptr);   
+    // }
+
+    // Render each line segment seperately based on their orientation and lenght
     const std::vector<Eigen::Quaternion<Real>> *ori_ptr = dlo_.getOriPtr();
     const std::vector<Real> *len_ptr = dlo_.getSegmentLengthsPtr();
     drawRvizRod(pos_ptr,ori_ptr,len_ptr);
