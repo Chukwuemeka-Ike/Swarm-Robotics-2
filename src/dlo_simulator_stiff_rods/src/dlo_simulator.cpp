@@ -70,6 +70,9 @@ DloSimulator::~DloSimulator() {
 
     nh_local_.deleteParam("use_zero_stretch_stiffness");
 
+    nh_local_.deleteParam("global_damp_coeff_v");
+    nh_local_.deleteParam("global_damp_coeff_w");
+
     nh_local_.deleteParam("initial_height");
 
     nh_local_.deleteParam("num_hang_corners");
@@ -133,6 +136,9 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
 
     nh_local_.param<bool>("use_zero_stretch_stiffness", use_zero_stretch_stiffness_, true);
 
+    nh_local_.param<Real>("global_damp_coeff_v", global_damp_coeff_v_, 0.0);
+    nh_local_.param<Real>("global_damp_coeff_w", global_damp_coeff_w_, 0.0);
+
     nh_local_.param<Real>("initial_height", initial_height_, 1.0);
 
     nh_local_.param<int>("num_hang_corners", num_hang_corners_, 1);
@@ -191,7 +197,9 @@ bool DloSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empty::
                            dlo_torsion_modulus_, 
                            dlo_density_,dlo_r_,
                            use_direct_kkt_solver_,
-                           use_zero_stretch_stiffness_);
+                           use_zero_stretch_stiffness_,
+                           global_damp_coeff_v_,
+                           global_damp_coeff_w_);
 
     // Hang dlo from corners
     dlo_.hangFromCorners(num_hang_corners_);

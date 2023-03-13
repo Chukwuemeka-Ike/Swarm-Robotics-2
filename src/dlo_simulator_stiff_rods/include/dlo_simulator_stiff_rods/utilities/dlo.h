@@ -74,7 +74,9 @@ public:
         const Real &density,
         const Real &radius,
         const bool &use_direct_kkt_solver,
-        const bool &use_zero_stretch_stiffness);
+        const bool &use_zero_stretch_stiffness,
+        const Real &global_damp_coeff_v,
+        const Real &global_damp_coeff_w);
     ~Dlo();
 
     void preSolve(const Real &dt, const Eigen::Matrix<Real,3,1> &gravity);
@@ -188,6 +190,9 @@ private:
 
     bool use_direct_kkt_solver_;
     bool use_zero_stretch_stiffness_;
+
+    Real global_damp_coeff_v_; 
+    Real global_damp_coeff_w_;
     // END: Parameters and functions for Tree structured linear time direct solver
     // -----------------------------------------------------------------
 

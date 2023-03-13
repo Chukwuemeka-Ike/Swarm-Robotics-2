@@ -129,6 +129,9 @@ private:
 
     bool use_zero_stretch_stiffness_;
 
+    Real global_damp_coeff_v_; 
+    Real global_damp_coeff_w_;
+
     Real initial_height_; // initial dlo height from ground (m)
 
     int num_hang_corners_; // num of corners to hang dlo from (options: 0,1,2)

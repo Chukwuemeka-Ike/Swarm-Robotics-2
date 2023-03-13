@@ -19,7 +19,9 @@ Dlo::Dlo(const MeshDLO &mesh,
         const Real &density,
         const Real &radius,
         const bool &use_direct_kkt_solver,
-        const bool &use_zero_stretch_stiffness):
+        const bool &use_zero_stretch_stiffness,
+        const Real &global_damp_coeff_v,
+        const Real &global_damp_coeff_w):
     mesh_(mesh),
     zero_stretch_stiffness_(zero_stretch_stiffness),
     young_modulus_(young_modulus),
@@ -27,7 +29,9 @@ Dlo::Dlo(const MeshDLO &mesh,
     density_(density),
     radius_(radius),
     use_direct_kkt_solver_(use_direct_kkt_solver),
-    use_zero_stretch_stiffness_(use_zero_stretch_stiffness)
+    use_zero_stretch_stiffness_(use_zero_stretch_stiffness),
+    global_damp_coeff_v_(global_damp_coeff_v),
+    global_damp_coeff_w_(global_damp_coeff_w)
 {
     num_particles_ = mesh_.vertices.size();
     num_quaternions_ = mesh_.quaternions.size();
@@ -662,10 +666,10 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
         inv_dt_sqr / torsionStiffness;
 
     // // Damping coeffs.
-    // Real damping_shear_   = 1.0e-9;
-    // Real damping_stretch_ = 1.0e-9;
-    // Real damping_bending_ = 5.0e-6;
-    // Real damping_torsion_ = 5.0e-6;
+    // Real damping_shear_   = 0.0; // 5.0e-5; // 1.0e-9;
+    // Real damping_stretch_ = 0.0; // 5.0e-5; // 1.0e-9;
+    // Real damping_bending_ = 5.0e-4;
+    // Real damping_torsion_ = 0.0; //5.0e-5;
     
     // Eigen::Matrix<Real,3,1> beta_tilde_shear_stretch;
 
@@ -848,12 +852,12 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
             JMJT.block<3, 3>(3, 3) = JMJTOmega;
 
             // // Multiply each row with compliance times damping divided by dt
-            // JMJT.row(0) *= 1.0 + (stretch_compliance(0)*beta_tilde_shear_stretch(0)/dt); 
-            // JMJT.row(1) *= 1.0 + (stretch_compliance(1)*beta_tilde_shear_stretch(1)/dt); 
-            // JMJT.row(2) *= 1.0 + (stretch_compliance(2)*beta_tilde_shear_stretch(2)/dt); 
-            // JMJT.row(3) *= 1.0 + (bending_and_torsion_compliance(0)*beta_tilde_bending_torsion(0)/dt); 
-            // JMJT.row(4) *= 1.0 + (bending_and_torsion_compliance(1)*beta_tilde_bending_torsion(1)/dt); 
-            // JMJT.row(5) *= 1.0 + (bending_and_torsion_compliance(2)*beta_tilde_bending_torsion(2)/dt); 
+            // JMJT.row(0) *= (1.0 + (stretch_compliance(0)*beta_tilde_shear_stretch(0)/dt)); 
+            // JMJT.row(1) *= (1.0 + (stretch_compliance(1)*beta_tilde_shear_stretch(1)/dt)); 
+            // JMJT.row(2) *= (1.0 + (stretch_compliance(2)*beta_tilde_shear_stretch(2)/dt)); 
+            // JMJT.row(3) *= (1.0 + (bending_and_torsion_compliance(0)*beta_tilde_bending_torsion(0)/dt)); 
+            // JMJT.row(4) *= (1.0 + (bending_and_torsion_compliance(1)*beta_tilde_bending_torsion(1)/dt)); 
+            // JMJT.row(5) *= (1.0 + (bending_and_torsion_compliance(2)*beta_tilde_bending_torsion(2)/dt)); 
 
             // add compliance
             JMJT(0, 0) += stretch_compliance(0);
@@ -875,7 +879,7 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
             // const Eigen::Matrix<Real,3,1> w1 = 2.0*(q1 * q1_prev.conjugate()).vec()/dt;
 
             // Jv.block<3,1>(0,0) = v0 - v1 + ra_crossT*w0 - rb_crossT*w1;
-            // Jv.block<3,1>(3,0) = MInvJT0.transpose() * w0 + MInvJT1.transpose() * w1;
+            // Jv.block<3,1>(3,0) = jOmegaG0 * w0 + jOmegaG1 * w1;
 
             // //Update rhs with -alpha_tilde*beta_tilde*Jv
             // rhs(0) -= stretch_compliance(0)*beta_tilde_shear_stretch(0) * Jv(0); 
@@ -983,8 +987,6 @@ void Dlo::postSolve(const Real &dt){
     }
 
     // Create an artificial global damping
-    Real global_damp_c_v = 2.1e-4; // 0.9e-3
-    Real global_damp_c_w = 2.1e-4;
     #pragma omp parallel default(shared)
     {
         // Damp linear velocities
@@ -992,7 +994,7 @@ void Dlo::postSolve(const Real &dt){
         #pragma omp parallel for 
         for (int i = 0; i< num_particles_; i++){
             if (inv_mass_[i] != 0){
-                vel_.col(i) -= std::min(1.0, global_damp_c_v*inv_mass_[i]*vel_.col(i).norm()*dt)*vel_.col(i).normalized();
+                vel_.col(i) -= std::min(1.0, global_damp_coeff_v_*dt*inv_mass_[i]) * vel_.col(i);
             }
         }
         // Damp angular velocities
@@ -1001,7 +1003,7 @@ void Dlo::postSolve(const Real &dt){
         for (int i = 0; i< num_quaternions_; i++){
             // if (!inv_iner_[i].isZero(0)){
             if (inv_mass_[i]!= 0){
-                Eigen::Matrix<Real,3,1> dw = global_damp_c_w*inv_iner_[i]*omega_.col(i).norm()*dt*omega_.col(i).normalized();
+                Eigen::Matrix<Real,3,1> dw = global_damp_coeff_w_*dt*inv_iner_[i]*omega_.col(i);
                 
                 if(dw.norm() >= omega_.col(i).norm()){
                     omega_.col(i).setZero();
