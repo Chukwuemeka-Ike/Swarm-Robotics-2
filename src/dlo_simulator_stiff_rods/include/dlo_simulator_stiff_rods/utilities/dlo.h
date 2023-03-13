@@ -11,14 +11,14 @@
 #include <vector>
 #include <list>
 #include <unordered_map> 
-#include <algorithm>    // std::sort
+#include <algorithm>    // std::sort, std::min
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 // #include <scipy/spatial.h>
 
 #include <string>
-#include <iostream>
+#include <iostream> // std::cout
 
 #include <float.h>
 
