@@ -973,6 +973,7 @@ void Dlo::crossProductMatrix(const Eigen::Matrix<Real,3,1> &v, Eigen::Matrix<Rea
 }
 
 void Dlo::postSolve(const Real &dt){
+    // Update velocities
     #pragma omp parallel default(shared)
     {
         // Update linear velocities
@@ -1003,7 +1004,8 @@ void Dlo::postSolve(const Real &dt){
         #pragma omp parallel for 
         for (int i = 0; i< num_particles_; i++){
             if (inv_mass_[i] != 0){
-                vel_.col(i) -= std::min(1.0, global_damp_coeff_v_*dt*inv_mass_[i]) * vel_.col(i);
+                vel_.col(i) -= std::min(1.0, (global_damp_coeff_v_/num_particles_)*dt*inv_mass_[i]) * vel_.col(i);
+                // divide damping coeff by num_particles_ to get rid of the segment number dependent damping response
             }
         }
         // Damp angular velocities
@@ -1012,7 +1014,8 @@ void Dlo::postSolve(const Real &dt){
         for (int i = 0; i< num_quaternions_; i++){
             // if (!inv_iner_[i].isZero(0)){
             if (inv_mass_[i]!= 0){
-                Eigen::Matrix<Real,3,1> dw = global_damp_coeff_w_*dt*inv_iner_[i]*omega_.col(i);
+                Eigen::Matrix<Real,3,1> dw = (global_damp_coeff_w_/num_quaternions_)*dt*inv_iner_[i]*omega_.col(i);
+                // divide damping coeff by num_quaternions_ to get rid of the segment number dependent damping response
                 
                 if(dw.norm() >= omega_.col(i).norm()){
                     omega_.col(i).setZero();
