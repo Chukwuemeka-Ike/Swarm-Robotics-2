@@ -690,7 +690,16 @@ void Dlo::solveStretchBendTwistConstraints(const Real &dt){
 
     // updates on the constraints
     // For each constraint
-    for (int i = 0; i < stretchBendTwist_restDarbouxVectors_.size(); i++){
+    int i = 0;
+    const int n = stretchBendTwist_restDarbouxVectors_.size(); // num. of constraints
+    for (int itr = 0; itr < n; itr++){
+        // Bilateral interleaving order
+        if (n % 2 == 0) {
+            (itr % 2 == 0) ? i = itr :  i = n-itr;
+        } else {
+            (itr % 2 == 0) ? i = itr :  i = n-itr-1;
+        }
+
         // IDs 
         const int& id0 = stretchBendTwist_ids_(0,i);
         const int& id1 = stretchBendTwist_ids_(1,i);

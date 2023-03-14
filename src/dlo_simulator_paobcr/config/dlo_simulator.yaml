@@ -11,7 +11,7 @@ num_steps: 1 # experimental only. do not change from 1
 dlo_l: 2.25 # 3.3528 # dlo length in meters
 dlo_r: 0.0035 # 0.0035 # dlo radius in meters
 dlo_density: 1000.0 # dlo mass per meter cube (kg/m^3)
-dlo_resolution: 10 # particle resolution per meter 
+dlo_resolution: 15 # particle resolution per meter 
 
 dlo_stretching_compliance: 1.0 # 1.0 # 0.01
 dlo_shearing_compliance_x: 1.0 # 1.0 # 0.01
@@ -21,7 +21,7 @@ dlo_twisting_compliance: 1.0 # 2.0 # 0.01
 dlo_bending_compliance_x: 1.0 # 2.0 # 0.01 
 dlo_bending_compliance_y: 1.0 # 2.0 # 0.01 
 
-initial_height: 1.10 # initial dlo height from ground (m)
+initial_height: 3.10 # initial dlo height from ground (m)
 
 num_hang_corners: 1 # num of corners to hang dlo from (options: 0,1,2)
 

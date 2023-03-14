@@ -335,11 +335,14 @@ void Dlo::solveStretchShearConstraints(const Real &dt){
     stretchingAndShearingKs[2] = 1.0/(stretching_compliance_+eps_);
 
     int i = 0;
-    for (int itr = 0; itr < stretchShear_restLengths_.size(); itr++){
-
+    const int n = stretchShear_restLengths_.size(); // num. of constraints
+    for (int itr = 0; itr < n; itr++){
         // Bilateral interleaving order
-        // (itr % 2 == 0) ? i = itr :  i = stretchShear_restLengths_.size() - itr;
-        (itr % 2 == 0) ? i = itr :  i = itr;
+        if (n % 2 == 0) {
+            (itr % 2 == 0) ? i = itr :  i = n-itr;
+        } else {
+            (itr % 2 == 0) ? i = itr :  i = n-itr-1;
+        }
 
         // Correction vectors place holders
         Eigen::Matrix<Real,3,1> dp0;
@@ -421,11 +424,14 @@ void Dlo::solveBendTwistConstraints(const Real &dt){
     bendingAndTwistingKs[2] = 1.0/(twisting_compliance_+eps_);
 
     int i = 0;
-    for (int itr = 0; itr < bendTwist_restDarbouxVectors_.size(); itr++){
-
+    const int n = bendTwist_restDarbouxVectors_.size(); // num. of constraints
+    for (int itr = 0; itr < n; itr++){
         // Bilateral interleaving order
-        // (itr % 2 == 0) ? i = itr :  i = bendTwist_restDarbouxVectors_.size() - itr;
-        (itr % 2 == 0) ? i = itr :  i = itr;
+        if (n % 2 == 0) {
+            (itr % 2 == 0) ? i = itr :  i = n-itr;
+        } else {
+            (itr % 2 == 0) ? i = itr :  i = n-itr-1;
+        }
 
         // Correction vectors place holders
         Eigen::Quaternion<Real> dq0;
