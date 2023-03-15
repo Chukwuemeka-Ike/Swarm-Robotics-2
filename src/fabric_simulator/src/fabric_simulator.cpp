@@ -59,8 +59,15 @@ FabricSimulator::~FabricSimulator() {
     nh_local_.deleteParam("fabric_y");
     nh_local_.deleteParam("fabric_density");
     nh_local_.deleteParam("fabric_resolution");
+
+    nh_local_.deleteParam("fabric_stretching_compliance");
     nh_local_.deleteParam("fabric_bending_compliance");
+    
     nh_local_.deleteParam("initial_height");
+
+    nh_local_.deleteParam("num_hang_corners");
+
+    nh_local_.deleteParam("global_damp_coeff_v");
 
     nh_local_.deleteParam("simulation_rate");
     nh_local_.deleteParam("rendering_rate");
@@ -109,8 +116,15 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<Real>("fabric_y", fabric_y_, 2.); //2
     nh_local_.param<Real>("fabric_density", fabric_density_, 1.0);
     nh_local_.param<Real>("fabric_resolution", fabric_resolution_, 10); //10
+
+    nh_local_.param<Real>("fabric_stretching_compliance", fabric_stretching_compliance_, 0.01);
     nh_local_.param<Real>("fabric_bending_compliance", fabric_bending_compliance_, 0.01);
+
     nh_local_.param<Real>("initial_height", initial_height_, 0.8);
+
+    nh_local_.param<int>("num_hang_corners", num_hang_corners_, 2);
+
+    nh_local_.param<Real>("global_damp_coeff_v", global_damp_coeff_v_, 0.0);
     
     nh_local_.param<Real>("simulation_rate", simulation_rate_, 90.0); //90
     nh_local_.param<Real>("rendering_rate", rendering_rate_, 30.0); //30
@@ -155,10 +169,14 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     // std::cout << "fabric_mesh.face_tri_ids:\n" << fabric_mesh.face_tri_ids << std::endl;
 
     // Create cloth
-    fabric_ = pbd_object::Cloth(fabric_mesh, fabric_bending_compliance_, fabric_density_);
+    fabric_ = pbd_object::Cloth(fabric_mesh, 
+                                fabric_stretching_compliance_,
+                                fabric_bending_compliance_,
+                                fabric_density_,
+                                global_damp_coeff_v_);
 
     // Hang fabric from corners
-    fabric_.hangFromCorners(0);
+    fabric_.hangFromCorners(num_hang_corners_);
 
     if (p_active_ != prev_active) {
         if (p_active_) {
@@ -183,6 +201,8 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
         }
         else {
             // Send empty message?
+            // TODO: Send zero (or null corresponding) message from each publisher to end cleanly.
+
 
             // Stop publishers
             pub_fabric_points_.shutdown();

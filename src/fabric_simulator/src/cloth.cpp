@@ -10,13 +10,17 @@ Cloth::Cloth(){
 
 }
 
-Cloth::Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &density):
+Cloth::Cloth(const Mesh &mesh, 
+             const Real &stretching_compliance, 
+             const Real &bending_compliance, 
+             const Real &density,
+             const Real &global_damp_coeff_v):
     mesh_(mesh),
+    stretching_compliance_(stretching_compliance),
     bending_compliance_(bending_compliance),
-    density_(density)
+    density_(density),
+    global_damp_coeff_v_(global_damp_coeff_v)
 {
-    stretching_compliance_ = 1.0e-9; // 0.0; // 1.0/100000 ; //0.0;
-
     num_particles_ = mesh_.vertices.rows();
     std::cout << "num particles: " << num_particles_ << std::endl;
     
@@ -233,7 +237,7 @@ void Cloth::solveStretching(const Real &compliance, const Real &dt){
         grads_ = pos_.row(id0) - pos_.row(id1);
 
         Real len = grads_.norm();
-        if (len <= static_cast<Real>(1e-6)){
+        if (len <= static_cast<Real>(1e-13)){
             continue;
         }
 
@@ -245,7 +249,7 @@ void Cloth::solveStretching(const Real &compliance, const Real &dt){
         Real C = len - rest_len;
         Real K = w+alpha;
         
-        if (std::fabs(K) <= static_cast<Real>(1e-6)){
+        if (std::fabs(K) <= static_cast<Real>(1e-13)){
             continue;
         } 
 
@@ -281,7 +285,7 @@ void Cloth::solveBending(const Real &compliance, const Real &dt){
         grads_ = pos_.row(id0) - pos_.row(id1);
 
         Real len = grads_.norm();
-        if (len < static_cast<Real>(1e-6)){
+        if (len < static_cast<Real>(1e-13)){
             continue;
         }
 
@@ -291,7 +295,7 @@ void Cloth::solveBending(const Real &compliance, const Real &dt){
         Real C = len - rest_len;
         Real K = w+alpha;
     
-        if (std::fabs(K) <= static_cast<Real>(1e-6)){
+        if (std::fabs(K) <= static_cast<Real>(1e-13)){
             continue;
         } 
 
@@ -335,36 +339,36 @@ void Cloth::hangFromCorners(const int &num_corners){
                 return;
                 // break;
             case 1:
-                std::cout << "Virtually hang from 1 corners." << std::endl;
                 if (y > max_y - eps && x > max_x - eps) {
+                    std::cout << "id: " << i << " is virtually hang as corner 1." << std::endl;
                     inv_mass_(i) = 0.0;
                     attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
                 }
                 break;
             case 2:
-                std::cout << "Virtually hang from 2 corners." << std::endl;
                 if (y > max_y - eps && (x < min_x + eps || x > max_x - eps)) {
+                    std::cout << "id: " << i << " is virtually hang as corners 1 or 2." << std::endl;
                     inv_mass_(i) = 0.0;
                     attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
                 }
                 break;
             case 3:
-                std::cout << "Virtually hang from 3 corners." << std::endl;
                 if ((y > max_y - eps && x < min_x + eps) || (y > max_y - eps && x > max_x - eps) || (y < min_y + eps && x > max_x - eps) ) {
+                    std::cout << "id: " << i << " is virtually hang as corners 1 or 2 or 3." << std::endl;
                     inv_mass_(i) = 0.0;
                     attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
                 }
                 break;
             case 4:
-                std::cout << "Virtually hang all corners." << std::endl;
                 if ((y < min_y + eps || y > max_y - eps  ) && (x < min_x + eps || x > max_x - eps)) {
+                    std::cout << "id: " << i << " is virtually hang as corners 1 or 2 or 3 or 4." << std::endl;
                     inv_mass_(i) = 0.0;
                     attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
                 }
                 break;
             default:
-                std::cout << "Err. Virtually hang all corners." << std::endl;
                 if ((y < min_y + eps || y > max_y - eps  ) && (x < min_x + eps || x > max_x - eps)) {
+                    std::cout << "id: " << i << " is virtually hang as corners 1 or 2 or 3 or 4." << std::endl;
                     inv_mass_(i) = 0.0;
                     attached_ids_.push_back(i); // add fixed particle id to the attached_ids_ vector
                 }
@@ -374,17 +378,23 @@ void Cloth::hangFromCorners(const int &num_corners){
 }
 
 void Cloth::preSolve(const Real &dt, const Eigen::Matrix<Real,1,3> &gravity){
-    for (int i = 0; i< num_particles_; i++){
-        if (inv_mass_(i) > 0){
-            vel_.row(i) += gravity*dt;
-            prev_pos_.row(i) = pos_.row(i);
-            pos_.row(i) += vel_.row(i)*dt;
+    #pragma omp parallel default(shared)
+    {
+        // Semi implicit euler (position)
+        // #pragma omp for schedule(static) 
+        #pragma omp parallel for 
+        for (int i = 0; i< num_particles_; i++){
+            if (inv_mass_(i) > 0){
+                vel_.row(i) += gravity*dt;
+                prev_pos_.row(i) = pos_.row(i);
+                pos_.row(i) += vel_.row(i)*dt;
 
-            // Prevent going below ground
-            Real z = pos_(i,2);
-            if (z < 0.){
-                pos_.row(i) = prev_pos_.row(i) ;
-                pos_(i,2) = 0.0;
+                // Prevent going below ground
+                Real z = pos_(i,2);
+                if (z < 0.){
+                    pos_.row(i) = prev_pos_.row(i) ;
+                    pos_(i,2) = 0.0;
+                }
             }
         }
     }
@@ -397,9 +407,29 @@ void Cloth::solve(const Real &dt){
 
 void Cloth::postSolve(const Real &dt){
     // Update velocities
-    for (int i = 0; i< num_particles_; i++){
-        if (inv_mass_(i) != 0){
-            vel_.row(i) = (pos_.row(i) - prev_pos_.row(i))/dt;
+    #pragma omp parallel default(shared)
+    {
+        // Update linear velocities
+        // #pragma omp for schedule(static) 
+        #pragma omp parallel for 
+        for (int i = 0; i< num_particles_; i++){
+            if (inv_mass_(i) != 0){
+                vel_.row(i) = (pos_.row(i) - prev_pos_.row(i))/dt;
+            }
+        }
+    }
+
+    // Create an artificial global damping
+    #pragma omp parallel default(shared)
+    {
+        // Damp linear velocities
+        // #pragma omp for schedule(static) 
+        #pragma omp parallel for 
+        for (int i = 0; i< num_particles_; i++){
+            if (inv_mass_(i) != 0){
+                vel_.row(i) -= std::min(1.0, (global_damp_coeff_v_/std::sqrt(num_particles_))*dt*inv_mass_(i)) * vel_.row(i);
+                // divide damping coeff by square root of num_particles_ to get rid of the fabric area dependent damping response
+            }
         }
     }
 }

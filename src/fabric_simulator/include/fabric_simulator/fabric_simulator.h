@@ -121,8 +121,15 @@ private:
     Real fabric_y_; // expansion in y dimension (m)
     Real fabric_density_; // fabric mass per meter square (kg/m^2)
     Real fabric_resolution_; // particle resolution per meter
+
+    Real fabric_stretching_compliance_;
     Real fabric_bending_compliance_;
+    
     Real initial_height_; // initial fabric height from ground (m)
+
+    int num_hang_corners_; // num of corners to hang dlo from (options: 0,1,2,3,4)
+
+    Real global_damp_coeff_v_; 
     
     Real simulation_rate_;
     Real rendering_rate_;

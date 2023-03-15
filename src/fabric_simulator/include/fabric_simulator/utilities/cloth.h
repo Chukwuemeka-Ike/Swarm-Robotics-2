@@ -21,6 +21,8 @@
 
 #include <float.h>
 
+#include <omp.h>
+
 #define USE_DOUBLE // comment out if you would like to use float.
 
 #ifdef USE_DOUBLE
@@ -45,7 +47,11 @@ class Cloth
 {
 public:
     Cloth();
-    Cloth(const Mesh &mesh, const Real &bending_compliance, const Real &density);
+    Cloth(const Mesh &mesh, 
+          const Real &stretching_compliance,
+          const Real &bending_compliance,
+          const Real &density,
+          const Real &global_damp_coeff_v);
     ~Cloth();
 
     void preSolve(const Real &dt, const Eigen::Matrix<Real,1,3> &gravity);
@@ -101,6 +107,8 @@ private:
 
     Real stretching_compliance_;
     Real bending_compliance_;
+
+    Real global_damp_coeff_v_; 
 
     // May not be necessary?
     // Eigen::RowVectorXi attached_ids_; // ids of robot attached particles
