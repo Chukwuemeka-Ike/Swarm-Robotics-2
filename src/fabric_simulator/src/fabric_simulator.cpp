@@ -46,6 +46,8 @@ FabricSimulator::FabricSimulator(ros::NodeHandle &nh, ros::NodeHandle &nh_local,
 }
 
 FabricSimulator::~FabricSimulator() {
+    publishZeroWrenches();
+
     nh_local_.deleteParam("gravity_x");
     nh_local_.deleteParam("gravity_y");
     nh_local_.deleteParam("gravity_z");
@@ -149,7 +151,7 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
     nh_local_.param<std::string>("wrench_03_frame_id", wrench_03_frame_id_, std::string("d3_tf_fabric_mount_link"));
     nh_local_.param<std::string>("wrench_04_frame_id", wrench_04_frame_id_, std::string("d4_tf_fabric_mount_link"));
 
-    nh_local_.param<Real>("fabric_rob_z_offset_", fabric_rob_z_offset_, 0.0); // 0.785145); // makes it 80cm above ground
+    nh_local_.param<Real>("fabric_rob_z_offset", fabric_rob_z_offset_, 0.0); // 0.785145); // makes it 80cm above ground
 
     // Set timer periods based on the parameters
     timer_render_.setPeriod(ros::Duration(1.0/rendering_rate_));
@@ -202,7 +204,7 @@ bool FabricSimulator::updateParams(std_srvs::Empty::Request& req, std_srvs::Empt
         else {
             // Send empty message?
             // TODO: Send zero (or null corresponding) message from each publisher to end cleanly.
-
+            publishZeroWrenches();
 
             // Stop publishers
             pub_fabric_points_.shutdown();
@@ -710,6 +712,40 @@ void FabricSimulator::publishWrenches(const ros::TimerEvent& e){
         msg.wrench.torque.x = 0.0;
         msg.wrench.torque.y = 0.0;
         msg.wrench.torque.z = 0.0;
+        pub_wrench_stamped_04_.publish(msg);
+    }    
+}
+
+// Publish forces on each robot by the fabric
+void FabricSimulator::publishZeroWrenches(){
+    geometry_msgs::WrenchStamped msg;
+    msg.header.stamp = ros::Time::now();
+
+    msg.wrench.force.x = 0.0;
+    msg.wrench.force.y = 0.0;
+    msg.wrench.force.z = 0.0;
+    msg.wrench.torque.x = 0.0;
+    msg.wrench.torque.y = 0.0;
+    msg.wrench.torque.z = 0.0;
+
+    if (is_rob_01_attached_){
+        // std::cout << "id: " << rob_01_attached_id_ << ". Force = " << rob_01_attached_force_ << " N." << std::endl;
+        msg.header.frame_id = wrench_01_frame_id_;
+        pub_wrench_stamped_01_.publish(msg);
+    }
+    if (is_rob_02_attached_){
+        // std::cout << "id: " << rob_02_attached_id_ << ". Force = " << rob_02_attached_force_ << " N." << std::endl;
+        msg.header.frame_id = wrench_02_frame_id_;
+        pub_wrench_stamped_02_.publish(msg);
+    }
+    if (is_rob_03_attached_){
+        // std::cout << "id: " << rob_03_attached_id_ << ". Force = " << rob_03_attached_force_ << " N." << std::endl;
+        msg.header.frame_id = wrench_03_frame_id_;
+        pub_wrench_stamped_03_.publish(msg);
+    }
+    if (is_rob_04_attached_){
+        // std::cout << "id: " << rob_04_attached_id_ << ". Force = " << rob_04_attached_force_ << " N." << std::endl;
+        msg.header.frame_id = wrench_04_frame_id_;
         pub_wrench_stamped_04_.publish(msg);
     }    
 }

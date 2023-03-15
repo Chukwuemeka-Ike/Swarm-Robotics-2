@@ -127,6 +127,15 @@ class WrenchTransformer():
             wrench_msg.torque.y = t[1]
             wrench_msg.torque.z = t[2]
             self.pub_wrench.publish(wrench_msg)
+        else:
+            wrench_msg = geometry_msgs.msg.Wrench()
+            wrench_msg.force.x = 0.0
+            wrench_msg.force.y = 0.0
+            wrench_msg.force.z = 0.0
+            wrench_msg.torque.x = 0.0
+            wrench_msg.torque.y = 0.0
+            wrench_msg.torque.z = 0.0
+            self.pub_wrench.publish(wrench_msg)
 
     """
     def publishWrenchStamped(self, header, wrench):

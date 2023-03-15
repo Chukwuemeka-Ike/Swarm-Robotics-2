@@ -66,6 +66,7 @@ private:
     void simulate(const ros::TimerEvent& e);
     void render(const ros::TimerEvent& e);
     void publishWrenches(const ros::TimerEvent& e);
+    void publishZeroWrenches();
 
     // Odometry callback functions
     void odometryCb_01(const nav_msgs::Odometry::ConstPtr odom_msg);
