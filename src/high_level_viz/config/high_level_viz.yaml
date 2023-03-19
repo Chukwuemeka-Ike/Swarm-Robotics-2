@@ -1,0 +1,23 @@
+model_states_topic_name: "/gazebo/set_model_state" # topic name to publish gazebo_msgs/ModelState msg to Gazebo
+
+pub_time_interval: 2.0 # seconds. Specifies how long would you like to wait to update to the next state
+
+path_to_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/sample.csv" # specifies the csv file to read the time stamps and (robot) model poses (x,y,theta)
+
+time_marker_topic_name: "time_marker" # topic name to publish the view oriented time marker to rviz
+
+# What is the reference frames of the model poses to be updated at
+model_world_frame: "map"
+
+# Position and scale of the time marker in RVIZ
+time_marker_frame: "map"
+time_marker_x: 0.0
+time_marker_y: 0.0
+time_marker_z: 0.0
+time_marker_scale: 1.0
+
+model_names: # gazebo model names to update their states (order is important, the data csv file is read in this order)
+  - "dingo_d1"
+  - "dingo_d2"
+  - "dingo_d3"
+  - "dingo_d4"

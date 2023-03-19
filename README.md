@@ -49,7 +49,7 @@ git clone https://github.com/burakaksoy/dingo_simulator.git;
 git clone https://github.com/burakaksoy/dingo_desktop.git;
 git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git;
 git clone https://github.com/burakaksoy/RVizMeshVisualizer.git;
-
+git clone https://github.com/burakaksoy/uwb_gazebo_plugin;
 
 cd ..;
 catkin_make -DCMAKE_BUILD_TYPE=Release;

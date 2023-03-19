@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>   
+    <node type="high_level_viz_node.py" name="high_level_visualizer_node" pkg="high_level_viz" output="screen">
+        <rosparam command="load" file="$(find high_level_viz)/config/high_level_viz.yaml" subst_value="true" />
+    </node>
+</launch>
