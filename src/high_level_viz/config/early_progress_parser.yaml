@@ -1,0 +1,35 @@
+
+# specify the csv file to read the time stamps and (robot) robot poses as workstations stings (e.g. "ws_1_0" : workstation 1 number 0)
+input_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/early_progress_outputs/sample_early.csv"
+
+# If set to true, it will not export the rows that have the same pose informations (default: true)
+remove_same_rows: true
+
+# Workstation names that are expected to be seen in the input file
+ws_names:
+  - "WS_0_0"
+  - "WS_1_0"
+  - "WS_1_1"
+  - "WS_2_0"
+  - "WS_3_0"
+  - "WS_3_1"
+  - "WS_3_2"
+  - "WS_4_0"
+
+# Data files that store the Hard coded locations of the robots for each workstation
+hardcoded_data_files:
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_0_0.csv"
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_1_0.csv"
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_1_1.csv"
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_2_0.csv"
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_3_0.csv"
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_3_1.csv"
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_3_2.csv"
+  - "~/catkin_ws_swarm2/src/high_level_viz/data/hard_coded/ws_4_0.csv"
+
+# Exported file that will include the corresponding x,y,theta locations instead of workstation names
+export_data_directory: "~/catkin_ws_swarm2/src/high_level_viz/data" # do not put "/" in the end!
+export_data_file_name: "exported_anchor2.csv"
+
+
+

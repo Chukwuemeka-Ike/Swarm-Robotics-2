@@ -1,0 +1,17 @@
+publish_interval: 10
+settings:
+  /d1/cmd_vel/angular/z: {is_repeat: true, max: 1.0, min: -1.0}
+  /d1/cmd_vel/linear/x: {is_repeat: true, max: 1.0, min: -1.0}
+  /d1/cmd_vel/linear/y: {is_repeat: true, max: 1.0, min: -1.0}
+  /d2/cmd_vel/angular/z: {is_repeat: true, max: 1.0, min: -1.0}
+  /d2/cmd_vel/linear/x: {is_repeat: true, max: 1.0, min: -1.0}
+  /d2/cmd_vel/linear/y: {is_repeat: true, max: 1.0, min: -1.0}
+  /d3/cmd_vel/angular/z: {is_repeat: true, max: 1.0, min: -1.0}
+  /d3/cmd_vel/linear/x: {is_repeat: true, max: 1.0, min: -1.0}
+  /d3/cmd_vel/linear/y: {is_repeat: true, max: 1.0, min: -1.0}
+  /d4/cmd_vel/angular/z: {is_repeat: true, max: 1.0, min: -1.0}
+  /d4/cmd_vel/linear/x: {is_repeat: true, max: 1.0, min: -1.0}
+  /d4/cmd_vel/linear/y: {is_repeat: true, max: 1.0, min: -1.0}
+texts: [/d1/cmd_vel/linear/x, /d1/cmd_vel/linear/y, /d1/cmd_vel/angular/z, /d2/cmd_vel/linear/x,
+  /d2/cmd_vel/linear/y, /d2/cmd_vel/angular/z, /d3/cmd_vel/linear/x, /d3/cmd_vel/linear/y,
+  /d3/cmd_vel/angular/z, /d4/cmd_vel/linear/x, /d4/cmd_vel/linear/y, /d4/cmd_vel/angular/z]

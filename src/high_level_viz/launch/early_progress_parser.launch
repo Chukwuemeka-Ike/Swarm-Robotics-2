@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>   
+    <node type="early_progress_parser.py" name="early_progress_parser_node" pkg="high_level_viz" output="screen">
+        <rosparam command="load" file="$(find high_level_viz)/config/early_progress_parser.yaml" subst_value="true" />
+    </node>
+</launch>

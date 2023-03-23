@@ -27,6 +27,8 @@ import math
 import visualization_msgs.msg  # Marker
 import gazebo_msgs.msg # ModelState
 
+import time
+
 
 class RobotStateVisualizer():
     def __init__(self):
@@ -60,8 +62,8 @@ class RobotStateVisualizer():
         self.time_marker_scale = rospy.get_param("~time_marker_scale", 1.0)
 
         # Publishers
-        self.pub_time_marker = rospy.Publisher(self.time_marker_topic_name, visualization_msgs.msg.Marker, queue_size=1) 
-        self.pub_model_states = rospy.Publisher(self.model_states_topic_name, gazebo_msgs.msg.ModelState, queue_size=self.num_models) 
+        self.pub_time_marker = rospy.Publisher(self.time_marker_topic_name, visualization_msgs.msg.Marker, queue_size=100) 
+        self.pub_model_states = rospy.Publisher(self.model_states_topic_name, gazebo_msgs.msg.ModelState, queue_size=100) 
 
 
 
@@ -93,6 +95,7 @@ class RobotStateVisualizer():
                     th = np.deg2rad(th)
 
                     self.update_model_state(model_name,x,y,th)
+                    time.sleep(0.01)
 
             else:
                 rospy.logerr("The given csv file does not have as many data as the specified model names!")

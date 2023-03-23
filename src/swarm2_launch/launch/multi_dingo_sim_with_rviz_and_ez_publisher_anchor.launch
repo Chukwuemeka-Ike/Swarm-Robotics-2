@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <launch>   
     <!-- Launch Multiple Dingo-O robot simulation with ground truth reporting -->
-    <include file="$(find dingo_gazebo)/launch/highbay_multi_ground_truth.launch">
+    <include file="$(find dingo_gazebo)/launch/anchor_multi_ground_truth.launch">
         <!-- TODO: SPecify here to disable launching the default rviz and gazebo client GUI -->
     </include>
 
     <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
         <rosparam param="frame" subst_value="True">map</rosparam>
-        <rosparam param="visualizer_path" subst_value="True">$(find lab_gazebo)/worlds/highbay_swarm_world/meshes</rosparam>
+        <rosparam param="visualizer_path" subst_value="True">$(find lab_gazebo)/worlds/anchor_plant_world/meshes</rosparam>
     </node>
 
     <!-- Launch RVIZ specific to Fabric + Multi robot simulation -->
-    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find dingo_viz)/rviz/multi_dingo_with_cloth_sim.rviz" output="screen"/>
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find swarm2_launch)/rviz/multi_dingo_in_anchor_sim.rviz" output="screen"/>
 
     <!-- RQT EZ publisher -->
     <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen">
-        <rosparam command="load" file="$(find swarm2_launch)/config/rqt_ez_publisher/ez_cmd_vel_multi_dingo.yaml" subst_value="true" />
+        <rosparam command="load" file="$(find swarm2_launch)/config/rqt_ez_publisher/ez_cmd_vel_multi_dingo_anchor.yaml" subst_value="true" />
     </node>
 
 </launch>

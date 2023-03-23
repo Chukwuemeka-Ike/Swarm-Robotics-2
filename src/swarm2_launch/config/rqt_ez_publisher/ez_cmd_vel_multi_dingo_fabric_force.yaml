@@ -1,0 +1,8 @@
+publish_interval: 10
+settings:
+  /d1/fabric_wrench_stamped/header/frame_id: {is_repeat: true, max: 0, min: 0}
+  /d1/fabric_wrench_stamped/wrench/force/x: {is_repeat: true, max: 100.0, min: -100.0}
+  /d1/fabric_wrench_stamped/wrench/force/y: {is_repeat: true, max: 100.0, min: -100.0}
+  /d1/fabric_wrench_stamped/wrench/force/z: {is_repeat: true, max: 1000.0, min: -1000.0}
+texts: [/d1/fabric_wrench_stamped/header/frame_id, /d1/fabric_wrench_stamped/wrench/force/x,
+  /d1/fabric_wrench_stamped/wrench/force/y, /d1/fabric_wrench_stamped/wrench/force/z]

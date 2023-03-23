@@ -1,0 +1,22 @@
+publish_interval: 10
+settings:
+  /d1/ground_truth/fabric_mount/odom/pose/pose/orientation: {is_repeat: false, max: 3.14,
+    min: -3.14}
+  /d1/ground_truth/fabric_mount/odom/pose/pose/position/x: {is_repeat: false, max: 2.0,
+    min: -2.0}
+  /d1/ground_truth/fabric_mount/odom/pose/pose/position/y: {is_repeat: false, max: 3.0,
+    min: -1.0}
+  /d1/ground_truth/fabric_mount/odom/pose/pose/position/z: {is_repeat: false, max: 3.0,
+    min: 0.0}
+  /d2/ground_truth/fabric_mount/odom/pose/pose/orientation: {is_repeat: false, max: 3.14,
+    min: -3.14}
+  /d2/ground_truth/fabric_mount/odom/pose/pose/position/x: {is_repeat: false, max: 2.0,
+    min: -2.0}
+  /d2/ground_truth/fabric_mount/odom/pose/pose/position/y: {is_repeat: false, max: 1.0,
+    min: -3.0}
+  /d2/ground_truth/fabric_mount/odom/pose/pose/position/z: {is_repeat: false, max: 3.0,
+    min: 0.0}
+texts: [/d1/ground_truth/fabric_mount/odom/pose/pose/position/x, /d1/ground_truth/fabric_mount/odom/pose/pose/position/y,
+  /d1/ground_truth/fabric_mount/odom/pose/pose/position/z, /d1/ground_truth/fabric_mount/odom/pose/pose/orientation,
+  /d2/ground_truth/fabric_mount/odom/pose/pose/position/x, /d2/ground_truth/fabric_mount/odom/pose/pose/position/y,
+  /d2/ground_truth/fabric_mount/odom/pose/pose/position/z, /d2/ground_truth/fabric_mount/odom/pose/pose/orientation]
