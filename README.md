@@ -186,3 +186,40 @@ Note that RVIZ TF frames are reported by `robot_localization` package that uses 
 <!-- TODO: ADD image here -->
 
 </details>
+
+# Physical UWB setup
+<details> 
+    <summary>Click to expand</summary>
+    
+## Related websites for the Qorvo (DecaWave) UWB module documents
+DW1000 [https://www.qorvo.com/products/p/DW1000#documents](https://www.qorvo.com/products/p/DW1000#documents)
+
+DW1001C [https://www.qorvo.com/products/p/DWM1001C#documents](https://www.qorvo.com/products/p/DWM1001C#documents)
+
+DWM1001-DEV [https://www.qorvo.com/products/p/DWM1001-DEV#documents](https://www.qorvo.com/products/p/DWM1001-DEV#documents)
+
+MDEK1001 [https://www.qorvo.com/products/p/MDEK1001#documents](https://www.qorvo.com/products/p/MDEK1001#documents)
+
+
+## Download the Android DRTLS phone app
+
+[https://www.qorvo.com/products/p/MDEK1001#documents](https://www.qorvo.com/products/p/MDEK1001#documents)
+
+Download DRTLS App : Android Application APK
+
+## Calibration Script
+Used to determine the every module's (tags and anchors) offsets based on [this white paper with name: Antenna Delay Calibration of DW1000-Based Products and Systems (Application Note APS014)](https://www.qorvo.com/products/d/da008449).
+
+Set 4 of them an on a nice square with best possible known manual position measurements. 
+
+(3 of them gives only one solution, 4 of them gives a Least Squares solution with RMSE error to have an idea of how accurate the calculated offsets are.)
+
+Take note of the manually measured distances, they are needed in the calibration script.
+
+From the Android app, set all the modules as anchors in the same network and specify the initiator correctly.
+
+Use `finding_antenna_offsets.m` MATLAB script in `uwb_matlab_scripts/` directory of this repo to find the offsets of each UWB module. Then set the offsets in `antenna_calibration.yaml` in `src/swarm_launch/config/` folder. Comments of the script should be sufficient to guide you for further details. 
+
+This script uses the BLE interface of the firmware to communicate with the tags. For further information see section 7 of [DWM1001 Firmware API Guide](https://www.qorvo.com/products/d/da007975)
+    
+</details>
