@@ -188,7 +188,8 @@ class UWBPosePublisher():
                                                self.tag_z_height)
 
                 # Ignore reading if rmse is high than ... meters
-                if rmse > 0.15:
+                # if rmse > 0.15:
+                if rmse > 0.5:
                     rospy.logwarn("Dropping UWB reading | rmse = " + str(rmse) + " is too high" )
                     return
 
