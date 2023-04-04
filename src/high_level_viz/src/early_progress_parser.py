@@ -16,6 +16,7 @@ Publishes to:
 Broadcasts to:
     - NONE
 """
+import sys
 import os
 
 import rospy
@@ -75,6 +76,7 @@ class Parser():
         rospy.loginfo("Parsing is completed successfully. Check: '" + self.export_data_file_name + " in " + self.export_data_directory + "' for the exported file.")
         reason = "Parsing is completed successfully."
         rospy.signal_shutdown(reason)
+        # sys.exit()
 
 
     def parse(self):

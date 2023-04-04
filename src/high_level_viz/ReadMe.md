@@ -6,6 +6,17 @@ Reads a .csv file filled with time stamps (t) and robot poses (x,y,𝜭)
 Updates robots poses with user specified intervals (e.g. 2 seconds)
 Also shows the time stamps with a TEXT_VIEW_FACING visualization marker in RVIZ.
 
+An example csv file
+```
+t,x,y,th,x,y,th,x,y,th,x,y,th
+1,1,1,0,-1,1,0,-1,-1,0,1,-1,0
+60,2,1,90,0,1,90,0,-1,90,2,-1,90
+350,3,1,0,1,1,0,1,-1,0,3,-1,0
+3950,-1,1.5,-90,-2,1.5,-90,-3,1.5,-90,-4,1.5,-90
+39500,-0.5,-0.75,180,-1.5,-1.25,180,-2.2,-0.75,-180,-3,-1.25,-180
+45000,4,2,270,4,-1,270,1,2,270,1,-1,270
+```
+
 # For early progress of the high level planner:
 
 When the high level planner is not yet matured to directly output the corresponding robot poses with time steps,
@@ -67,4 +78,4 @@ ws_4_0.csv
 ```
 with 15 rows that is corresponding to the assumed 15 robots.
 
-A python file (`TODO.py`) will parse the `high_level_output_early.csv` file, the hardcoded pose information csv files (`ws_0_0.csv, ws_1_0.csv, ...`), and generate the proper pose csv file that this package can use to visualize.
+A python file will parse the `high_level_output_early.csv` file, the hardcoded pose information csv files (`ws_0_0.csv, ws_1_0.csv, ...`), and generate the proper pose csv file that this package can use to visualize.

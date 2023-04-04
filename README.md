@@ -33,6 +33,16 @@ sudo apt-get install ros-melodic-ridgeback-gazebo-plugins
 sudo apt-get install ros-melodic-interactive-marker-twist-server
 sudo apt-get install ros-melodic-ridgeback-control
 sudo apt-get install ros-melodic-rqt-ez-publisher
+
+sudo apt-get install spacenavd
+sudo apt-get install ros-melodic-spacenav-node
+sudo apt-get install ros-melodic-twist-mux
+sudo apt-get install ros-melodic-robot-localization;
+sudo apt-get install ros-melodic-microstrain-inertial-driver;
+sudo apt-get install ros-melodic-microstrain-inertial-rqt;
+sudo apt-get install ros-melodic-tf2-sensor-msgs;
+sudo apt-get install ros-melodic-imu-tools;
+sudo apt-get install ros-melodic-imu-pipeline; # for imu_transformer
 ```
 
 ## Building Steps

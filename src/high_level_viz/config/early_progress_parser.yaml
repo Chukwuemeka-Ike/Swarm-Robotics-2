@@ -1,6 +1,7 @@
 
 # specify the csv file to read the time stamps and (robot) robot poses as workstations stings (e.g. "ws_1_0" : workstation 1 number 0)
-input_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/early_progress_outputs/sample_early.csv"
+# input_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/early_progress_outputs/sample_early.csv"
+input_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/early_progress_outputs/highLevelVizRobotTimelines.csv"
 
 # If set to true, it will not export the rows that have the same pose informations (default: true)
 remove_same_rows: true
@@ -29,7 +30,7 @@ hardcoded_data_files:
 
 # Exported file that will include the corresponding x,y,theta locations instead of workstation names
 export_data_directory: "~/catkin_ws_swarm2/src/high_level_viz/data" # do not put "/" in the end!
-export_data_file_name: "exported_anchor2.csv"
+export_data_file_name: "exported_anchor3.csv"
 
 
 

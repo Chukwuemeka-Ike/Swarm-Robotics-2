@@ -5,7 +5,8 @@ pub_time_interval: 0.5 # seconds. Specifies how long would you like to wait to u
 # specify the csv file to read the time stamps and (robot) model poses (x,y,theta)
 # path_to_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/sample.csv" 
 # path_to_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/sample_anchor.csv"
-path_to_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/exported_anchor2.csv"
+# path_to_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/exported_anchor2.csv"
+path_to_data_file: "~/catkin_ws_swarm2/src/high_level_viz/data/exported_anchor3.csv"
 
 time_marker_topic_name: "time_marker" # topic name to publish the view oriented time marker to rviz
 
