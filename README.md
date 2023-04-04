@@ -226,13 +226,15 @@ Set 4 of them an on a nice square with best possible known manual position measu
 
 Take note of the manually measured distances, they are needed in the calibration script.
 
-From the Android app, set all the modules as anchors in the same network and specify the initiator correctly.
+From the android app, put all the modules in the same network and set them as anchors. From the powered ones, only one of them must be set as initiator.
 
 Use `antenna_offset_finding.m` MATLAB script in `uwb_matlab_scripts/` directory of this repo to find the offsets of each UWB module. Then set the offsets in `antenna_calibration.yaml` in `src/swarm_launch/config/` folder. Comments of the script should be sufficient to guide you for further details. 
 
 Note: This script would work on Windows 10 but not in Windows 11 as of writing this document. See details [here](https://www.mathworks.com/matlabcentral/answers/1912280-bluetooth-scanning-error-in-windows-11-solutions#answer_1173820)
 
 This script uses the BLE interface of the firmware to communicate with the tags. For further information see section 7 of [DWM1001 Firmware API Guide](https://www.qorvo.com/products/d/da007975)
+
+After the calibration is done, set modules back as tags those you won't to use as anchors from the Android app.
 
 ## Script to Calculate and Write the Anchor positions into the Modules
 Mount the UWB anchors in the (high bay) area. Measure the distances between them with a laser distance meter. 
