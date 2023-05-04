@@ -16,11 +16,11 @@ uwb_tag_2_id: 'DA36'
 # tag_2_x: 0.22
 # tag_2_y: 0.0
 
-tag_1_x: -0.29
-tag_1_y: 0.0
+tag_1_x: -0.015
+tag_1_y: -0.29 
 
-tag_2_x: 0.29
-tag_2_y: 0.0
+tag_2_x: -0.015
+tag_2_y: 0.29 
 
 # tag_z_height: 0.184
 tag_z_height: 0.50

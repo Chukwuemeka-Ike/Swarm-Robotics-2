@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_d1.launch"></include>
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_d2.launch"></include>
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_d3.launch"></include>
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_d4.launch"></include>
+</launch>

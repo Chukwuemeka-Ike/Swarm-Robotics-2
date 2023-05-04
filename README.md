@@ -8,7 +8,7 @@ https://github.com/dingo-cpr
 
 | Description             | Username      | Hostname (Computer Name) | IP            | Password  | OS           | ROS     |
 | ---                     | ---           | ---                      | ---           | ---       | ---          | ---     |
-| Pendant Tablet          | tablet        | tablet20                 | 192.168.1.99  | 1234      | Ubuntu 20.04 | Noetic  |
+| Pendant Tablet          | tablet        | tablet18                 | 192.168.1.99  | 1234      | Ubuntu 18.04 | Melodic  |
 | Main Computer           | razer         | razer-18                 | 192.168.1.100 | 1234      | Ubuntu 18.04 | Melodic |
 | Robot 1 (Color)         | dingo01       | dingo01-18               | 192.168.1.101 | 1234      | Ubuntu 18.04 | Melodic |
 | Robot 2 (Color)         | dingo02       | dingo02-18               | 192.168.1.102 | 1234      | Ubuntu 18.04 | Melodic |
@@ -244,4 +244,42 @@ Note: This script would work on Windows 10 but not in Windows 11 as of writing t
 
 This script uses the BLE interface of the firmware to communicate with the tags. For further information see section 7 of [DWM1001 Firmware API Guide](https://www.qorvo.com/products/d/da007975)
     
+</details>
+
+
+# Tablet OS Setup
+<details> 
+    <summary>Click to expand</summary>
+
+## Steps to install Ubuntu (20.04 or 18.04) on Surface Go 2 Tablet
+
+Requires a USB-C to USB-A adapter and flash drive
+
+1. Update Windows 10/11 using Settings -> Updates
+2. Download and create Ubuntu 20.04 amd64 USB install drive
+3. Disable Windows bitlocker and reboot. If it says “waiting to active”, finish activation, then disable: https://www.isunshare.com/windows-10/4-ways-to-remove-or-disable-bitlocker-encryption-on-windows-10.html 
+4. Shrink the Windows 10 partition using Windows disk manager: https://www.tenforums.com/tutorials/96288-shrink-volume-partition-windows-10-a.html Suggested to shrink by 64000 MB
+5. Connect bootable USB drive and reboot using advanced startup options: https://www.digitalcitizen.life/boot-your-windows-10-pc-usb-flash-drive The bootable usb drive may have the title “Linpus Lite”
+6. Install Ubuntu as normal
+7. Remove the USB drive
+8. At this point Ubuntu is installed, but will not boot automatically. Do the advanced startup options again, and select “ubuntu”. This will boot into Ubuntu.
+Follow these instructions in Ubuntu to disable Windows boot: https://www.reddit.com/r/SurfaceLinux/comments/egds33/possible_fix_for_booting_directly_to_grub_on/ Windows can still be booted using Grub menu
+Ubuntu should now boot. The post is copied here for convenience:
+    ```
+        Possible fix for booting directly to grub on Surface Go
+        If you're having trouble getting your Surface Go to boot to grub instead of the Windows Boot Manager, I might have something to try if you're brave: I moved the Microsoft folder in /boot/efi/EFI out of the way (In Ubuntu: sudo mv /boot/efi/EFI/Microsoft /boot/efi/EFI/Microsoft.bak) and now grub is loaded by default. I'd really only recommend this if you:
+
+        Have a Windows USB recovery made and you know it's bootable
+
+        Have your files backed up off the SSD (both Linux and Windows (if you care))
+
+        Feel comfortable screwing around fixing a potentially broken EFI partition
+
+        Aren't the sort of person who blames other people when you break your own computer following instructions you found on the Internet!
+
+        All that said, it works for me on my recently purchased 8GB/128GB Surface Go w/ Ubuntu 19.10. I had already dumped the WIndows partition though, so I never tested whether grub had any issues loading Windows. You may also need to mess around with efibootmgr to fix the boot order, but I'm not sure.
+    ```
+9. You may also need to disable secure boot. This is achived from the BIOS settings. To enter the BIOS settings, while powering up the tablet, Press and hold the volume-up button on your Surface and at the same time, press and release the power button. When you see the Surface logo, release the volume-up button.
+The UEFI menu will display within a few seconds.
+
 </details>

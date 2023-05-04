@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Configuration of Dingo which you would like to simulate.
+        See dingo_description for details. -->
+    <arg name="config" default="$(optenv DINGO_CONFIG base)" />
+
+    <!-- Robot Spawn Pose -->
+    <arg name="x"     default="-1.0"/>
+    <arg name="y"     default="1.0"/>
+    <arg name="z"     default="0.0"/>
+    <arg name="yaw"   default="0"/>
+
+    <!-- Robot name -->
+    <arg name="name"   default="d2"/>
+
+    <!-- UWB tag IDs for robot description -->
+    <arg name="uwb_tag_1_id"       default="2"/>
+    <arg name="uwb_tag_2_id"       default="3"/>
+
+
+    <group ns="$(arg name)">
+
+        <include file="$(find dingo_gazebo)/launch/spawn_dingo_multi_ground_truth.launch" >
+            <arg name="x"         value="$(arg x)" />
+            <arg name="y"         value="$(arg y)" />
+            <arg name="z"         value="$(arg z)" />
+            <arg name="yaw"       value="$(arg yaw)" />
+            <arg name="robot_namespace"  value="$(arg name)" />
+            <arg name="config"  value="$(arg config)" />
+            <arg name="uwb_tag_1_id"       value="$(arg uwb_tag_1_id)"/>
+            <arg name="uwb_tag_2_id"       value="$(arg uwb_tag_2_id)"/>
+        </include>
+
+        <include file="$(find uwb_pose_publisher)/launch/uwb_pose_publisher.launch" >
+            <arg name="config_file"              value="$(find swarm2_launch)/config/d1_uwb_pose_publisher.yaml" />
+            <arg name="antenna_calib_file"       value="$(find swarm2_launch)/config/antenna_calibration.yaml" />
+        </include>
+
+        <node name="robot_cl_vel_controller" pkg="vel_controller" type="vel_controller.py">
+            <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
+        </node>
+
+        <!-- <node name="ctrl_point_inv_kin" pkg="vel_controller" type="ctrl_point_inv_kin_omni.py">
+            <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
+        </node> -->
+
+        <!-- <node name="ctrl_point_fwd_kin" pkg="vel_controller" type="ctrl_point_fwd_kin_omni.py">
+            <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
+        </node> -->
+
+    </group>
+
+</launch>

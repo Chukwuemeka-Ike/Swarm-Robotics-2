@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+<!-- <group ns="sim">    -->
+    <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
+
+    <!-- Launch the Fabric Simulation that reads the location data of robots and attaches the fabric corners to those locations  -->
+    <node type="fabric_simulator_node" name="fabric_simulator_node" pkg="fabric_simulator" output="screen">
+        <rosparam command="load" file="$(find swarm2_launch)/config/sim_fabric_simulator.yaml" subst_value="true" />
+    </node>
+
+<!-- </group> -->
+</launch>

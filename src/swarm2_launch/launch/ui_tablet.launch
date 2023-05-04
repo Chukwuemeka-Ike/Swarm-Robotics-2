@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<launch>
+<group ns="ui">
+    <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
+
+    <!-- Launch Mesh Visualizer for Static Environment World -->
+    <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
+        <rosparam param="frame" subst_value="True">map</rosparam>
+        <rosparam param="visualizer_path" subst_value="True">$(find lab_gazebo)/worlds/highbay_swarm_world/meshes</rosparam>
+    </node>
+
+    <!-- Launch RVIZ specific to Fabric + Multi robot simulation -->
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find swarm2_launch)/config/rviz/config.rviz" output="screen"/>
+
+    <!-- RQT EZ publisher -->
+    <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen">
+        <rosparam command="load" file="$(find swarm2_launch)/config/rqt_ez_publisher/ez_cmd_vel_multi_dingo.yaml" subst_value="true" />
+    </node>
+
+
+    <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py">
+        <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
+    </node> -->
+
+    <include file="$(find spacenav_node)/launch/classic.launch"/>
+
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux">
+        <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_twist_mux.yaml" />
+        <remap from="cmd_vel_out" to="deadman_switch_spacenav_twist"/>
+    </node>
+
+    <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_gui_params.yaml"/>
+    <node name="swarm_gui" pkg="swarm_gui" type="swarm_gui_user.py"/>
+
+
+</group>
+</launch>

@@ -11,9 +11,7 @@ antenna_offsets: # in m
   '101': 0.0 # anchor_2 sim
   '102': 0.0 # anchor_3 sim
   '103': 0.0 # anchor_4 sim
-  '43A9': 0.083 # prev proj: 0.055
   '2FEB': 0.037 # prev proj: 0.048
-  '2FFD': 0.041 # prev proj: 0.047
   '152F': 0.023 # prev proj: 0.036
   '0D40': 0.118 # prev proj: 0.094
   '15ED': 0.041 # prev proj: 0.039
@@ -28,9 +26,11 @@ antenna_offsets: # in m
   '1337': 0.077
   '028D': 0.060
   'DA36': 0.084
-  '033B': 0.056
-  '85A7': 0.104
-  'D82D': 0.063
+  '033B': 0.071 # 0.056 # ANCHOR 1
+  '85A7': 0.104 
+  'D82D': 0.079 # 0.063 # ANCHOR 2
+  '43A9': 0.066 # 0.083 # prev proj: 0.055 # ANCHOR 3
+  '2FFD': 0.020 # 0.041 # prev proj: 0.047 # ANCHOR 4
   '1032': 0.110
 #   '2A32': 0.065 # Mobile Anchor 1 LL # ON THE FINAL DEMO AREA
 #   '29EF': 0.042 # Mobile Anchor 2 LR # ON THE FINAL DEMO AREA
