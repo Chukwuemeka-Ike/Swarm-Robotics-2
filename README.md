@@ -358,6 +358,50 @@ ip a
 This will show all active connections and their IP addresses, including your robot's connection to the desired wireless
 network, and the IP address assigned to the robot's computer.
 </details>
-        
     
+## Dingo Setup for Remote Host
+Once each robot is connected to the wireless network with static IP addresses (that can be done through the router settings. We set the IP addresses as specified in the table at the top this document), we set each to use the same ROS master. To do
+this do the following on each robot. First, run 
+```bash
+sudo nano /usr/sbin/ros-start
+```
+In the *ros-start* file, change the line `export ROS_MASTER_URI=http://127.0.0.1:11311` to  
+    
+```
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+export ROS_IP=192.168.1.101 (USE THE CORRECT IP ADRESS HERE)
+``` 
+
+and comment out the line `export ROS_HOSTNAME=$(hostname)`
+to make sure that the robot uses the host machine as its ROS Master. 
+
+The reason of doing this comes from the fact that the Clearpath has setup the starting of the ROS nodes of the robot as a service that is initated during the boot-up. [For further information about this see this link.](https://roboticsbackend.com/make-ros-launch-start-on-boot-with-robot_upstart/)
+    
+To make sure that ros.service by Clearpath starts after the network is really online, 
+edit `ros.service` file with command   
+`sudo nano /lib/systemd/system/ros.service`   
+and add the following lines   
+```
+After=network-online.target
+Wants=network-online.target
+```
+in place of the line   
+```
+After=network.target
+```
+[For further information about this above see this link.](https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/)
+
+## Namespacing the Dingo Robots
+These directions are for the Ridgeback, but it's the same process for the Dingo robots. The goal is to modify the automatic roslaunch files to do the following:
+
+* Add namespacing to prevent naming conflicts
+* Add e-stop functionality
+* Add scaling for forward and inverse kinematics
+
+Following https://www.clearpathrobotics.com/assets/guides/kinetic/ridgeback/startup.html
+
+In the `/etc/ros/kinetic/ros.d` directory of the Dingo, move the existing files and copy the three files in the TODO [`ridgeback_startup`](https://github.com/rpiRobotics/ARM-20-02-C-15-Swarm-Robotics/tree/main/ridgeback_startup) folder. These new launch files put all the Dingo nodes and topics into the proper namespace, for example `/d1,/d2,/d3,/d4`.
+
+You can run this automatically by running TODO `./ridgeback_namespacing.bash`. This will move all the files currently in `/etc/ros/kinetic/ros.d` to the folder `/home/administrator/backup_ros_d`.
+        
 </details>
