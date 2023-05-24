@@ -283,3 +283,81 @@ Ubuntu should now boot. The post is copied here for convenience:
 The UEFI menu will display within a few seconds.
 
 </details>
+
+# Physical Dingo setup
+<details> 
+    <summary>Click to expand</summary>
+
+Four Dingo-O robots arrived with a printed document named "Custom Robot Quickstart Guide". We only needed to apply section 3 and section 5 of this document after the batteries are fully charged (both the robot batteries and the PlayStation controller batteries). The texts are in these sections are copied below:
+   
+<details>
+<summary>## Section 3: Getting Started</summary>
+Your system has been configured to allow you to get started immediately after receipt. Follow these instructions to get
+moving.  
+    
+1. Remove the Dingo's side panels and top fairings (yellow), insert the batteries provided (or confirm they are
+inserted), then replace the top fairings and side panels.  
+2. Turn on the Dingo via the HMI button pad on the rear. Note that the computer may beep when starting up.  
+3. Press "PS" button on gamepad to turn it on.  
+
+</details>
+    
+<details>
+<summary>## Section 5: Wireless</summary>
+To set up the wireless communications on your Dingo, you must first establish a wired connection. Using an Ethernet
+cable, connect your computer to an Ethernet port on the Dingo's computer by removing the Dingo fairing, and set a
+static IP on your computer to `192.168.131.19` (for example). If there are no free ports you may temporarily disconnect
+one of the payloads. SSH into the robot computer with:  
+
+```
+ssh administrator@192.168.131.1
+```  
+    
+Enter the login password when prompted. Once you have successfully logged in, you can connect the robot's computer to a desired wireless network.
+You can connect your robot to a desired wireless network using Netplan.  
+    
+Simply create a file called `60-wireless.yaml` inside of the `/etc/netplan folder` on your robot's computer. Copy and paste
+the contents below into the file, and make sure to modify the wireless interface, SSID, and password fields.  
+    
+```
+network:
+    wifis:
+    # Replace WIRELESS_INTERFACE with the name of the wireless network device, e.g. wlane or wlp3s0
+    # Fill in the SSID_GOES_HERE and PASSWORD_GOES_HERE fields as appropriate. The password may be included
+    as plain-text
+    # or as a password hash. To generate the hashed password, run
+    #
+    echo -n 'WIFI_PASSWORD' | iconv -t UTF-16LE | openssl md4 -binary | xxd -p
+    # If you have multiple wireless cards you may include a block for each device.
+    # For more options, see https://netplan.io/reference/
+    WIRELESS_INTERFACE:
+        optional: true
+        access-points:
+            SSID_GOES HERE:
+            password: PASSWORD_GOES_HERE
+        dhcp4: true
+        dhcp4-overrides:
+            send-hostname: true
+```  
+    
+Once you have saved the file, you will then need to apply your new Netplan configuration and bring up your wireless
+connection by running:  
+    
+```
+sudo netplan apply
+``` 
+    
+More advanced networking examples, including configurations for accessing a wifi network requiring WPA Enterprise
+credentials, can be found here:  
+https://netplan.io/examples/  
+
+You can verify that your robot is connected to a wireless network by running:
+```
+ip a
+```
+This will show all active connections and their IP addresses, including your robot's connection to the desired wireless
+network, and the IP address assigned to the robot's computer.
+</details>
+        
+    
+</details>
