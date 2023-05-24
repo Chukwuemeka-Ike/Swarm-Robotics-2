@@ -287,7 +287,9 @@ The UEFI menu will display within a few seconds.
 # Physical Dingo setup
 <details> 
     <summary>Click to expand</summary>
-
+    
+## Getting Started
+    
 Four Dingo-O robots arrived with a printed document named "Custom Robot Quickstart Guide". We only needed to apply section 3 and section 5 of this document after the batteries are fully charged (both the robot batteries and the PlayStation controller batteries). The texts are in these sections are copied below:
    
 <details>
