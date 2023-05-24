@@ -10,10 +10,10 @@ https://github.com/dingo-cpr
 | ---                     | ---           | ---                      | ---           | ---       | ---          | ---     |
 | Pendant Tablet          | tablet        | tablet18                 | 192.168.1.99  | 1234      | Ubuntu 18.04 | Melodic  |
 | Main Computer           | razer         | razer-18                 | 192.168.1.100 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 1 (Color)         | dingo01       | dingo01-18               | 192.168.1.101 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 2 (Color)         | dingo02       | dingo02-18               | 192.168.1.102 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 3 (Color)         | dingo03       | dingo03-18               | 192.168.1.103 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 4 (Color)         | dingo04       | dingo04-18               | 192.168.1.104 | 1234      | Ubuntu 18.04 | Melodic |
+| Robot 1 (Color)         | administrator | cpr-do100-10000050       | 192.168.1.101 | cleatpath | Ubuntu 20.04 | Noetic |
+| Robot 2 (Color)         | administrator | cpr-do100-10000051       | 192.168.1.102 | cleatpath | Ubuntu 20.04 | Noetic |
+| Robot 3 (Color)         | administrator | cpr-do100-10000052       | 192.168.1.103 | cleatpath | Ubuntu 20.04 | Noetic |
+| Robot 4 (Color)         | administrator | cpr-do100-10000053       | 192.168.1.104 | cleatpath | Ubuntu 20.04 | Noetic |
 
 # Setting up the system
 
