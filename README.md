@@ -377,7 +377,7 @@ export ROS_IP=192.168.1.101 (USE THE CORRECT IP ADRESS HERE)
 and comment out the line `export ROS_HOSTNAME=$(hostname)`
 to make sure that the robot uses the host machine as its ROS Master. 
 
-The reason of doing this comes from the fact that the Clearpath has setup the starting of the ROS nodes of the robot as a service that is initated during the boot-up. [For further information about this see this link.](https://roboticsbackend.com/make-ros-launch-start-on-boot-with-robot_upstart/)
+The reason of doing this comes from the fact that the Clearpath has setup the starting of the ROS nodes of the robot as a service that is initated during the boot-up. [For further information about this see this link.](https://roboticsbackend.com/make-ros-launch-start-on-boot-with-robot_upstart/). Clearpath created a `dingo_bringup` package to achieve this service behaviour. The installation file is given [here](https://github.com/dingo-cpr/dingo_robot/blob/noetic-devel/dingo_bringup/scripts/install), and the step of doing this installation on a fresh install from scracth is explained in [here](https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo#installing-dingo-software).
     
 To make sure that ros.service by Clearpath starts after the network is really online, 
 edit `ros.service` file with command   
