@@ -392,6 +392,18 @@ in place of the line
 After=network.target
 ```
 [For further information about this above see this link.](https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/)
+    
+After these changes, also add the following lines in the master computer's `~/.bashrc` file:  
+    
+```
+export ROS_IP=192.168.1.100
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+```
+    
+*Note that these changes on the robots will make the robots to look for the master computer running the `roscore` command while they are booting. If the `roscore` is not running on the master computer during the booting of the robots, the robots will be able to boot correctly and connect to the WiFi. However, the `ros.service` of `systemctl` will fail and therefore the robot will not be able to move (the comms and Wi-Fi indicator LEDs will be off on the robot's HMI interface). If you run the `roscore` command on the master computer after the robots are booted up, you need to manually start the `ros.service` on the robots by ssh'ing into them. This is achieved by running this command on the robot terminals:*  
+```
+sudo systemctl start ros.service
+```
 
 ## Namespacing the Dingo Robots
 These directions are for the Ridgeback, but it's the same process for the Dingo robots. The goal is to modify the automatic roslaunch files to do the following:
