@@ -8,12 +8,12 @@ https://github.com/dingo-cpr
 
 | Description             | Username      | Hostname (Computer Name) | IP            | Password  | OS           | ROS     |
 | ---                     | ---           | ---                      | ---           | ---       | ---          | ---     |
-| Pendant Tablet          | tablet        | tablet18                 | 192.168.1.99  | 1234      | Ubuntu 18.04 | Melodic  |
-| Main Computer           | razer         | razer-18                 | 192.168.1.100 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 1 (Color)         | dingo01       | dingo01-18               | 192.168.1.101 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 2 (Color)         | dingo02       | dingo02-18               | 192.168.1.102 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 3 (Color)         | dingo03       | dingo03-18               | 192.168.1.103 | 1234      | Ubuntu 18.04 | Melodic |
-| Robot 4 (Color)         | dingo04       | dingo04-18               | 192.168.1.104 | 1234      | Ubuntu 18.04 | Melodic |
+| Pendant Tablet          | tablet        | tablet20                 | 192.168.1.99  | 1234      | Ubuntu 20.04 | Noetic  |
+| Main Computer           | razer         | razer20                  | 192.168.1.100 | 1234      | Ubuntu 20.04 | Noetic |
+| Robot 1 (Color)         | administrator | cpr-do100-10000050       | 192.168.1.101 | clearpath | Ubuntu 20.04 | Noetic |
+| Robot 2 (Color)         | administrator | cpr-do100-10000051       | 192.168.1.102 | clearpath | Ubuntu 20.04 | Noetic |
+| Robot 3 (Color)         | administrator | cpr-do100-10000052       | 192.168.1.103 | clearpath | Ubuntu 20.04 | Noetic |
+| Robot 4 (Color)         | administrator | cpr-do100-10000053       | 192.168.1.104 | clearpath | Ubuntu 20.04 | Noetic |
 
 # Setting up the system
 
@@ -282,4 +282,140 @@ Ubuntu should now boot. The post is copied here for convenience:
 9. You may also need to disable secure boot. This is achived from the BIOS settings. To enter the BIOS settings, while powering up the tablet, Press and hold the volume-up button on your Surface and at the same time, press and release the power button. When you see the Surface logo, release the volume-up button.
 The UEFI menu will display within a few seconds.
 
+</details>
+
+# Physical Dingo setup
+<details> 
+    <summary>Click to expand</summary>
+    
+## Getting Started
+    
+Four Dingo-O robots arrived with a printed document named "Custom Robot Quickstart Guide". We only needed to apply section 3 and section 5 of this document after the batteries are fully charged (both the robot batteries and the PlayStation controller batteries). The texts are in these sections are copied below:
+   
+<details>
+<summary>## Section 3: Getting Started</summary>
+Your system has been configured to allow you to get started immediately after receipt. Follow these instructions to get
+moving.  
+    
+1. Remove the Dingo's side panels and top fairings (yellow), insert the batteries provided (or confirm they are
+inserted), then replace the top fairings and side panels.  
+2. Turn on the Dingo via the HMI button pad on the rear. Note that the computer may beep when starting up.  
+3. Press "PS" button on gamepad to turn it on.  
+
+</details>
+    
+<details>
+<summary>## Section 5: Wireless</summary>
+To set up the wireless communications on your Dingo, you must first establish a wired connection. Using an Ethernet
+cable, connect your computer to an Ethernet port on the Dingo's computer by removing the Dingo fairing, and set a
+static IP on your computer to `192.168.131.19` (for example). If there are no free ports you may temporarily disconnect
+one of the payloads. SSH into the robot computer with:  
+
+```
+ssh administrator@192.168.131.1
+```  
+    
+Enter the login password when prompted. Once you have successfully logged in, you can connect the robot's computer to a desired wireless network.
+You can connect your robot to a desired wireless network using Netplan.  
+    
+Simply create a file called `60-wireless.yaml` inside of the `/etc/netplan folder` on your robot's computer. Copy and paste
+the contents below into the file, and make sure to modify the wireless interface, SSID, and password fields.  
+    
+```
+network:
+    wifis:
+    # Replace WIRELESS_INTERFACE with the name of the wireless network device, e.g. wlane or wlp3s0
+    # Fill in the SSID_GOES_HERE and PASSWORD_GOES_HERE fields as appropriate. The password may be included
+    as plain-text
+    # or as a password hash. To generate the hashed password, run
+    #
+    echo -n 'WIFI_PASSWORD' | iconv -t UTF-16LE | openssl md4 -binary | xxd -p
+    # If you have multiple wireless cards you may include a block for each device.
+    # For more options, see https://netplan.io/reference/
+    WIRELESS_INTERFACE:
+        optional: true
+        access-points:
+            SSID_GOES HERE:
+            password: PASSWORD_GOES_HERE
+        dhcp4: true
+        dhcp4-overrides:
+            send-hostname: true
+```  
+    
+Once you have saved the file, you will then need to apply your new Netplan configuration and bring up your wireless
+connection by running:  
+    
+```
+sudo netplan apply
+``` 
+    
+More advanced networking examples, including configurations for accessing a wifi network requiring WPA Enterprise
+credentials, can be found here:  
+https://netplan.io/examples/  
+
+You can verify that your robot is connected to a wireless network by running:
+```
+ip a
+```
+This will show all active connections and their IP addresses, including your robot's connection to the desired wireless
+network, and the IP address assigned to the robot's computer.
+</details>
+    
+## Dingo Setup for Remote Host
+Once each robot is connected to the wireless network with static IP addresses (that can be done through the router settings. We set the IP addresses as specified in the table at the top this document), we set each to use the same ROS master. To do
+this do the following on each robot. First, run 
+```bash
+sudo nano /usr/sbin/ros-start
+```
+In the *ros-start* file, change the line `export ROS_MASTER_URI=http://127.0.0.1:11311` to  
+    
+```
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+export ROS_IP=192.168.1.101 (USE THE CORRECT IP ADRESS HERE)
+``` 
+
+and comment out the line `export ROS_HOSTNAME=$(hostname)`
+to make sure that the robot uses the host machine as its ROS Master. 
+
+The reason of doing this comes from the fact that the Clearpath has setup the starting of the ROS nodes of the robot as a service that is initated during the boot-up. [For further information about this see this link.](https://roboticsbackend.com/make-ros-launch-start-on-boot-with-robot_upstart/). Clearpath created a `dingo_bringup` package to achieve this service behaviour. The installation file is given [here](https://github.com/dingo-cpr/dingo_robot/blob/noetic-devel/dingo_bringup/scripts/install), and the step of doing this installation on a fresh install from scracth is explained in [here](https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo#installing-dingo-software).
+    
+To make sure that ros.service by Clearpath starts after the network is really online, 
+edit `ros.service` file with command   
+`sudo nano /lib/systemd/system/ros.service`   
+and add the following lines   
+```
+After=network-online.target
+Wants=network-online.target
+```
+in place of the line   
+```
+After=network.target
+```
+[For further information about this above see this link.](https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/)
+    
+After these changes, also add the following lines in the master computer's `~/.bashrc` file:  
+    
+```
+export ROS_IP=192.168.1.100
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+```
+    
+*Note that these changes on the robots will make the robots to look for the master computer running the `roscore` command while they are booting. If the `roscore` is not running on the master computer during the booting of the robots, the robots will be able to boot correctly and connect to the WiFi. However, the `ros.service` of `systemctl` will fail and therefore the robot will not be able to move (the comms and Wi-Fi indicator LEDs will be off on the robot's HMI interface). If you run the `roscore` command on the master computer after the robots are booted up, you need to manually start the `ros.service` on the robots by ssh'ing into them. This is achieved by running this command on the robot terminals:*  
+```
+sudo systemctl start ros.service
+```
+
+## Namespacing the Dingo Robots
+These directions are for the Ridgeback, but it's the same process for the Dingo robots. The goal is to modify the automatic roslaunch files to do the following:
+
+* Add namespacing to prevent naming conflicts
+* Add e-stop functionality
+* Add scaling for forward and inverse kinematics
+
+Following https://www.clearpathrobotics.com/assets/guides/kinetic/ridgeback/startup.html
+
+In the `/etc/ros/kinetic/ros.d` directory of the Dingo, move the existing files and copy the three files in the TODO [`ridgeback_startup`](https://github.com/rpiRobotics/ARM-20-02-C-15-Swarm-Robotics/tree/main/ridgeback_startup) folder. These new launch files put all the Dingo nodes and topics into the proper namespace, for example `/d1,/d2,/d3,/d4`.
+
+You can run this automatically by running TODO `./ridgeback_namespacing.bash`. This will move all the files currently in `/etc/ros/kinetic/ros.d` to the folder `/home/administrator/backup_ros_d`.
+        
 </details>
