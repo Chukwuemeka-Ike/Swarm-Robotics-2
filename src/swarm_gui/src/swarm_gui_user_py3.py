@@ -32,7 +32,7 @@ callback_lock=threading.Lock()
 class swarm_button:
     def __init__(self,button,topic):
         self.button=button
-        self.publisher=rospy.Publisher(topic, Twist, queue_size=0)
+        self.publisher = rospy.Publisher(topic, Twist, queue_size=0)
         self.button.pressed.connect(self.button_pressed)
         self.enabled=False
 
@@ -67,6 +67,7 @@ class robot_button:
         #self.button2.setFont(QFont('Ubuntu',11))
         #self.button2.setText(self.text2)
         #self.button2.pressed.connect(self.button_pressed2)
+
     def publish_out_message(self):
         message=FrameTwist()
         h=std_msgs.msg.Header()
@@ -90,11 +91,12 @@ class robot_button:
     
 class LEDManager:
     def __init__(self,nodenames,led_objects):
-        self.nodenames=nodenames
-        self.led_objects=led_objects
-        self.active_bots=[]
-        self.publisher=rospy.Publisher("robot_enable_status",Int32,queue_size=10)
-        self.send_value=0
+        self.nodenames = nodenames
+        self.led_objects = led_objects
+        self.active_bots = []
+        self.robot_enable_status_topic = rospy.get_param('robot_enable_status_topic') 
+        self.publisher = rospy.Publisher(self.robot_enable_status_topic, Int32, queue_size=10)
+        self.send_value = 0
         for i in range(len(led_objects)):
             self.active_bots.append(False)
             
@@ -168,32 +170,35 @@ class SWARMGUI(QtWidgets.QMainWindow):
         #self.number_of_bots=3
         #self.number_of_bots=rospy.get_param('number_of_robots')
         try:
-            self.number_of_bots=rospy.get_param('number_of_robots')
-            self.nodenames=rospy.get_param('robot_node_names')
-            self.open_loop_command_topics=rospy.get_param('open_loop_command_topics')
-            self.close_loop_command_topics=rospy.get_param('closed_loop_command_topics')
-            self.input_command_topic=rospy.get_param('input_command_topic')
-            self.robot_types=rospy.get_param('robot_type_information')
-            self.closed_loop_swarm_command_topic=rospy.get_param('closed_loop_swarm_command_topic')
-            self.open_loop_swarm_command_topic=rospy.get_param('open_loop_swarm_command_topic')
-            #self.sync_topic=rospy.get_param('sync_frames_topic')
-            self.swarm_tf=rospy.get_param('swarm_tf_frame')
-            self.robot_tfs=rospy.get_param('robot_tf_frames')
-            self.real_robot_tfs=rospy.get_param('real_robot_tf_frames')
-            self.resize_swarm_scaling_factor=float(rospy.get_param('resize_scaling_factor'))
-            self.tf_changer_topic=rospy.get_param('tf_changer_topic')
+            self.number_of_bots = rospy.get_param('number_of_robots')
+            self.nodenames = rospy.get_param('robot_node_names')
+            self.open_loop_command_topics = rospy.get_param('open_loop_command_topics')
+            self.close_loop_command_topics = rospy.get_param('closed_loop_command_topics')
+            self.input_command_topic = rospy.get_param('input_command_topic')
+            self.robot_types = rospy.get_param('robot_type_information')
+            self.closed_loop_swarm_command_topic = rospy.get_param('closed_loop_swarm_command_topic')
+            self.open_loop_swarm_command_topic = rospy.get_param('open_loop_swarm_command_topic')
+            #self.sync_topic = rospy.get_param('sync_frames_topic')
+            self.swarm_tf = rospy.get_param('swarm_tf_frame')
+            self.robot_tfs = rospy.get_param('robot_tf_frames')
+            self.real_robot_tfs = rospy.get_param('real_robot_tf_frames')
+            self.resize_swarm_scaling_factor = float(rospy.get_param('resize_scaling_factor'))
+            self.tf_changer_topic = rospy.get_param('tf_changer_topic')
         except:
-            self.number_of_bots=3
-            self.nodenames=[["/rosout"],["hello"],["hello"]]
-            self.command_topics=["/spacenav/twist/repub","/spacenav/twist/repub2","/spacenav/twist/repub3","hello"]
-            self.input_command_topic='deadman_switch_spacenav_twist'
+            self.number_of_bots = 3
+            self.nodenames = [["/rosout"],["hello"],["hello"]]
+            self.command_topics = ["/spacenav/twist/repub","/spacenav/twist/repub2","/spacenav/twist/repub3","hello"]
+            self.input_command_topic = 'deadman_switch_spacenav_twist'
 
         #self.syncpub=rospy.Publisher(self.sync_topic,Bool,queue_size=10)
         self.syncFrames.pressed.connect(self.sync_frames)
-        self.moveswarmbutton = swarm_button(self.Moveswarm,self.closed_loop_swarm_command_topic)
-        self.moveswarmframebutton = swarm_button(self.Moveswarmframe,self.open_loop_swarm_command_topic)
+        
+        self.moveswarmbutton = swarm_button(self.Moveswarm, self.closed_loop_swarm_command_topic)
+        self.moveswarmframebutton = swarm_button(self.Moveswarmframe, self.open_loop_swarm_command_topic)
+        
         self.buttons.append(self.moveswarmbutton)
         self.buttons.append(self.moveswarmframebutton)
+        
         rospy.Subscriber(self.input_command_topic, Twist, self.offset_callback)
         
         for i in range(self.number_of_bots):
@@ -215,7 +220,7 @@ class SWARMGUI(QtWidgets.QMainWindow):
                 print("NOT ALL ROBOTS HAVE BEEN GIVEN TYPE INFORMATION")
                 break
             
-            robot_label=QLabel()
+            robot_label = QLabel()
             robot_label.setFixedSize(buttonwidth//self.number_of_bots,100)
             
             robot_label.setAlignment(Qt.AlignCenter)
@@ -233,8 +238,8 @@ class SWARMGUI(QtWidgets.QMainWindow):
                 break
             
             
-            button_class_object=robot_button(i,self.open_loop_command_topics[i],True,buttonwidth//self.number_of_bots,heightnew//8,self.robot_types[i])
-            button_class_object2=robot_button(i,self.close_loop_command_topics[i],False,buttonwidth//self.number_of_bots,heightnew//8,self.robot_types[i])
+            button_class_object = robot_button(i,self.open_loop_command_topics[i],True,buttonwidth//self.number_of_bots,heightnew//8,self.robot_types[i])
+            button_class_object2 = robot_button(i,self.close_loop_command_topics[i],False,buttonwidth//self.number_of_bots,heightnew//8,self.robot_types[i])
             self.Robotlayout.addWidget(button_class_object.button,1,i)
             self.Robotlayout.addWidget(button_class_object2.button,2,i)
             self.buttons.append(button_class_object)
@@ -270,28 +275,42 @@ class SWARMGUI(QtWidgets.QMainWindow):
         self.package_path = rp.get_path('swarm_gui')
         #self.plusbutton.resize(width/3,height/5)
         #self.minusbutton.resize(width/3,height/5)
+
         self.rotation_disabled=False
         self.Disablerotation.pressed.connect(self.disable_rotation)
+
+        self.translation_disabled=False
+        # self.Disabletranslation.pressed.connect(self.disable_translation)
+
+
         #self.Savestructure.resize(width/3,height/5)
         #self.repubme=rospy.Publisher(self.input_command_topic, Twist, queue_size=0)
         #rospy.Timer(rospy.Duration(0.1), self.move_swarm_frame)
         self.Savestructure.pressed.connect(self.save_structure)
         self.Loadstructure.pressed.connect(self.load_structure)
         #self.Assumestructure.pressed.connect(self.assume_structure)
-        self.tf_changer=rospy.Publisher(self.tf_changer_topic,PoseStamped,queue_size=10)
+        self.tf_changer = rospy.Publisher(self.tf_changer_topic, PoseStamped, queue_size=10)
         self.windowresized()
         self.show()
 
 
     def disable_rotation(self):
         self.rotation_disabled=not(self.rotation_disabled)
+        
         if(self.rotation_disabled):
-            
             self.Disablerotation.setStyleSheet('QPushButton {background-color: orange; color: white;}')
             
-        else:
-            
+        else:    
             self.Disablerotation.setStyleSheet('QPushButton {background-color: white; color: black;}')    
+
+    # def disable_translation(self):
+    #     self.translation_disabled=not(self.translation_disabled)
+
+    #     if(self.translation_disabled):
+    #         self.Disabletranslation.setStyleSheet('QPushButton {background-color: orange; color: white;}')
+            
+    #     else:
+    #         self.Disabletranslation.setStyleSheet('QPushButton {background-color: white; color: black;}') 
    
     def callback_gui(self,evt):
         self.status_manager.poll_node_names()
@@ -303,6 +322,7 @@ class SWARMGUI(QtWidgets.QMainWindow):
         else:
             self.robot1led.led_change(False)
         """
+
     def move_swarm_frame(self,evt):
         message=Twist()
         message.linear.x=0
@@ -321,8 +341,8 @@ class SWARMGUI(QtWidgets.QMainWindow):
                 p1 = PoseStamped()
                 p1.header.frame_id = self.robot_tfs[i]
                 #rospy.logwarn(str(trans[0]))
-                trans[0]+=trans[0]*self.resize_swarm_scaling_factor
-                trans[1]+=trans[1]*self.resize_swarm_scaling_factor
+                trans[0] += trans[0]*self.resize_swarm_scaling_factor
+                trans[1] += trans[1]*self.resize_swarm_scaling_factor
                 #rospy.logwarn(str(trans[0]))
                 p1.pose.position.x = float(trans[0])
                 p1.pose.position.y = float(trans[1])
@@ -342,8 +362,8 @@ class SWARMGUI(QtWidgets.QMainWindow):
                 trans, quaternions = self.tf.lookupTransform(self.swarm_tf,self.robot_tfs[i], t)
                 p1 = PoseStamped()
                 p1.header.frame_id = self.robot_tfs[i]
-                trans[0]-=trans[0]*self.resize_swarm_scaling_factor
-                trans[1]-=trans[1]*self.resize_swarm_scaling_factor
+                trans[0] -= trans[0]*self.resize_swarm_scaling_factor
+                trans[1] -= trans[1]*self.resize_swarm_scaling_factor
                 p1.pose.position.x = float(trans[0])
                 p1.pose.position.y = float(trans[1])
                 p1.pose.position.z = float(trans[2])
@@ -357,9 +377,23 @@ class SWARMGUI(QtWidgets.QMainWindow):
     def offset_callback(self,data):
         with callback_lock:
             if(self.rotation_disabled):
-                data.angular.z = data.angular.z*0
+                data.angular.x = data.angular.x*0.
+                data.angular.y = data.angular.y*0.
+                data.angular.z = data.angular.z*0.
             else:
+                data.angular.x = data.angular.x*1.0
+                data.angular.y = data.angular.y*1.0
                 data.angular.z = data.angular.z*1.0
+
+            if(self.translation_disabled):
+                data.linear.x = data.linear.x*0.
+                data.linear.y = data.linear.y*0.
+                data.linear.z = data.linear.z*0.
+            else:
+                data.linear.x = data.linear.x*1.0
+                data.linear.y = data.linear.y*1.0
+                data.linear.z = data.linear.z*1.0
+
             for i in range(len(self.buttons)):
                 if(self.buttons[i].enabled):
                     self.buttons[i].publisher.publish(data)
@@ -426,6 +460,7 @@ class SWARMGUI(QtWidgets.QMainWindow):
         self.Savestructure.setFont(f)
         self.Loadstructure.setFont(f)
         self.Disablerotation.setFont(f)
+        # self.Disabletranslation.setFont(f)
         #self.Assumestructure.setFont(f)
         self.syncFrames.setFont(f)
 
@@ -433,7 +468,7 @@ class SWARMGUI(QtWidgets.QMainWindow):
         name, done1 = QtWidgets.QInputDialog.getText(
              self, 'Save Structure', 'Enter desired save name:')
         if(done1):
-            name=self.package_path+'/resource/'+name+'.txt'
+            name = self.package_path + '/resource/' + name + '.txt'
             f = open(name, "w")
             
             for i in range(len(self.robot_tfs)):
@@ -451,7 +486,7 @@ class SWARMGUI(QtWidgets.QMainWindow):
         name, done1 = QtWidgets.QInputDialog.getText(
              self, 'Load Structure', 'Enter desired file name:')
         if(done1):
-            name=self.package_path+'/resource/'+name+'.txt'
+            name = self.package_path+'/resource/'+ name + '.txt'
             rospy.logwarn("swarm_gui_user.py: line 368: "+ name)
             f = open(name, "r+")
             lines=f.readlines()
