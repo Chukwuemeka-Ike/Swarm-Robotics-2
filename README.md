@@ -281,6 +281,8 @@ Ubuntu should now boot. The post is copied here for convenience:
     ```
 9. You may also need to disable secure boot. This is achived from the BIOS settings. To enter the BIOS settings, while powering up the tablet, Press and hold the volume-up button on your Surface and at the same time, press and release the power button. When you see the Surface logo, release the volume-up button.
 The UEFI menu will display within a few seconds.
+    
+10. The default kernel version installed with ubuntu 20.04 as of writing this document is 5.15 however this version causes hangging problem when shutting down. Installing kernel version 5.4.243 via Mainline kernel installer resolves the issue for this specific tablet. 
 
 </details>
 
