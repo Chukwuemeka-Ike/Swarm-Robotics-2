@@ -57,7 +57,7 @@ src/dingo_desktop
 src/dingo_simulator
 src/AssistiveRobot-SimulationFiles
 src/RVizMeshVisualizer
-src/UWB-Gazebo-Plugin
+src/uwb_gazebo_plugin
 src/dlo_simulator_paobcr
 src/dlo_simulator_stiff_rods
 src/fabric_simulator
