@@ -2,7 +2,7 @@
 <group ns="$(optenv DINGO_CUSTOM_NAME d)">
   <arg name="motor_params" default="$(optenv DINGO_MOTOR_PARAMS base)" />
 
-  <include file="$(find dingo_customization)/launch/description.launch" />
+  <include file="$(find dingo_customization)/d4/launch/description.launch" />
 
   <node pkg="rosserial_python" type="message_info_service.py" name="rosserial_message_info" />
 
@@ -23,7 +23,7 @@
   </node>
 
   <!-- Differential controller and basic localization -->
-  <include file="$(find dingo_customization)/launch/control.launch" />
+  <include file="$(find dingo_customization)/d4/launch/control.launch" />
 
   <!-- Teleoperation via joystick and rviz interactive markers -->
   <include file="$(find dingo_control)/launch/teleop.launch" />

@@ -52,6 +52,7 @@ pip3 install scipy;
 
 
 # DINGO RELATED
+sudo apt install -y ros-noetic-gazebo-msgs;
 sudo apt-get install ros-noetic-dingo-desktop;
 # Installs:
 # ros-noetic-dingo-msgs 
