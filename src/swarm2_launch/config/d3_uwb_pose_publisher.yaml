@@ -4,9 +4,11 @@ pub_pose_topic_name: "pose_uwb"
 sub_uwb_tag_1_topic_name: "uwb/tag_1_serial_ranging"
 sub_uwb_tag_2_topic_name: "uwb/tag_2_serial_ranging"
 
-uwb_tag_1_id: '4'
-uwb_tag_2_id: '5'
+# If you update the ids here, for correct descriptions also update /etc/ros/setup.bash of the physical robot.
+uwb_tag_1_id: '1032' # '4' 
+uwb_tag_2_id: '85A7' # '5' 
 
+# If you update the x y z positions below, also update /etc/ros/setup.bash of the physical robot for correct description update.
 tag_1_x: 0.0
 tag_1_y: -0.22
 
