@@ -42,6 +42,15 @@ sudo apt-get install -y ros-noetic-tf2-sensor-msgs;
 sudo apt-get install -y ros-noetic-imu-tools;
 sudo apt-get install -y ros-noetic-imu-pipeline; # for imu_transformer
 
+# PYTHON RELATED
+sudo apt-get install -y python3-pip;
+pip3 install pyserial;
+pip3 install quadprog;
+pip3 install pandas;
+pip3 install pygame;
+pip3 install scipy;
+
+
 # DINGO RELATED
 sudo apt-get install ros-noetic-dingo-desktop;
 # Installs:
