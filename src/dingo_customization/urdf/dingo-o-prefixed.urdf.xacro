@@ -660,5 +660,5 @@
   <!-- ........................................................................ -->
 
   <!-- Optional custom includes. -->
-  <xacro:include filename="$(optenv DINGO_URDF_EXTRAS empty.urdf)" />
+  <!-- <xacro:include filename="$(optenv DINGO_URDF_EXTRAS empty.urdf)" /> -->
 </robot>

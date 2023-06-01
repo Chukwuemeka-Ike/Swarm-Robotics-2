@@ -4,7 +4,10 @@
   <arg name="robot_namespace"       default="$(optenv DINGO_CUSTOM_NAME d)"/>
   <!-- Generate the tf_prefix from the namespace -->
   <!-- <arg name="tf_prefix" default="$(arg robot_namespace)_tf_" /> -->
-  <arg name="tf_prefix" default="$(optenv TF_PREFIX $(arg robot_namespace)_tf_)" />
+  <!-- <arg name="tf_prefix" default="$(optenv TF_PREFIX $(arg robot_namespace)_tf_)" /> -->
+  <arg name="tf_prefix" default="$(optenv TF_PREFIX tf_)" />
+  
+
 
   <arg name="uwb_tag_1_id"       default="$(optenv DINGO_UWB_TAG_1_ID 0)"/>
   <arg name="uwb_tag_2_id"       default="$(optenv DINGO_UWB_TAG_2_ID 1)"/>
@@ -14,7 +17,7 @@
   <param name="robot_description"
          command="$(find dingo_description)/scripts/env_run
                   $(find dingo_description)/urdf/configs/$(arg config)
-                  $(find xacro)/xacro $(find dingo_customization)/urdf/dingo-o-prefixed.urdf.xacro
+                  $(find xacro)/xacro --inorder $(find dingo_customization)/urdf/dingo-o-prefixed.urdf.xacro
                   robot_namespace:=$(arg robot_namespace)
                   tf_prefix:=$(arg tf_prefix)
                   uwb_tag_1_id:=$(arg uwb_tag_1_id)
