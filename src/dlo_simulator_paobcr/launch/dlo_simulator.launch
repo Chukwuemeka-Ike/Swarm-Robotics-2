@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>   
-    <!-- Launch the DLO Simulation that reads the location data of robots and attaches the dlo corners to those locations  -->
-    <node type="dlo_simulator_node" name="dlo_simulator_paobcr_node" pkg="dlo_simulator_paobcr" output="screen">
-        <rosparam command="load" file="$(find dlo_simulator_paobcr)/config/dlo_simulator.yaml" subst_value="true" />
-    </node>
-</launch>
