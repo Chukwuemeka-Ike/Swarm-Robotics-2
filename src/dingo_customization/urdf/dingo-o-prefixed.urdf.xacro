@@ -544,7 +544,25 @@
     </xacro:if>
   </xacro:if>
 
-  
+  <!-- Add the secondary lidar, same format as the first, but on the rear -->
+  <xacro:if value="$(optenv DINGO_LASER_SECONDARY 0)">
+    <xacro:property name="mount_secondary" value="$(optenv DINGO_LASER_SECONDARY_MOUNT ${robot_prefix}rear)" />
+    <xacro:property name="topic_secondary" value="$(optenv DINGO_LASER_SECONDARY_TOPIC rear/scan)" />
+    <xacro:property name="prefix_secondary" value="$(optenv DINGO_LASER_SECONDARY_PREFIX ${mount_secondary})" />
+    <xacro:property name="parent_secondary" value="$(optenv DINGO_LASER_SECONDARY_PARENT ${mount_secondary}_mount)" />
+    <xacro:property name="lidar_model_secondary" value="$(optenv DINGO_LASER_SECONDARY_MODEL ust10)" />
+
+    <!-- Secondary Hokuyo UST10 -->
+    <xacro:if value="${lidar_model_secondary == 'ust10'}">
+      <xacro:hokuyo_ust10_mount prefix="${prefix_secondary}" topic="${topic_secondary}" />
+      <joint name="${prefix_secondary}_laser_mount_joint" type="fixed">
+        <origin xyz="$(optenv DINGO_LASER_SECONDARY_OFFSET 0 0 0)"
+                rpy="$(optenv DINGO_LASER_SECONDARY_RPY 0 0 ${M_PI})" />
+        <parent link="${parent_secondary}" />
+        <child link="${prefix_secondary}_laser_mount" />
+      </joint>
+    </xacro:if>
+  </xacro:if>
 
   <!--
     Add Microstrain IMU. By default the DINGO comes equipped with an IMU linked to "imu_link". These extra
