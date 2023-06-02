@@ -14,8 +14,7 @@
        the base_frame_id -->
 
   <!-- Spawn controllers -->
-  <node name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="dingo_joint_publisher dingo_velocity_controller" />
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" args="dingo_joint_publisher dingo_velocity_controller">
       <!-- Load controller configuration (Based on robot type: omnidir) -->
     <rosparam command="load" file="$(find swarm2_launch)/config/d1_control_omni.yaml" subst_value="true"/>         
   </node>
