@@ -520,6 +520,30 @@
 
   <xacro:include filename="$(find dingo_description)/urdf/accessories/hokuyo_ust10.urdf.xacro" />
   
+  <!--
+    Add a lidar sensor.  By default this is a SICK LMS1xx but can be changed with the
+    DINGO_LASER_MODEL environment variable. Valid model designations are:
+    - ust10            :: Hokuyo UST10
+  -->
+  <xacro:if value="$(optenv DINGO_LASER 0)">
+    <xacro:property name="mount" value="$(optenv DINGO_LASER_MOUNT ${robot_prefix}front)" />
+    <xacro:property name="topic" value="$(optenv DINGO_LASER_TOPIC front/scan)" />
+    <xacro:property name="prefix" value="$(optenv DINGO_LASER_PREFIX ${mount})" />
+    <xacro:property name="parent" value="$(optenv DINGO_LASER_PARENT ${mount}_mount)" />
+    <xacro:property name="lidar_model" value="$(optenv DINGO_LASER_MODEL ust10)" />
+
+    <!-- Hokuyo UST10 -->
+    <xacro:if value="${lidar_model == 'ust10'}">
+      <xacro:hokuyo_ust10_mount prefix="${prefix}" topic="${topic}" />
+      <joint name="${prefix}_laser_mount_joint" type="fixed">
+        <origin xyz="$(optenv DINGO_LASER_OFFSET 0 0 0)"
+                rpy="$(optenv DINGO_LASER_RPY 0 0 0)" />
+        <parent link="${parent}" />
+        <child link="${prefix}_laser_mount" />
+      </joint>
+    </xacro:if>
+  </xacro:if>
+
   
   <!-- ........................................................................ -->
 
