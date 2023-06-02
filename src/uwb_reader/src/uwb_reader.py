@@ -42,25 +42,25 @@ class Uwb_reader:
         self.ser.reset_input_buffer()
         self.ser.reset_output_buffer()
         
-        ser_bytes = self.ser.readline()
+        ser_bytes = self.ser.readline().decode()
         while not 'dwm>' in ser_bytes:
             rospy.loginfo('waiting for dwm>')
             rospy.loginfo(ser_bytes)
             self.ser.write('\r\r'.encode())
-            ser_bytes = self.ser.readline()
+            ser_bytes = self.ser.readline().decode()
             time.sleep(0.1)
             while(self.ser.in_waiting):
                 rospy.loginfo('waiting for dwm> (ser.in_waiting)')
-                ser_bytes = self.ser.readline()
+                ser_bytes = self.ser.readline().decode()
                 time.sleep(0.1)
 
         # Tell UWB tag to give us distance readings
         self.ser.write("lec\r".encode())
 
-        ser_bytes = self.ser.readline() 
+        ser_bytes = self.ser.readline().decode() 
 
         # Throw out first reading (has extra "dwm> ")
-        ser_bytes = self.ser.readline() 
+        ser_bytes = self.ser.readline().decode() 
 
     def start_reading(self):
         while not rospy.is_shutdown():
@@ -74,7 +74,7 @@ class Uwb_reader:
                     time.sleep(1)
                     self.start_lec_mode()
 
-                ser_bytes = self.ser.readline()
+                ser_bytes = self.ser.readline().decode()
                 if(ser_bytes):
                     self.pub.publish(ser_bytes)
                 else:
