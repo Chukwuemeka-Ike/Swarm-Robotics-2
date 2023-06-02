@@ -17,13 +17,13 @@
   <group if="$(optenv DINGO_OMNI 0)">
     <rosparam command="load" file="$(find swarm2_launch)/config/dingo_control_omni.yaml" subst_value="true"/>
 
-    <rosparam param="dingo_velocity_controller/front_left_wheel_joint"  subst_value="true">$(arg tf_prefix)front_left_wheel</rosparam>
-    <rosparam param="dingo_velocity_controller/back_left_wheel_joint"   subst_value="true">$(arg tf_prefix)rear_left_wheel</rosparam>
-    <rosparam param="dingo_velocity_controller/front_right_wheel_joint" subst_value="true">$(arg tf_prefix)front_right_wheel</rosparam>
-    <rosparam param="dingo_velocity_controller/back_right_wheel_joint"  subst_value="true">$(arg tf_prefix)rear_right_wheel</rosparam>
+    <!-- <rosparam param="dingo_velocity_controller/front_left_wheel_joint"  subst_value="true">$(arg tf_prefix)front_left_wheel</rosparam> -->
+    <!-- <rosparam param="dingo_velocity_controller/back_left_wheel_joint"   subst_value="true">$(arg tf_prefix)rear_left_wheel</rosparam> -->
+    <!-- <rosparam param="dingo_velocity_controller/front_right_wheel_joint" subst_value="true">$(arg tf_prefix)front_right_wheel</rosparam> -->
+    <!-- <rosparam param="dingo_velocity_controller/back_right_wheel_joint"  subst_value="true">$(arg tf_prefix)rear_right_wheel</rosparam> -->
 
-    <rosparam param="dingo_velocity_controller/base_frame_id" subst_value="true">$(arg tf_prefix)base_link</rosparam>
-    <rosparam param="dingo_velocity_controller/odom_frame_id" subst_value="true">$(arg tf_prefix)odom</rosparam>
+    <!-- <rosparam param="dingo_velocity_controller/base_frame_id" subst_value="true">$(arg tf_prefix)base_link</rosparam> -->
+    <!-- <rosparam param="dingo_velocity_controller/odom_frame_id" subst_value="true">$(arg tf_prefix)odom</rosparam> -->
   </group>
   <group unless="$(optenv DINGO_OMNI 0)">
     <rosparam command="load" file="$(find swarm2_launch)/config/dingo_control_diff.yaml" />
