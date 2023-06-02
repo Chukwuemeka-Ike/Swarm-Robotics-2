@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import rospy
 from std_msgs.msg import String
 
@@ -35,8 +35,8 @@ class Uwb_reader:
 
     def start_lec_mode(self):
        # Reset UWB tag so that we're in a known state
-        self.ser.write('reset\r'.encode())
-        self.ser.write('reset\r'.encode())
+        self.ser.write('reset\r')
+        self.ser.write('reset\r')
 
         time.sleep(0.1)
         self.ser.reset_input_buffer()
@@ -46,7 +46,7 @@ class Uwb_reader:
         while not 'dwm>' in ser_bytes:
             rospy.loginfo('waiting for dwm>')
             rospy.loginfo(ser_bytes)
-            self.ser.write('\r\r'.encode())
+            self.ser.write('\r\r')
             ser_bytes = self.ser.readline()
             time.sleep(0.1)
             while(self.ser.in_waiting):
@@ -55,7 +55,7 @@ class Uwb_reader:
                 time.sleep(0.1)
 
         # Tell UWB tag to give us distance readings
-        self.ser.write("lec\r".encode())
+        self.ser.write("lec\r")
 
         ser_bytes = self.ser.readline() 
 
