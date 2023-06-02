@@ -17,7 +17,7 @@ in the URDF. See dingo_description/urdf/accessories.urdf.xacro.
     <arg name="lidar_model" value="$(optenv DINGO_LASER_MODEL lms1xx)" />
     <!-- UST10 node -->
     <group if="$(eval arg('lidar_model') == 'ust10')">
-      <node pkg="urg_node" name="hokuyo" type="urg_node">
+      <node pkg="urg_node" name="hokuyo" type="urg_node" output="screen">
         <param name="ip_address" value="$(optenv DINGO_LASER_HOST 192.168.131.20)" />
         <param name="frame_id" value="$(optenv DINGO_LASER_MOUNT front)_laser" />
         <remap from="scan" to="$(optenv DINGO_LASER_TOPIC front/scan)" />
@@ -33,7 +33,7 @@ in the URDF. See dingo_description/urdf/accessories.urdf.xacro.
     <arg name="lidar2_model" value="$(optenv DINGO_LASER_SECONDARY_MODEL lms1xx)" />
     <!-- UST10 node -->
     <group if="$(eval arg('lidar2_model') == 'ust10')">
-      <node pkg="urg_node" name="hokuyo_secondary" type="urg_node">
+      <node pkg="urg_node" name="hokuyo_secondary" type="urg_node" output="screen">
         <param name="ip_address" value="$(optenv DINGO_LASER_SECONDARY_HOST 192.168.131.21)" />
         <param name="frame_id" value="$(optenv DINGO_LASER_SECONDARY_MOUNT rear)_laser" />
         <remap from="scan" to="$(optenv DINGO_LASER_SECONDARY_TOPIC rear/scan)" />
@@ -52,10 +52,10 @@ in the URDF. See dingo_description/urdf/accessories.urdf.xacro.
 
   <!-- QORVO UWB tags -->
   <group if="$(optenv DINGO_UWB_TAGS 0)">
-    <node name="uwb_right" pkg="uwb_reader" type="uwb_reader.py">
+    <node name="uwb_right" pkg="uwb_reader" type="uwb_reader.py" output="screen">
         <rosparam file="$(find swarm2_launch)/config/$(optenv DINGO_CUSTOM_NAME d)_uwb_1.yaml"/>
     </node>
-    <node name="uwb_left" pkg="uwb_reader" type="uwb_reader.py">
+    <node name="uwb_left" pkg="uwb_reader" type="uwb_reader.py" output="screen">
         <rosparam file="$(find swarm2_launch)/config/$(optenv DINGO_CUSTOM_NAME d)_uwb_2.yaml"/>
     </node>
 

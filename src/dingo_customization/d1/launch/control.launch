@@ -13,19 +13,20 @@
        So, we load the default control configuration and then overwrite 
        the base_frame_id -->
 
+  <!-- Load controller configuration (Based on robot type: omnidir) -->
+  <rosparam command="load" file="$(find swarm2_launch)/config/d1_control_omni.yaml" subst_value="true"/>         
+
   <!-- Spawn controllers -->
-  <node name="controller_spawner" pkg="controller_manager" type="spawner" args="dingo_joint_publisher dingo_velocity_controller">
-      <!-- Load controller configuration (Based on robot type: omnidir) -->
-    <rosparam command="load" file="$(find swarm2_launch)/config/d1_control_omni.yaml" subst_value="true"/>         
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" args="dingo_joint_publisher dingo_velocity_controller" output="screen">
   </node>
 
   <!-- EKF localization -->
-  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="screen">
     <rosparam command="load" file="$(find swarm2_launch)/config/d1_robot_localization.yaml" />
   </node>
 
   <!-- Robot Internal twist mux -->
-  <node pkg="twist_mux" type="twist_mux" name="twist_mux">
+  <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
     <rosparam command="load" file="$(find dingo_control)/config/twist_mux.yaml" />
     <remap from="cmd_vel_out" to="dingo_velocity_controller/cmd_vel"/>
   </node>
