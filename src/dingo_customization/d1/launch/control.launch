@@ -22,8 +22,8 @@
     <rosparam param="dingo_velocity_controller/front_right_wheel_joint" subst_value="true">$(arg tf_prefix)front_right_wheel</rosparam>
     <rosparam param="dingo_velocity_controller/back_right_wheel_joint"  subst_value="true">$(arg tf_prefix)rear_right_wheel</rosparam>
 
-    <rosparam param="dingo_velocity_controller/base_frame_id" subst_value="true">$(arg tf_prefix)base_link</rosparam>
-    <rosparam param="dingo_velocity_controller/odom_frame_id" subst_value="true">$(arg tf_prefix)odom</rosparam>
+    <!-- <rosparam param="dingo_velocity_controller/base_frame_id" subst_value="true">$(arg tf_prefix)base_link</rosparam> -->
+    <!-- <rosparam param="dingo_velocity_controller/odom_frame_id" subst_value="true">$(arg tf_prefix)odom</rosparam> -->
   </group>
   <group unless="$(optenv DINGO_OMNI 0)">
     <rosparam command="load" file="$(find swarm2_launch)/config/dingo_control_diff.yaml" />
@@ -37,8 +37,8 @@
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
     <rosparam command="load" file="$(find swarm2_launch)/config/dingo_robot_localization.yaml" />
 
-    <rosparam param="odom_frame"       subst_value="true">$(arg tf_prefix)odom</rosparam>
-    <rosparam param="base_link_frame"  subst_value="true">$(arg tf_prefix)base_link</rosparam>
+    <!-- <rosparam param="odom_frame"       subst_value="true">$(arg tf_prefix)odom</rosparam> -->
+    <!-- <rosparam param="base_link_frame"  subst_value="true">$(arg tf_prefix)base_link</rosparam> -->
   </node>
 
   <!-- Robot Internal twist mux -->
