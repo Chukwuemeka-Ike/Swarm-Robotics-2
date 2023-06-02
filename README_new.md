@@ -49,7 +49,7 @@ pip3 install quadprog;
 pip3 install pandas;
 pip3 install pygame;
 pip3 install scipy;
-
+pip3 install numpy==1.21; # needed to resolve the issue "AttributeError: module 'numpy' has no attribute 'typeDict'"
 
 # DINGO RELATED
 sudo apt install -y ros-noetic-gazebo-msgs;
