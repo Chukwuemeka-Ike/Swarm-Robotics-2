@@ -6,7 +6,8 @@
   <!-- Generate the tf_prefix from the namespace -->
   <!-- <arg name="tf_prefix" default="$(arg robot_namespace)_tf_" /> -->
   <!-- <arg name="tf_prefix" default="$(optenv TF_PREFIX $(arg robot_namespace)_tf_)" /> -->
-  <arg name="tf_prefix" default="$(optenv TF_PREFIX tf_)" />
+  <!-- <arg name="tf_prefix" default="$(optenv TF_PREFIX tf_)" /> -->
+  <arg name="tf_prefix" default="$(eval optenv('TF_PREFIX', arg('robot_namespace') + 'tf_'))" />
 
   <!-- Here we spawn (load and launch) two controllers 
        The key thing we need to do is to set the 
