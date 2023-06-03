@@ -49,6 +49,6 @@
       <rosparam command="load" file="$(find dingo_base)/config/diagnostic_analyzers_diff.yaml" />
     </node>
   </group>
+  -->
 </group>
--->
 </launch>
