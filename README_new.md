@@ -92,7 +92,7 @@ sudo apt-get install -y ros-noetic-dingo-simulator;
 # ros-noetic-uuid-msgs
 
 # ONLY ON PHYSICAL ROBOTS, NEED TO INSTALL
-sudo apt-get install -y ros-noetic-roslint
+sudo apt-get install -y ros-noetic-roslint # needed to build dingo_base package
 sudo apt-get install -y ros-noetic-dingo-robot # AFTER ADDING CLEARPATH KEYS (see https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo/#installing-from-debian-packages)
 # INSTALLS:
 # can-utils 
