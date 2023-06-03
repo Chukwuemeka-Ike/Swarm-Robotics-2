@@ -46,7 +46,7 @@ odom0_config: [false, false, true,
 # # data is converted to velocity data by differentiating the absolute pose measurements. These velocities are then
 # # integrated as usual. NOTE: this only applies to sensors that provide pose measurements; setting differential to true
 # # for twist measurements has no effect.
-odom0_differential: true
+odom0_differential: false
 odom0_relative: false
 
 
