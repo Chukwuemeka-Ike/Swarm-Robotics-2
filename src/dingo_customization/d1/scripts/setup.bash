@@ -45,6 +45,7 @@ export DINGO_LASER_SECONDARY_MOUNT="${TF_PREFIX}rear"
 export DINGO_IMU_MICROSTRAIN=true
 export DINGO_IMU_MICROSTRAIN_OFFSET="0 0 0.08" # wrt base in the description
 export DINGO_IMU_MICROSTRAIN_LINK="${TF_PREFIX}microstrain_link"
+export DINGO_IMU_MICROSTRAIN_PARENT="${TF_PREFIX}imu_link"
 
 # Add UWB tag IDs on the robot (1: RIGHT, 2:LEFT)
 export DINGO_UWB_TAGS=true

@@ -29,10 +29,10 @@ set_baud : False
 # filter_frame_id and filter_child_frame_id are specifically useful as the node will also publish a transform to the /tf topic
 # that contains the transform between these two frames. Many ROS tools such as RViz will use the /tf topic to display things like robot position.
 imu_frame_id          : $(optenv DINGO_IMU_MICROSTRAIN_LINK microstrain_link)
-gnss1_frame_id        : "gnss1_antenna_wgs84"
-gnss2_frame_id        : "gnss2_antenna_wgs84"
-filter_frame_id       : "sensor_wgs84"
-filter_child_frame_id : "sensor"
+# gnss1_frame_id        : "gnss1_antenna_wgs84"
+# gnss2_frame_id        : "gnss2_antenna_wgs84"
+filter_frame_id       : $(optenv DINGO_IMU_MICROSTRAIN_PARENT imu_link) # "sensor_wgs84"
+filter_child_frame_id : $(optenv DINGO_IMU_MICROSTRAIN_LINK microstrain_link) # "sensor"
 nmea_frame_id         : "nmea"
 
 # Waits for a configurable amount of time until the device exists
@@ -169,7 +169,7 @@ publish_nmea   : False
 # ****************************************************************** 
 # Kalman Filter Settings (only applicable for devices with a Kalman Filter) 
 # ****************************************************************** 
-filter_data_rate : 10
+filter_data_rate : 50
 
 # The speed at which the individual Filter publishers will publish at.
 #      If set to -1, will use filter_data_rate to determine the rate at which to stream and publish
