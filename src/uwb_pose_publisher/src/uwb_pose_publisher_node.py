@@ -72,8 +72,8 @@ class UWBPosePublisher():
         self.pub_rmse = rospy.Publisher(self.pub_pose_topic_name + '_RMSE', std_msgs.msg.Float32, queue_size=10)
 
         # Subscribe to UWB tags
-        rospy.Subscriber(self.sub_uwb_tag_1_topic_name, std_msgs.msg.String, self.uwb_serial_tag_1_callback, queue_size=1)
-        rospy.Subscriber(self.sub_uwb_tag_2_topic_name, std_msgs.msg.String, self.uwb_serial_tag_2_callback, queue_size=1)
+        rospy.Subscriber(self.sub_uwb_tag_1_topic_name, std_msgs.msg.String, self.uwb_serial_tag_1_callback, queue_size=5)
+        rospy.Subscriber(self.sub_uwb_tag_2_topic_name, std_msgs.msg.String, self.uwb_serial_tag_2_callback, queue_size=5)
 
         # Class variables:
         # time stamps of last uwb readings
