@@ -164,10 +164,10 @@ class UWBPosePublisher():
                     rospy.logwarn("UWB timesteps are older than 0.25 s | dt = " + str(dt))
                     return
 
-                # # Ignore the reading if there are less than 8 readings
-                # if self.uwb_tag_1_anchor_dists.size + self.uwb_tag_2_anchor_dists.size < 8:
-                #     rospy.logwarn("Dropping UWB reading | number of readings = " + str(self.uwb_tag_1_anchor_dists.size + self.uwb_tag_2_anchor_dists.size) + " which is less than 8" )
-                #     return
+                # Ignore the reading if there are less than 8 readings
+                if self.uwb_tag_1_anchor_dists.size + self.uwb_tag_2_anchor_dists.size < 8:
+                    rospy.logwarn("Dropping UWB reading | number of readings = " + str(self.uwb_tag_1_anchor_dists.size + self.uwb_tag_2_anchor_dists.size) + " which is less than 8" )
+                    return
                 
                 # Ignore the reading if there are less than 3 readings per tag
                 if (self.uwb_tag_1_anchor_dists.size < 3) or (self.uwb_tag_2_anchor_dists.size < 3):
@@ -188,8 +188,8 @@ class UWBPosePublisher():
                                                self.tag_z_height)
 
                 # Ignore reading if rmse is high than ... meters
-                # if rmse > 0.15:
-                if rmse > 0.5:
+                if rmse > 0.15:
+                # if rmse > 0.5:
                     rospy.logwarn("Dropping UWB reading | rmse = " + str(rmse) + " is too high" )
                     return
 
