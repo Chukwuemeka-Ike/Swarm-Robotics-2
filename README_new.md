@@ -52,8 +52,8 @@ pip3 install scipy;
 pip3 install numpy==1.21; # needed to resolve the issue "AttributeError: module 'numpy' has no attribute 'typeDict'"
 
 # DINGO RELATED
-sudo apt install -y ros-noetic-gazebo-msgs;
-sudo apt-get install ros-noetic-dingo-desktop;
+sudo apt-get install -y ros-noetic-gazebo-msgs;
+sudo apt-get install -y ros-noetic-dingo-desktop;
 # Installs:
 # ros-noetic-dingo-msgs 
 # ros-noetic-dingo-viz
@@ -63,7 +63,7 @@ sudo apt-get install ros-noetic-dingo-desktop;
 # ros-noetic-lms1xx (duplicate from dingo-desktop)
 # ros-noetic-realsense2-description (duplicate from dingo-desktop)
 # ros-noetic-velodyne-description (duplicate from dingo-desktop)
-sudo apt-get install ros-noetic-dingo-simulator;
+sudo apt-get install -y ros-noetic-dingo-simulator;
 # Installs:
 # ros-noetic-dingo-control 
 # ros-noetic-dingo-gazebo 
@@ -92,7 +92,8 @@ sudo apt-get install ros-noetic-dingo-simulator;
 # ros-noetic-uuid-msgs
 
 # ONLY ON PHYSICAL ROBOTS, NEED TO INSTALL
-# sudo apt-get install ros-noetic-dingo-robot AFTER ADDING CLEARPATH KEYS
+sudo apt-get install -y ros-noetic-roslint
+sudo apt-get install -y ros-noetic-dingo-robot # AFTER ADDING CLEARPATH KEYS (see https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo/#installing-from-debian-packages)
 # INSTALLS:
 # can-utils 
 # daemontools 
