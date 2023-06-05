@@ -40,3 +40,110 @@ sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/accessories.launch /et
 ```
 
 For other robots (`d2,d3,d4`), ssh into them and execute after replacing the `d1` parts in the commands.
+
+
+## Detailed explanations of some changes done in this package
+
+<details>
+
+### Dingo Setup for Remote Master
+
+<details>
+
+
+Once each robot is connected to the wireless network with static IP addresses (that can be done through the router settings. We set the IP addresses as specified in the table at the top this document), we set each to use the same ROS master. To do
+this do the following on each robot. First, run 
+
+```bash
+sudo nano /usr/sbin/ros-start
+```
+
+In this `ros-start` file, change the line `export ROS_MASTER_URI=http://127.0.0.1:11311` to  
+
+```bash
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+export ROS_IP=192.168.1.101 (USE THE CORRECT IP ADRESS HERE)
+```
+
+and comment out the line `export ROS_HOSTNAME=$(hostname)`
+to make sure that the robot uses the host machine as its ROS Master. 
+
+The reason of doing this comes from the fact that the Clearpath has setup the starting of the ROS nodes of the robot as a service that is initated during the boot-up. [For further information about this see this link.](https://roboticsbackend.com/make-ros-launch-start-on-boot-with-robot_upstart/). Clearpath created a `dingo_bringup` package to achieve this service behaviour. The installation file is given [here](https://github.com/dingo-cpr/dingo_robot/blob/noetic-devel/dingo_bringup/scripts/install), and the step of doing this installation on a fresh install from scracth is explained in [here](https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo#installing-dingo-software).
+
+**For the final version of the changes made in this section, see `/src/dingo_customization/d1/scripts/ros-start` file. We basically replace the default file with this custom file.**
+
+<pre><del> To make sure that ros.service by Clearpath starts after the network is really online,
+edit `ros.service` file with command
+`sudo nano /lib/systemd/system/ros.service`
+and add the following lines  
+
+```txt
+After=network-online.target
+Wants=network-online.target
+```
+
+in place of the line
+
+```txt
+After=network.target
+```
+
+[For further information about this above see this link.](https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/) </del></pre>
+
+After these changes, also add the following lines in the master computer's `~/.bashrc` file:  
+
+```bash
+export ROS_IP=192.168.1.100
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+```
+
+**Note that these changes on the robots will make the robots to look for the master computer running the `roscore` command while they are booting. If the `roscore` is not running on the master computer during the booting of the robots, the robots will be able to boot correctly and connect to the WiFi. However, the `ros.service` of `systemctl` will fail and therefore the robot will not be able to move (the comms and Wi-Fi indicator LEDs will be off on the robot's HMI interface). If you run the `roscore` command on the master computer after the robots are booted up, you need to manually start the `ros.service` on the robots by ssh'ing into them. This is achieved by running this command on the robot terminals:**  
+
+```bash
+sudo systemctl start ros.service
+```
+
+</details>
+
+### Namespacing the Dingo Robots
+
+<details>
+
+After the factory default install of Dingo-O, there are two files in `/etc/ros/noetic/ros.d` named `base.launch` and `accessories.launch`. Those file are actually symbolic links to the launch files of `dingo_base` and `dingo_bringup` packages that are installed in `/opt/ros/noetic/share/`. These launch files are automatically launched during the boot of the robot.
+
+The goal is to modify the automatic roslaunch files to do the following:
+
+* Add namespacing to prevent naming conflicts
+* Add e-stop functionality
+* Add scaling for forward and inverse kinematics
+
+Following https://www.clearpathrobotics.com/assets/guides/kinetic/ridgeback/startup.html
+
+For namespaces such as `/d1,/d2,/d3,/d4`, add `<group ns="NAMESPACE"> ... </group>` into the launch files. For example, for dingo robot `d1`, edit the launch files as follows:
+
+```html
+<launch>
+    <group ns="d1">
+        ...
+        ... ORIGINAL CONTENT OF THE 'base.launch file' or 'accessories.launch' file.
+        ...
+    </group>
+<launch>
+```
+
+</details>
+
+### Needed Edits for `/etc/ros/setup.bash`
+
+<details>
+
+* Add `export DINGO_OMNI=1` if it does not setup as `1`.
+* Comment out or edit the line `source /home/administrator/catkin_ws/devel/setup.bash` such that it points to the name of our workspace `catkin_ws_swarm2` as `source /home/administrator/catkin_ws_swarm2/devel/setup.bash`.
+* Comment out the line `source /etc/clearpath-dingo.bash`or make sure it does not conflict with the `export ...` lines such as `export DINGO_OMNI=1` specified in this `/etc/ros/setup.bash` file.
+* Comment out the line `export DINGO_CONFIG_EXTRAS=$(catkin_find rpi06_dingo config/localization.yaml --first-only)` if it exists.
+* Make sure the lines related to LIDAR, IMU and the UWB sensors are included in this file. 
+* For the final version of `/etc/ros/setup.bash` file, see `/src/dingo_customization/d1/scripts/setup.bash`. We basically replace the default file with this custom file.
+
+</details>
+
+</details>

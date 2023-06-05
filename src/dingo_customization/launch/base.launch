@@ -6,7 +6,7 @@
   <!-- Generate the tf_prefix from the namespace -->
   <arg name="tf_prefix" default="$(eval optenv('TF_PREFIX', arg('robot_namespace') + '_tf_'))" />
 
-  <include file="$(find dingo_customization)/d1/launch/description.launch" />
+  <include file="$(find dingo_customization)/launch/description.launch" />
   <!-- <include file="$(find dingo_description)/launch/description.launch" /> -->
 
   <node pkg="rosserial_python" type="message_info_service.py" name="rosserial_message_info" output="screen" />
@@ -33,7 +33,7 @@
   </node>
 
   <!-- Differential controller and basic localization -->
-  <include file="$(find dingo_customization)/d1/launch/control.launch" />
+  <include file="$(find dingo_customization)/launch/control.launch" />
   <!-- <include file="$(find dingo_control)/launch/control.launch" /> -->
 
   <!-- Teleoperation via joystick and rviz interactive markers -->
