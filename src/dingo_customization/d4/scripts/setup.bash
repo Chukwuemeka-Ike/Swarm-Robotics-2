@@ -26,7 +26,7 @@ source /home/administrator/catkin_ws_swarm2/devel/setup.bash
 # export DINGO_CONFIG_EXTRAS=$(catkin_find rpi06_dingo config/localization.yaml --first-only)
 
 # Add dingo custom name
-export DINGO_CUSTOM_NAME=d1
+export DINGO_CUSTOM_NAME=d4
 export TF_PREFIX="${DINGO_CUSTOM_NAME}_tf_"
 
 # Add the front facing Hokuyo UST10LX LiDAR
