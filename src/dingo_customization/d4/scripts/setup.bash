@@ -26,7 +26,7 @@ source /home/administrator/catkin_ws_swarm2/devel/setup.bash
 # export DINGO_CONFIG_EXTRAS=$(catkin_find rpi06_dingo config/localization.yaml --first-only)
 
 # Add dingo custom name
-export DINGO_CUSTOM_NAME=d4
+export DINGO_CUSTOM_NAME=d1
 export TF_PREFIX="${DINGO_CUSTOM_NAME}_tf_"
 
 # Add the front facing Hokuyo UST10LX LiDAR
@@ -45,11 +45,12 @@ export DINGO_LASER_SECONDARY_MOUNT="${TF_PREFIX}rear"
 export DINGO_IMU_MICROSTRAIN=true
 export DINGO_IMU_MICROSTRAIN_OFFSET="0 0 0.08" # wrt base in the description
 export DINGO_IMU_MICROSTRAIN_LINK="${TF_PREFIX}microstrain_link"
+export DINGO_IMU_MICROSTRAIN_PARENT="${TF_PREFIX}imu_link"
 
 # Add UWB tag IDs on the robot (1: RIGHT, 2:LEFT)
 export DINGO_UWB_TAGS=true
 # below values are specified just for the description, uwb reading nodes have their own yaml files.
-export DINGO_UWB_TAG_1_ID="1337" 
+export DINGO_UWB_TAG_1_ID="1337" # right
 export DINGO_UWB_TAG_1_OFFSET="0 -0.22 0.1" # wrt mid mount in the description
-export DINGO_UWB_TAG_2_ID="C702"
+export DINGO_UWB_TAG_2_ID="C702" # left
 export DINGO_UWB_TAG_2_OFFSET="0 0.22 0.1" # wrt mid mount in the description

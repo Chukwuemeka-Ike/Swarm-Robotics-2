@@ -29,13 +29,14 @@ The edited/new file list as follows:
 * `...../dingo_customization/config/robot_localization.yaml` -->
 
 ## Commands to copy in a robot
+
 For example, after ssh'ing into robot `d1`, the following commands copies the necessary files to the correct directories:
 
 ```bash
 sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d1/scripts/ros-start /usr/sbin/
 sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d1/scripts/setup.bash /etc/ros/
-sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d1/launch/base.launch /etc/ros/noetic/ros.d/
-sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d1/launch/accessories.launch /etc/ros/noetic/ros.d/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/base.launch /etc/ros/noetic/ros.d/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/accessories.launch /etc/ros/noetic/ros.d/
 ```
 
 For other robots (`d2,d3,d4`), ssh into them and execute after replacing the `d1` parts in the commands.
