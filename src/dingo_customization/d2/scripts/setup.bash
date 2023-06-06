@@ -25,6 +25,9 @@ source /home/administrator/catkin_ws_swarm2/devel/setup.bash
 # Add the config extras file:
 # export DINGO_CONFIG_EXTRAS=$(catkin_find rpi06_dingo config/localization.yaml --first-only)
 
+export ROS_MASTER_URI=http://192.168.1.100:11311
+export ROS_IP=192.168.1.102
+
 # Add dingo custom name
 export DINGO_CUSTOM_NAME=d2
 export TF_PREFIX="${DINGO_CUSTOM_NAME}_tf_"
