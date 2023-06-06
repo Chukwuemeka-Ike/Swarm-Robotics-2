@@ -196,8 +196,8 @@ filter_aiding_measurement_summary_data_rate : -1  # Rate of nav/aiding_summary t
 #            Quaternion order is [i, j, k, w]
 filter_sensor2vehicle_frame_selector : 1
 
-# filter_sensor2vehicle_frame_transformation_euler      : [0.0, 0.0, 1.5708]
-filter_sensor2vehicle_frame_transformation_euler      : [0.0, 0.0, 0.0]
+filter_sensor2vehicle_frame_transformation_euler      : [0.0, 0.0, 1.5708]
+# filter_sensor2vehicle_frame_transformation_euler      : [0.0, 0.0, 0.0]
 filter_sensor2vehicle_frame_transformation_matrix     : [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
 filter_sensor2vehicle_frame_transformation_quaternion : [0.0, 0.0, 0.0, 1.0]
 
