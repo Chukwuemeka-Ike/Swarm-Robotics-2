@@ -31,7 +31,7 @@ pose0_config: [true,  true,  false,
 pose0_differential: false
 pose0_relative: false
 pose0_queue_size: 2
-# pose0_rejection_threshold: 2  # Note the difference in parameter name
+pose0_rejection_threshold: 0.4  # Note the difference in parameter name
 pose0_nodelay: false
 
 
