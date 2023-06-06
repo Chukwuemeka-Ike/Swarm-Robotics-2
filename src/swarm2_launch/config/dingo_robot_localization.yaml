@@ -6,10 +6,11 @@
 frequency: 30
 
 silent_tf_failure: false
+
 # The period, in seconds, after which we consider a sensor to have timed out. In this event, we carry out a predict
 # cycle on the EKF without correcting it. This parameter can be thought of as the minimum frequency with which the
 # filter will generate new output. Defaults to 1 / frequency if not specified.
-sensor_timeout: 0.05
+# sensor_timeout: 0.05
 
 disabled_at_startup: true # if set true, will not run the filter on startup
 
@@ -30,7 +31,7 @@ pose0_config: [true,  true,  false,
                false, false, false,
                false, false, false,
                false, false, false]
-pose0_differential: false
+pose0_differential: true
 pose0_relative: false
 pose0_queue_size: 2
 # pose0_rejection_threshold: 0.8  # Note the difference in parameter name
