@@ -37,6 +37,21 @@ sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d1/scripts/ros-start /usr/sbi
 sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d1/scripts/setup.bash /etc/ros/
 sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/base.launch /etc/ros/noetic/ros.d/
 sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/accessories.launch /etc/ros/noetic/ros.d/
+
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d2/scripts/ros-start /usr/sbin/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d2/scripts/setup.bash /etc/ros/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/base.launch /etc/ros/noetic/ros.d/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/accessories.launch /etc/ros/noetic/ros.d/
+
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d3/scripts/ros-start /usr/sbin/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d3/scripts/setup.bash /etc/ros/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/base.launch /etc/ros/noetic/ros.d/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/accessories.launch /etc/ros/noetic/ros.d/
+
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d4/scripts/ros-start /usr/sbin/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/d4/scripts/setup.bash /etc/ros/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/base.launch /etc/ros/noetic/ros.d/
+sudo cp ~/catkin_ws_swarm2/src/dingo_customization/launch/accessories.launch /etc/ros/noetic/ros.d/
 ```
 
 For other robots (`d2,d3,d4`), ssh into them and execute after replacing the `d1` parts in the commands.
