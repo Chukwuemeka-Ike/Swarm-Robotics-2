@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import least_squares # nonlinear least-squares
 
 def tag_pair_min_z(anchor_mat_front, anchor_mat_back,
-	dists_meas_front, dists_meas_back, tag_loc_front, tag_loc_back, z=0.0):
+	dists_meas_front, dists_meas_back, tag_loc_front, tag_loc_back, z=None):
 	# Find the position of the robot given distance readings from 2 UWB tags
 
 	# The two tags can have different numbers of readings
@@ -66,27 +66,39 @@ def tag_pair_min_z(anchor_mat_front, anchor_mat_back,
 	# angle_guess is the amount of rotation needed from world x axis to robot x axis wrapped btw. -pi to +pi
 
 	# Go from the mean frame back to the robot frame
-	xyz_guess = xyz_mean_guess - rot_mat(angle_guess).dot(np.block([[tag_loc_mean],[z]]))
+	xyz_guess = xyz_mean_guess - rot_mat(angle_guess).dot(np.block([[tag_loc_mean],[0.]]))
 	xyzt_guess = np.block([[xyz_guess],[angle_guess]])
+	xyt_guess = xyzt_guess[[0,1,3]]
 
 	# Using this close first guess, apply nonlinear minimization
-	opt_result = least_squares(tag_pair_err_fun, 
-			    			   xyzt_guess.flatten(),
-							   args=(anchor_mat_front, anchor_mat_back,
-									 dists_meas_front, dists_meas_back, 
-									 np.block([[tag_loc_front],[z]]), 
-									 np.block([[tag_loc_back],[z]])))
+	if z is None:
+		opt_result = least_squares(tag_pair_err_fun, xyzt_guess.flatten(),
+			args=(anchor_mat_front, anchor_mat_back,
+			dists_meas_front, dists_meas_back, tag_loc_front, tag_loc_back))
 
-	robot_pos = opt_result.x
+		robot_pos = opt_result.x
+	else: # z (robot tags' height) is given
+		opt_result = least_squares(tag_pair_err_z_given_fun, xyt_guess.flatten(),
+			args=(anchor_mat_front, anchor_mat_back,
+			dists_meas_front, dists_meas_back, tag_loc_front, tag_loc_back,z))
+
+		robot_pos = np.insert(opt_result.x,2,z,axis=0)
+
 	robot_pos[3] = wrapToPi(robot_pos[3])
 	
 	rmse = np.sqrt(np.mean(opt_result.fun**2.))
 	return robot_pos, rmse
 
-def tag_pair_err_fun(robot_pos, 
-					 anchor_mat_1, anchor_mat_2,
-					 dists_meas_1, dists_meas_2, 
-					 p_1, p_2):
+def tag_pair_err_z_given_fun(
+	robot_pos, anchor_mat_1, anchor_mat_2,
+	dists_meas_1, dists_meas_2, p_1, p_2, z):
+
+	robot_pos = np.insert(robot_pos,2,z,axis=0)
+	return tag_pair_err_fun(robot_pos, anchor_mat_1, anchor_mat_2, dists_meas_1, dists_meas_2, p_1, p_2)
+
+def tag_pair_err_fun(
+	robot_pos, anchor_mat_1, anchor_mat_2,
+	dists_meas_1, dists_meas_2, p_1, p_2):
 	
 	# The error output is minimized to find the best robot position
 	# Error is the diffrence between measured and actual UWB distances
@@ -102,8 +114,8 @@ def tag_pair_err_fun(robot_pos,
 	#	anchor_mat_2: each col is XYZ position of anchor measured with tag 2
 	#	dists_meas_1: vector of measured distances from tag 1
 	#	dists_meas_2: vector of measured distances from tag 2
-	#	p_1: XYZ position of the 1st anchor in the robot frame
-	#	p_2: XYZ position of the 2nd anchor in the robot frame
+	#	p_1: XY position of the 1st anchor in the robot frame
+	#	p_2: XY position of the 2nd anchor in the robot frame
 	# Outputs:
 	# 	err: [dists_meas_1; dists_meas_2]  - (distances according to inputs)
 
@@ -113,9 +125,9 @@ def tag_pair_err_fun(robot_pos,
 
 	# From the robot position, calcualate tag positions
 	tag_1 = robot_pos[0:2+1, np.newaxis]\
-		+ rot_mat(robot_pos[3]).dot(p_1)
+		+ rot_mat(robot_pos[3]).dot(np.block([[p_1],[0.]]))
 	tag_2 =	robot_pos[0:2+1, np.newaxis]\
-		+ rot_mat(robot_pos[3]).dot(p_2)
+		+ rot_mat(robot_pos[3]).dot(np.block([[p_2],[0.]]))
 
 	N_anchors_1 = anchor_mat_1.shape[1]
 	N_anchors_2 = anchor_mat_2.shape[1]
