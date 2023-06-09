@@ -37,7 +37,7 @@
   <!-- <include file="$(find dingo_control)/launch/control.launch" /> -->
 
   <!-- Teleoperation via joystick and rviz interactive markers -->
-  <include file="$(find dingo_control)/launch/teleop.launch" />
+  <include file="$(find dingo_customization)/launch/teleop.launch" />
 
   <!-- Diagnostic Aggregator for robot monitor usage -->
   <!--
