@@ -22,7 +22,8 @@
     <node pkg="interactive_marker_twist_server" type="marker_server" name="twist_marker_server">
       <rosparam command="load" file="$(find interactive_marker_twist_server)/config/$(arg config).yaml" />
 
-      <rosparam param="base_link"  subst_value="true">$(arg tf_prefix)base_link</rosparam>
+      <rosparam param="link_name"  subst_value="true">$(arg tf_prefix)base_link</rosparam>
+      <rosparam param="robot_name"  subst_value="true">$(arg robot_namespace)_robot</rosparam>
     </node>
   </group>
   <group unless="$(optenv DINGO_OMNI 0)">
