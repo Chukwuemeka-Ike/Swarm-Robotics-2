@@ -52,4 +52,9 @@
 
   <rosparam command="load" file="$(arg config_extras)" subst_value="true" />
 
+  <!-- Closed Loop Velocity Controller for when a desired location is specified for the robot -->
+  <node name="cl_vel_controller" pkg="vel_controller" type="vel_controller.py">
+    <rosparam file="$(find swarm2_launch)/config/dingo_cl_vel_controller.yaml"/>
+  </node>
+
 </launch>
