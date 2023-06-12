@@ -202,7 +202,10 @@ alias killg='killall gzclient && killall gzserver && killall rosmaster'
 ### In Dingo robot computer `~/.bashrc` file, add these
 
 ```bash
-source /etc/ros/setup.bash
+# Uncomment this to source the same ROS environment as the robot's `ros` systemd job
+if [ -f /etc/ros/setup.bash ]; then
+  source /etc/ros/setup.bash
+fi
 ```
 
 ### Initial setup and Customizations for Dingo Robots
