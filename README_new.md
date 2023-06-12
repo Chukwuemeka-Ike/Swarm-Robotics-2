@@ -169,12 +169,12 @@ rm -rf {*,.*};
 
 git clone https://github.com/burakaksoy/Swarm-Robotics-2.git .;
 cd src;
-git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git;
-git clone https://github.com/burakaksoy/RVizMeshVisualizer.git;
-git clone https://github.com/burakaksoy/uwb_gazebo_plugin;
+git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git; # only on DESKTOP
+git clone https://github.com/burakaksoy/RVizMeshVisualizer.git; # only on DESKTOP
+git clone https://github.com/burakaksoy/uwb_gazebo_plugin; # only on DESKTOP
 
 cd ..;
-catkin_make -DCMAKE_BUILD_TYPE=Release;
+catkin_make -DCATKIN_BLACKLIST_PACKAGES='dingo_base;dingo_customization' -DCMAKE_BUILD_TYPE=Release; # on DESKTOP computer 
 # catkin_make -DCATKIN_BLACKLIST_PACKAGES='swarm_gui' -DCMAKE_BUILD_TYPE=Release; # on Physical Robots
 source devel/setup.bash;
 ```
