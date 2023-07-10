@@ -98,7 +98,7 @@
 
   <!-- Closed Loop Velocity Controller for when a desired location is specified for the robot -->
   <node name="robot_cl_vel_controller" pkg="vel_controller" type="vel_controller.py">
-    <rosparam file="$(find swarm2_launch)/config/dingo_cl_vel_controller.yaml"/>
+    <rosparam file="$(find swarm2_launch)/config/dingo_cl_vel_controller_sim.yaml"/>
   </node>
 
   <!-- <node name="ctrl_point_inv_kin" pkg="vel_controller" type="ctrl_point_inv_kin_omni.py">

@@ -30,7 +30,7 @@ fabric_translation: [0, 0, 0.8]
 fabric_rotationAxis: [0, 0, 1]
 fabric_rotationAngle: 0.0
 # fabric_scale: [1.25, 1.25, 1]
-fabric_scale: [1.4, 1.0, 1.0]
+fabric_scale: [1.0, 1.0, 1.0]
 
 # If fabric_mesh_path is not empty string (i.e., "") num_hang_corners is NOT used.
 # Also, for some rotations specified this may NOT work.

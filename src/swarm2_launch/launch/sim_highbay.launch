@@ -6,7 +6,8 @@
     <arg name="use_sim_time" default="true" />
     <arg name="gui" default="false" /> <!--make true to see Gazebo interface -->
     <arg name="headless" default="false" />
-    <arg name="world_name" default="$(find lab_gazebo)/worlds/highbay_swarm.world" />
+    <!-- <arg name="world_name" default="$(find lab_gazebo)/worlds/highbay_swarm.world" /> -->
+    <arg name="world_name" default="$(find gazebo_ros)/worlds/empty_world.world" />
 
     <!-- Launch Gazebo with the specified world -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">

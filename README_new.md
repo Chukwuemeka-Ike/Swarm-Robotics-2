@@ -265,61 +265,6 @@ and send messages to `\cmd_vel` topic.
 
 Assuming that you already did the dependancy installations and building in [**Setting up the system**](#setting-up-the-system) section.
 
-## Running the simulation in Empty World
-This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
-
-``` bash
-roslaunch dingo_gazebo empty_world_multi.launch
-```
-
-Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
-<!-- TODO: ADD image here -->
-![View in empty world](./.imgs/empty_world_multi.png)
-
-## Running the simulation in CII 8th Floor Lab
-This is an example lab environment to visualize the scales of Dingo robots.
-This command launches the corresponding RVIZ and the rqt_ez_publisher all together in CII 8th floor lab.
-
-``` bash
-roslaunch dingo_gazebo empty_lab_multi.launch
-```
-
-Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but more realistic.
-<!-- TODO: ADD image here -->
-![View in CII 8th Floor Lab](./.imgs/empty_lab_multi.png)
-
-## Running the simulation in Empty World with ground truth
-This command launches the simulation with ground truth reported TF frames to RVIZ. Again, launching the corresponding RVIZ and the rqt_ez_publisher is embedded all together. 
-
-``` bash
-roslaunch dingo_gazebo empty_world_multi_ground_truth.launch
-```
-
-Note that RVIZ TF frames are reported by `message_to_tf` package that uses the _ground truth_ data coming from `gazebo_ros_p3d` plugin, hence it is exact representation of the Gazebo World.
-Therefore, this command does not launch the Gazebo client GUI to save computational power, but could be re-enabled with gui parameter set to true in the launch file.
-<!-- TODO: ADD image here -->
-![Empty World with ground truth](./.imgs/empty_world_multi_ground_truth.png)
-
-## Running the simulation in Demonstration Floor - Highbay
-
-This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
-
-``` bash
-roslaunch dingo_gazebo empty_highbay_multi.launch
-```
-
-Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
-<!-- TODO: ADD image here -->
-![View in Empty Highbay](./.imgs/empty_highbay_multi.png)
-
-For a simulation that includes the representative workstations and the workers run:
-
-``` bash
-roslaunch dingo_gazebo highbay_multi.launch
-```
-
-![View in Highbay](./.imgs/highbay_multi.png)
-
 ## Running the simulation in Demonstration Floor - Highbay with ground truth
 
 This command launches the simulation with ground truth reported TF frames to RVIZ. Again, launching the corresponding RVIZ and the rqt_ez_publisher is embedded all together. 
