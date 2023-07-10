@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 <group ns="ui">
-    <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/>
+    <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
 
     <!-- Launch Mesh Visualizer for Static Environment World -->
     <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
@@ -10,7 +10,7 @@
     </node>
 
     <!-- Launch RVIZ specific to Fabric + Multi robot simulation -->
-    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find swarm2_launch)/config/rviz/config.rviz" output="screen"/>
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find swarm2_launch)/config/rviz/sim_robots.rviz" output="screen"/>
 
     <!-- RQT EZ publisher -->
     <!-- <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen">
@@ -18,16 +18,16 @@
     </node> -->
 
     <!-- ARDUINO READER -->
-    <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
+    <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
         <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
-    </node>
+    </node> -->
 
     <!-- SPACE MOUSE -->
     <include file="$(find spacenav_node)/launch/classic.launch"/>
 
     <!-- TWIST MUX FOR E-STOP -->
     <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
-        <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_twist_mux.yaml" />
+        <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_twist_mux_disabled.yaml" />
         <remap from="cmd_vel_out" to="deadman_switch_spacenav_twist"/>
     </node>
 

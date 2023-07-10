@@ -1,7 +1,83 @@
 <?xml version="1.0"?>
 <launch>
-    <include file="$(find swarm2_launch)/launch/test_launch/sim_d1.launch"></include>
-    <include file="$(find swarm2_launch)/launch/test_launch/sim_d2.launch"></include>
-    <include file="$(find swarm2_launch)/launch/test_launch/sim_d3.launch"></include>
-    <include file="$(find swarm2_launch)/launch/test_launch/sim_d4.launch"></include>
+    <!-- DINGO 1 -->
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_dingo.launch">
+        <!-- Robot Spawn Pose -->
+        <!-- <arg name="x"     value="1.0"/> -->
+        <!-- <arg name="y"     value="1.0"/> -->
+        <arg name="x"     value="1.5"/>
+        <arg name="y"     value="0.2"/>
+
+        <arg name="z"     value="0.0"/>
+        <arg name="yaw"   value="0"/>
+        <!-- <arg name="yaw"   value="1.57079632679"/> -->
+
+        <!-- Robot name -->
+        <arg name="name"   value="d1"/>
+
+        <!-- UWB tag IDs for robot description -->
+        <arg name="uwb_tag_1_id"       value="0"/>
+        <arg name="uwb_tag_2_id"       value="1"/>
+    </include>
+
+    <!-- DINGO 2 -->
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_dingo.launch">
+        <!-- Robot Spawn Pose -->
+        <!-- <arg name="x"     value="-1.0"/> -->
+        <!-- <arg name="y"     value="1.0"/> -->
+        <arg name="x"     value="0.5"/>
+        <arg name="y"     value="-0.2"/>
+
+        <arg name="z"     value="0.0"/>
+        <arg name="yaw"   value="0"/>
+        <!-- <arg name="yaw"   value="1.57079632679"/> -->
+
+        <!-- Robot name -->
+        <arg name="name"   value="d2"/>
+
+        <!-- UWB tag IDs for robot description -->
+        <arg name="uwb_tag_1_id"       value="2"/>
+        <arg name="uwb_tag_2_id"       value="3"/>
+    </include>
+
+    <!-- DINGO 3 -->
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_dingo.launch">
+        <!-- Robot Spawn Pose -->
+        <!-- <arg name="x"     value="-1.0"/> -->
+        <!-- <arg name="y"     value="-1.0"/> -->
+        <arg name="x"     value="-0.5"/>
+        <arg name="y"     value="0.2"/>
+
+        <arg name="z"     value="0.0"/>
+        <arg name="yaw"   value="0"/>
+        <!-- <arg name="yaw"   value="1.57079632679"/> -->
+
+        <!-- Robot name -->
+        <arg name="name"   value="d3"/>
+
+        <!-- UWB tag IDs for robot description -->
+        <arg name="uwb_tag_1_id"       value="4"/>
+        <arg name="uwb_tag_2_id"       value="5"/>
+    </include>
+
+    <!-- DINGO 4 -->
+    <include file="$(find swarm2_launch)/launch/test_launch/sim_dingo.launch">
+        <!-- Robot Spawn Pose -->
+        <!-- <arg name="x"     value="1.0"/> -->
+        <!-- <arg name="y"     value="-1.0"/> -->
+        <arg name="x"     value="-1.5"/>
+        <arg name="y"     value="-0.2"/>
+
+        <arg name="z"     value="0.0"/>
+        <arg name="yaw"   value="0"/>
+        <!-- <arg name="yaw"   value="1.57079632679"/> -->
+
+        <!-- Robot name -->
+        <arg name="name"   value="d4"/>
+
+        <!-- UWB tag IDs for robot description -->
+        <arg name="uwb_tag_1_id"       value="6"/>
+        <arg name="uwb_tag_2_id"       value="7"/>
+    </include>
+
 </launch>

@@ -18,7 +18,7 @@ from PyQt5 import QtWidgets, uic
 from std_msgs.msg import Bool, Int32
 import threading
 from geometry_msgs.msg import Pose2D, Twist, PoseStamped
-from led_indicator import LEDIndicator
+from utilities.led_indicator import * #LEDIndicator
 import rosnode
 import signal
 import std_msgs.msg
@@ -515,17 +515,11 @@ class SWARMGUI(QtWidgets.QMainWindow):
                     self.tf_changer.publish(p1)
 
     
-                
-    
-
-def main():
+if __name__== '__main__':
     rospy.init_node('SWARM_gui',log_level=rospy.DEBUG)
     signal.signal(signal.SIGINT,signal.SIG_DFL)
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
     window = SWARMGUI() # Create an instance of our class
     window.show()
     sys.exit(app.exec_()) # Start the application
-
-if __name__== '__main__':
-    main()
 

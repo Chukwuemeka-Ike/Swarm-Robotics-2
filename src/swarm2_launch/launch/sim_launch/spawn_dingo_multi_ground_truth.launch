@@ -1,0 +1,140 @@
+<launch>
+  <!-- Robot Spawn Pose -->
+  <arg name="x"         default="0"/>
+  <arg name="y"         default="0"/>
+  <arg name="z"         default="0.1"/>
+  <arg name="yaw"       default="0"/>
+
+  <!-- ..........................Bypass description.launch here .......................... -->  
+  <arg name="robot_namespace"       default="dingo"/>
+  <!-- Generate the tf_prefix from the namespace -->
+  <arg name="tf_prefix" default="$(arg robot_namespace)_tf_" />
+
+  <arg name="uwb_tag_1_id"       default="0"/>
+  <arg name="uwb_tag_2_id"       default="1"/>
+
+  <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom_tf_broadcaster" args="$(arg x) $(arg y) 0 $(arg yaw) 0 0 map $(arg tf_prefix)odom 100" /> -->
+  <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom_tf_broadcaster" args="0 0 0 0 0 0 map $(arg tf_prefix)odom 100" /> -->
+
+  <!-- Configuration of Dingo which you would like to simulate.
+      See dingo_description for details. -->
+  <arg name="config" default="$(optenv DINGO_CONFIG base)" />
+
+  <param name="robot_description"
+         command="$(find dingo_description)/scripts/env_run
+                  $(find dingo_description)/urdf/configs/$(arg config)
+                  $(find xacro)/xacro $(find dingo_customization)/urdf/dingo-o-prefixed.urdf.xacro
+                  robot_namespace:=$(arg robot_namespace)
+                  tf_prefix:=$(arg tf_prefix)
+                  uwb_tag_1_id:=$(arg uwb_tag_1_id)
+                  uwb_tag_2_id:=$(arg uwb_tag_2_id)
+                  " />
+
+  <rosparam command="load" file="$(find swarm2_launch)/config/dingo_sim_gains_omni_multi.yaml" />
+  
+  <!-- Spawn dingo in Gazebo-->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
+    args="-urdf -model dingo_$(arg robot_namespace) -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -Y $(arg yaw)" output="screen" />
+
+  <!-- Start the state publisher node in the namespace - uses the 
+       joint states from gazebo
+       along with the URDF model (robot_description) to publish 
+       the joint positions to /tf --> 
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />
+  <!-- ..........................Bypassed description.launch here .......................... -->
+
+  <!-- ..........................Bypassed control.launch here .......................... -->
+  <arg name="config_extras"
+       default="$(eval optenv('DINGO_CONFIG_EXTRAS', find('dingo_control') + '/config/empty.yaml'))"/>
+
+  <!-- Here we spawn (load and launch) two controllers which become 
+       part of Gazebo. The key thing we need to do is to set the 
+       "base_frame_id" of the diff_drive_controller
+       to include the tf_pre so that our tf trees work out.   
+       So, we load the default control configuration and then overwrite 
+       the base_frame_id -->
+
+  <!-- Load controller configuration (Based on robot type: omnidir) -->
+  <rosparam command="load" file="$(find swarm2_launch)/config/dingo_control_omni_sim.yaml" />
+
+  <rosparam param="dingo_velocity_controller/front_left_wheel_joint" subst_value="True">$(arg tf_prefix)front_left_wheel</rosparam>
+  <rosparam param="dingo_velocity_controller/back_left_wheel_joint" subst_value="True">$(arg tf_prefix)rear_left_wheel</rosparam>
+  <rosparam param="dingo_velocity_controller/front_right_wheel_joint" subst_value="True">$(arg tf_prefix)front_right_wheel</rosparam>
+  <rosparam param="dingo_velocity_controller/back_right_wheel_joint" subst_value="True">$(arg tf_prefix)rear_right_wheel</rosparam>
+
+  <rosparam param="dingo_velocity_controller/base_frame_id" subst_value="True">$(arg tf_prefix)base_link</rosparam>
+  <rosparam param="dingo_velocity_controller/odom_frame_id" subst_value="True">$(arg tf_prefix)odom</rosparam>
+  
+  <!-- Spawn controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="dingo_joint_publisher dingo_velocity_controller" output="screen" />
+
+  <!-- Uncomment below if you want to publish the tf from the ground truth -->
+  <node pkg="message_to_tf" type="message_to_tf" name="ground_truth_tf_broadcaster" output="screen"> 
+    <rosparam param="odometry_topic" subst_value="True">ground_truth/odom</rosparam>
+    <rosparam param="publish_pose" subst_value="True">false</rosparam>
+    <rosparam param="publish_euler" subst_value="True">false</rosparam>
+  </node>
+
+  <!-- EKF localization -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="screen">
+    <rosparam command="load" file="$(find swarm2_launch)/config/dingo_robot_localization_sim.yaml" />  
+
+    <rosparam param="world_frame"      subst_value="true">map</rosparam>
+    <rosparam param="map_frame"        subst_value="true">map</rosparam>
+    <rosparam param="odom_frame"       subst_value="true">$(arg tf_prefix)odom</rosparam>
+    <rosparam param="base_link_frame"  subst_value="true">$(arg tf_prefix)base_link</rosparam>
+  </node>
+
+
+
+  <node pkg="twist_mux" type="twist_mux" name="twist_mux">
+    <rosparam command="load" file="$(find dingo_control)/config/twist_mux.yaml" />
+    <remap from="cmd_vel_out" to="dingo_velocity_controller/cmd_vel"/>
+    <remap from="e_stop" to="/e_stop"/>
+  </node>
+
+  <rosparam command="load" file="$(arg config_extras)" subst_value="true" />
+
+  <!-- Closed Loop Velocity Controller for when a desired location is specified for the robot -->
+  <node name="robot_cl_vel_controller" pkg="vel_controller" type="vel_controller.py">
+    <rosparam file="$(find swarm2_launch)/config/dingo_cl_vel_controller.yaml"/>
+  </node>
+
+  <!-- <node name="ctrl_point_inv_kin" pkg="vel_controller" type="ctrl_point_inv_kin_omni.py">
+    <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
+  </node> -->
+
+  <!-- <node name="ctrl_point_fwd_kin" pkg="vel_controller" type="ctrl_point_fwd_kin_omni.py">
+    <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
+  </node> -->
+
+  <!-- ..........................Bypassed control.launch here .......................... -->
+
+
+  <!-- Optionally disable teleop -->
+  <arg name="joystick"  default="false" />
+  
+  <!-- <include file="$(find dingo_control)/launch/teleop.launch"> -->
+    <!-- <arg name="joystick" value="$(arg joystick)"/> -->
+  <!-- </include> -->
+
+  <node type="wrench_transformer_node.py" name="wrench_transformer_node" pkg="topic_tf_transformers" output="screen">
+    <!-- <rosparam command="load" file="/home/burak/ez_cmd_vel_multi_dingo.yaml" subst_value="true" /> -->
+    <rosparam param="wrench_topic_name_out" subst_value="True">fabric_force</rosparam>
+    <rosparam param="wrench_topic_name_in"  subst_value="True">fabric_wrench_stamped</rosparam>
+    <rosparam param="tf_a_frame_name"       subst_value="True">$(arg tf_prefix)fabric_mount_link</rosparam>
+    <rosparam param="tf_b_frame_name"       subst_value="True">$(arg tf_prefix)base_link</rosparam>
+    <rosparam param="pub_rate"              subst_value="True">100.0</rosparam>
+  </node>
+
+  <node type="odom_transformer_node.py" name="odom_transformer_node" pkg="topic_tf_transformers" output="screen">
+    <!-- <rosparam command="load" file="/home/burak/ez_cmd_vel_multi_dingo.yaml" subst_value="true" /> -->
+    <rosparam param="odom_topic_name_out" subst_value="True">ground_truth/fabric_mount/odom</rosparam>
+    <rosparam param="odom_topic_name_in"  subst_value="True">ground_truth/odom</rosparam>
+    <rosparam param="tf_a_frame_name"       subst_value="True">$(arg tf_prefix)base_link</rosparam>
+    <rosparam param="tf_b_frame_name"       subst_value="True">$(arg tf_prefix)fabric_mount_link</rosparam>
+    <rosparam param="pub_rate"              subst_value="True">100.0</rosparam>
+  </node>
+  
+</launch>

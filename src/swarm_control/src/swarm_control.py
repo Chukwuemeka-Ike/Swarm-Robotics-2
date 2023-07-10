@@ -11,7 +11,7 @@ import tf2_msgs.msg
 from std_msgs.msg import Bool, Int32
 import tf_conversions # quaternion stuff
 
-from safe_swarm_controller import *
+from utilities.safe_swarm_controller import *
 
 import numpy as np
 
@@ -278,5 +278,5 @@ def xyt2TF(xyt, header_frame_id, child_frame_id):
     return t
 
 if __name__ == '__main__':
-    Swarm_Control()
+    swarm_control = Swarm_Control()
     rospy.spin()

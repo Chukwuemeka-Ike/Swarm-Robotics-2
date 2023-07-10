@@ -6,21 +6,21 @@
 
     <!-- Robot Spawn Pose -->
     <arg name="x"     default="1.0"/>
-    <arg name="y"     default="-1.0"/>
+    <arg name="y"     default="1.0"/>
     <arg name="z"     default="0.0"/>
     <arg name="yaw"   default="0"/>
 
     <!-- Robot name -->
-    <arg name="name"   default="d4"/>
+    <arg name="name"   default="d1"/>
 
     <!-- UWB tag IDs for robot description -->
-    <arg name="uwb_tag_1_id"       default="6"/>
-    <arg name="uwb_tag_2_id"       default="7"/>
+    <arg name="uwb_tag_1_id"       default="0"/>
+    <arg name="uwb_tag_2_id"       default="1"/>
 
 
     <group ns="$(arg name)">
 
-        <include file="$(find dingo_gazebo)/launch/spawn_dingo_multi_ground_truth.launch" >
+        <include file="$(find swarm2_launch)/launch/sim_launch/spawn_dingo_multi_ground_truth.launch" >
             <arg name="x"         value="$(arg x)" />
             <arg name="y"         value="$(arg y)" />
             <arg name="z"         value="$(arg z)" />
@@ -32,21 +32,9 @@
         </include>
 
         <include file="$(find uwb_pose_publisher)/launch/uwb_pose_publisher.launch" >
-            <arg name="config_file"              value="$(find swarm2_launch)/config/d1_uwb_pose_publisher.yaml" />
+            <arg name="config_file"              value="$(find swarm2_launch)/config/$(arg name)_uwb_pose_publisher_sim.yaml" />
             <arg name="antenna_calib_file"       value="$(find swarm2_launch)/config/antenna_calibration.yaml" />
         </include>
-
-        <node name="robot_cl_vel_controller" pkg="vel_controller" type="vel_controller.py">
-            <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
-        </node>
-
-        <!-- <node name="ctrl_point_inv_kin" pkg="vel_controller" type="ctrl_point_inv_kin_omni.py">
-            <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
-        </node> -->
-
-        <!-- <node name="ctrl_point_fwd_kin" pkg="vel_controller" type="ctrl_point_fwd_kin_omni.py">
-            <rosparam file="$(find swarm2_launch)/config/$(arg name)_cl_vel_controller.yaml"/>
-        </node> -->
 
     </group>
 

@@ -18,7 +18,7 @@ from PyQt5 import QtWidgets, uic
 from std_msgs.msg import Bool, Int32
 import threading
 from geometry_msgs.msg import Pose2D, Twist, PoseStamped
-from led_indicator import LEDIndicator
+from utilities.led_indicator import * #LEDIndicator
 import rosnode
 import signal
 import std_msgs.msg
@@ -130,24 +130,27 @@ class SWARMGUI(QtWidgets.QMainWindow):
         self.mainscreenui = os.path.join(rospkg.RosPack().get_path('swarm_gui'), 'resource', 'mainwindow.ui')
         uic.loadUi(self.mainscreenui, self)
         desktop=QtWidgets.QDesktopWidget()
+
         screengeometry=desktop.screenGeometry()
         height=screengeometry.height()
         width=screengeometry.width()
         self.tf = TransformListener()
 
         #print(type(width))
-        heightnew=height//3
+        height_initial=height//3
+        width_initial=width//2 # SCREEN DISPLAY WIDTH 
         
-        #self.setMinimumSize(width-50,heightnew)
-        #self.setMaximumSize(width-50,heightnew)
-        self.setGeometry(0,0,width-50,heightnew)
+        self.setMinimumSize(width//8,height//8)
+        self.setMaximumSize(width-50,height-50)
+        self.setGeometry(0,0,width_initial,height_initial)
+
         layout=self.layout()
-        #self.setMaximumSize(width-70,heightnew)
+
         #self.setWindowState(Qt.WindowMinimized)
         #self.setWindowState(Qt.WindowActive)
         #self.showMinimized()
         #layout.setSizeConstraint(QLayout.SetDefaultConstraint)
-        self.move(70,height-heightnew)
+        self.move(70,height-height_initial)
         self.resized.connect(self.windowresized)
         #self.Moveswarm.pressed.connect(self.sync_robot_motion_pressed)
         #self.Moveswarmframe.pressed.connect(self.move_swarm_frame)
@@ -164,6 +167,9 @@ class SWARMGUI(QtWidgets.QMainWindow):
         
         
         #rospy.Subscriber("/OARBOT1/pose", Pose2D, callback) 
+
+        self.rotation_disabled = False
+        self.translation_disabled = False
         
         self.Leds=[]
 
@@ -213,7 +219,8 @@ class SWARMGUI(QtWidgets.QMainWindow):
         self.status_manager=LEDManager(self.nodenames,self.Leds)
         
         
-        buttonwidth=width-100
+        buttonwidth=width_initial-100
+        # buttonwidth = (width//8)*7
         for x in range(self.number_of_bots):
             
             if(len(self.robot_types)!=self.number_of_bots):
@@ -238,8 +245,8 @@ class SWARMGUI(QtWidgets.QMainWindow):
                 break
             
             
-            button_class_object = robot_button(i,self.open_loop_command_topics[i],True,buttonwidth//self.number_of_bots,heightnew//8,self.robot_types[i])
-            button_class_object2 = robot_button(i,self.close_loop_command_topics[i],False,buttonwidth//self.number_of_bots,heightnew//8,self.robot_types[i])
+            button_class_object = robot_button(i,self.open_loop_command_topics[i],True,buttonwidth//self.number_of_bots,height_initial//8,self.robot_types[i])
+            button_class_object2 = robot_button(i,self.close_loop_command_topics[i],False,buttonwidth//self.number_of_bots,height_initial//8,self.robot_types[i])
             self.Robotlayout.addWidget(button_class_object.button,1,i)
             self.Robotlayout.addWidget(button_class_object2.button,2,i)
             self.buttons.append(button_class_object)
@@ -276,10 +283,10 @@ class SWARMGUI(QtWidgets.QMainWindow):
         #self.plusbutton.resize(width/3,height/5)
         #self.minusbutton.resize(width/3,height/5)
 
-        self.rotation_disabled=False
+        
         self.Disablerotation.pressed.connect(self.disable_rotation)
 
-        self.translation_disabled=False
+        
         # self.Disabletranslation.pressed.connect(self.disable_translation)
 
 
@@ -516,16 +523,11 @@ class SWARMGUI(QtWidgets.QMainWindow):
 
     
                 
-    
-
-def main():
+if __name__== '__main__':
     rospy.init_node('SWARM_gui',log_level=rospy.DEBUG)
     signal.signal(signal.SIGINT,signal.SIG_DFL)
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
     window = SWARMGUI() # Create an instance of our class
     window.show()
     sys.exit(app.exec_()) # Start the application
-
-if __name__== '__main__':
-    main()
 

@@ -128,6 +128,43 @@
         <child link="${robot_prefix}fabric_mount_link" />
         <!-- <axis xyz="0 0 1" /> -->
     </joint>
+
+    <!-- Top Cylinder Link Definition -->
+    <link name="${robot_prefix}fabric_mount_cylinder_link">
+      <visual>
+        <origin xyz="0 0 -0.01" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.35" length="0.02"/>
+        </geometry>
+        <material name="cyan" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 -0.01" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.35" length="0.02"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 -0.01" rpy="0 0 0"/>
+        <mass value="1.0"/>
+        <inertia
+            ixx="0.01"
+            ixy="0.0"
+            ixz="0.0"
+            iyy="0.01"
+            iyz="0.0"
+            izz="0.01"
+        />
+      </inertial>
+    </link>
+    
+    <!-- Top Cylinder Joint Definition -->
+    <joint name="${robot_prefix}fabric_mount_cylinder_joint" type="fixed">
+        <origin xyz="0 0 0.0" rpy="0 0 0" />
+        <parent link="${robot_prefix}fabric_mount_link"/>
+        <child link="${robot_prefix}fabric_mount_cylinder_link" />
+    </joint>
+
   </xacro:macro>
 
   <xacro:fabric_stand robot_prefix="${robot_prefix}">
@@ -323,11 +360,11 @@
       <updateRate>50.0</updateRate>
       <bodyName>${robot_prefix}imu_link</bodyName>
       <topicName>imu/data</topicName>
-      <accelDrift>0.005 0.005 0.005</accelDrift>
+      <accelDrift>0.0001 0.0001 0.0001</accelDrift>
       <accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
-      <rateDrift>0.005 0.005 0.005 </rateDrift>
+      <rateDrift>0.0001 0.0001 0.0001 </rateDrift>
       <rateGaussianNoise>0.005 0.005 0.005 </rateGaussianNoise>
-      <headingDrift>0.005</headingDrift>
+      <headingDrift>0.0001</headingDrift>
       <headingGaussianNoise>0.005</headingGaussianNoise>
     </plugin>
   </gazebo>
@@ -440,7 +477,7 @@
       <!-- <bodyName>${robot_prefix}fabric_mount_link</bodyName> -->  <!-- Only base link and moving links works, fixed ones don't -->
       <topicName>ground_truth/odom</topicName>
       <updateRate>50.0</updateRate>
-      <gaussianNoise>0.01</gaussianNoise>
+      <gaussianNoise>0.0001</gaussianNoise>
     </plugin>
   </gazebo>
 
