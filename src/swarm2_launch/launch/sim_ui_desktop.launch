@@ -11,6 +11,7 @@
 
     <!-- Launch RVIZ specific to Fabric + Multi robot simulation -->
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find swarm2_launch)/config/rviz/sim_robots.rviz" output="screen"/>
+    <node type="rviz" name="rviz_2" pkg="rviz" args="-d $(find swarm2_launch)/config/rviz/sim_robots_top_down.rviz" output="screen"/>
 
     <!-- RQT EZ publisher -->
     <!-- <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen">

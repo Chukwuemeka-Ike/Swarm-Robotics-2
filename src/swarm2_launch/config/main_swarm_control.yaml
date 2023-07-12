@@ -5,7 +5,7 @@ frame_sync_topic_name: /ui/tf_changer
 robot_enable_status_topic_name: /ui/robot_enable_status
 
 N_robots: 4
-theta_scale: 100.0 # (m/s)/(rad/s)
+theta_scale: 1.0 # (m/s)/(rad/s)
 
 just_robot_vel_input_topic_name_0: /ui/just_robot_vel_1
 state_publish_topic_name_0: /d1/desired_state
