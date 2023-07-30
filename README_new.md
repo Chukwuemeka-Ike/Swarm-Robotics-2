@@ -41,6 +41,7 @@ sudo apt-get install -y ros-noetic-spacenav-node;
 sudo apt-get install -y ros-noetic-tf2-sensor-msgs;
 sudo apt-get install -y ros-noetic-imu-tools;
 sudo apt-get install -y ros-noetic-imu-pipeline; # for imu_transformer
+sudo apt-get install -y ros-noetic-navigation; # for navigation stack
 
 # PYTHON RELATED
 sudo apt-get install -y python3-pip;
@@ -89,6 +90,11 @@ sudo apt-get install -y ros-noetic-dingo-simulator;
 # ros-noetic-twist-mux
 # ros-noetic-twist-mux-msgs
 # ros-noetic-uuid-msgs
+sudo apt install ros-noetic-dingo-navigation;
+# Installs:
+# ros-noetic-dingo-navigation 
+# ros-noetic-gmapping 
+# ros-noetic-openslam-gmapping
 
 # ONLY ON PHYSICAL ROBOTS, NEED TO INSTALL
 sudo apt-get install -y ros-noetic-roslint; # needed to build dingo_base package

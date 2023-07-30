@@ -1,0 +1,21 @@
+# NavfnROS:
+#   allow_unknown: true # Specifies whether or not to allow navfn to create plans that traverse unknown space.
+#   default_tolerance: 0.1 # A tolerance on the goal point for the planner.
+
+# GlobalPlanner:
+allow_unknown: true
+default_tolerance: 0.1 # A tolerance on the goal point for the planner.
+use dijkstra: true
+use quadratic: true
+use grid path: false
+old navfn behavior: false
+visualize potential: false # true 
+
+lethal_cost: 253 # default (int) 253
+neutral_cost: 55 # default (int) 50
+cost_factor: 0.55 # default (double) 3.0
+publish_potential: true
+
+orientation_mode: 1 # (None=0, Forward=1, Interpolate=2, ForwardThenInterpolate=3, Backward=4, Leftward=5, Rightward=6) 
+
+outline_map: true # default: true, Outlines the global costmap with lethal obstacles. For the usage of a non static (rolling window) global costmap this needs to be set to false

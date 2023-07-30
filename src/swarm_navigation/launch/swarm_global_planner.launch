@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="static_tf0" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /odom 50"/>
+
+  <!-- Run the map server -->
+  <arg name="map_file" default="$(find swarm_navigation)/maps/highbay_map.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" output="screen" />
+
+  <!-- Global Costmap STANDALONE, USE ONLY TO TEST -->
+  <!-- <node name="global_costmap" pkg="costmap_2d" type="costmap_2d_node" output="screen">
+    <rosparam file="$(find swarm_navigation)/params/global_costmap_params.yaml" command="load" ns="costmap"/>
+  </node> -->
+
+  <!-- Global planner -->
+  <node name="global_planner" pkg="global_planner" type="planner" output="screen">
+    <rosparam file="$(find swarm_navigation)/params/global_planner_params.yaml" command="load" ns="planner"/>
+
+    <remap from="/global_planner/goal" to="/move_base_simple/goal"/>
+
+    <rosparam file="$(find swarm_navigation)/params/global_costmap_params.yaml" command="load" ns="costmap"/>
+
+  </node>
+
+</launch>

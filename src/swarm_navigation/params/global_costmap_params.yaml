@@ -1,0 +1,43 @@
+# footprint: [[1.0,-1.0], [1.0,1.0], [-1.0,1.0], [-1.0,-1.0]] # a default value for swarm shape to be updated with robot positions
+# footprint: [[-0.5, -0.33], [-0.5, 0.33], [0.5, 0.33], [0.5, -0.33]]
+footprint: [[0.5, 0.5], [0.5, -0.5], [-0.5, -0.5], [-0.5, 0.5]]
+footprint_padding: 0.01
+
+global_frame: map
+robot_base_frame: base_link # swarm_frame #base_link
+
+transform_tolerance: 0.5 # seconds
+
+update_frequency: 5.0 # freq. for the map to be updated
+publish_frequency: 3.0 # for display information the map
+
+always_send_full_costmap: false # true # default: false
+   
+width: 14.0
+height: 14.0
+resolution: 0.1
+   
+origin_x: -7.0
+origin_y: -7.0
+   
+static_map: true
+rolling_window: false
+
+plugins:
+   - {name: static_layer, type: "costmap_2d::StaticLayer"}
+   - {name: inflater_layer, type: "costmap_2d::InflationLayer"}
+   # - {name: obstacles_layer, type: "costmap_2d::ObstacleLayer"}
+
+#layer definitions
+static_layer:
+   map_topic: /map
+   subscribe_to_updates: true
+
+inflater_layer:
+   inflation_radius: 3.00 # inflation radius should be set to the MAXIMUM distance from obstacles at which a cost should be incurred. If you set it too tight, to footprint parameter can be ineffective. Ideally, the minimum value of this radius should be the radius of the minimum circle that encircles the footprint. The rule of thumb I come up with is 4x of the circumscribed circle radius of the footprint
+   cost_scaling_factor: 3.3 # rule of thumb I come up with is -ln(128/253)/(r_i-r_c) ~= 0.681/(r_i-r_c)
+
+# obstacles_layer:
+#   observation_sources: scan
+#   scan: {sensor_frame: front_laser, data_type: LaserScan, topic: front/scan, marking: true, clearing: true, min_obstacle_height: -2.0, max_obstacle_height: 2.0, obstacle_range: 2.5, raytrace_range: 3.0}
+
