@@ -26,8 +26,8 @@ def control_law(desired_state, position, vel_limit, K):
 	# vel_cmd = rot_mat(-position[2][0]).dot(u_world)
 	vel_cmd = u_world
 
-	# vel_cmd[vel_cmd >  vel_limit] =  vel_limit[vel_cmd >  vel_limit]
-	# vel_cmd[vel_cmd < -vel_limit] = -vel_limit[vel_cmd < -vel_limit]
+	vel_cmd[vel_cmd >  vel_limit] =  vel_limit[vel_cmd >  vel_limit]
+	vel_cmd[vel_cmd < -vel_limit] = -vel_limit[vel_cmd < -vel_limit]
 
 	return vel_cmd
 

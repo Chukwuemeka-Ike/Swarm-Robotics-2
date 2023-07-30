@@ -56,6 +56,7 @@ class robot_button:
         self.enabled=False
         self.motion_frame="world"
         self.button=QPushButton()
+
         self.button.setFixedSize(sizex,sizey)
         self.button.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Expanding)
         self.button.setFont(QFont('Ubuntu',13))
@@ -63,10 +64,6 @@ class robot_button:
         self.button.pressed.connect(self.button_pressed)
         
         self.publisher=rospy.Publisher(topic, Twist, queue_size=0)
-        #self.button2=QPushButton()
-        #self.button2.setFont(QFont('Ubuntu',11))
-        #self.button2.setText(self.text2)
-        #self.button2.pressed.connect(self.button_pressed2)
 
     def publish_out_message(self):
         message=FrameTwist()
@@ -265,6 +262,7 @@ class SWARMGUI(QtWidgets.QMainWindow):
         self.Robotlayout.addWidget(self.robot3led,1,2)
         """
         rospy.Timer(rospy.Duration(0.1), self.callback_gui)
+
         #needed_robot_nodes=[]
         self.plus = os.path.join(rospkg.RosPack().get_path('swarm_gui'), 'resource', '+.PNG')
         self.minus = os.path.join(rospkg.RosPack().get_path('swarm_gui'), 'resource', '-.PNG')

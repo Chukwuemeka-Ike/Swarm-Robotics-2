@@ -54,6 +54,8 @@ wrench_pub_rate: 100.0 # Hz, frequency to publish the fabric forces at the attac
 fabric_points_topic_name: "cloth_points" # topic name to publish the RVIZ visualization marker msgs
 fabric_points_frame_id: "map" # the reference tf frame ID that the visualization marker msgs are published in.
 
+face_tri_ids_topic_name: "face_tri_ids"
+
 # Odometry topics that publishes robot positions to the fabric simulator
 odom_01_topic_name: "d1/ground_truth/fabric_mount/odom"
 odom_02_topic_name: "d2/ground_truth/fabric_mount/odom"
