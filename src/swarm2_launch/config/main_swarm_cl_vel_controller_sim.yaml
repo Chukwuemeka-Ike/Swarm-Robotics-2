@@ -1,7 +1,7 @@
 feedback_gain_xy: 1.0
 feedback_gain_theta: 2.0
 
-cmd_input_topic_name: '/swarm/desired_state' # desired robot pose and velocity
+cmd_input_topic_name: 'swarm/desired_state' # desired robot pose and velocity
 
 position_feedback_topic_name: 'swarm_frame/odom'
 control_cmd_publish_topic_name: '/ui/desired_swarm_vel'

@@ -1,0 +1,36 @@
+# Parameters for costmap_parameter_updater object
+costmap_updater_planner_name: "main/global_planner"
+costmap_updater_costmap_name: "costmap"
+costmap_updater_inflation_layer_name: "inflater_layer"
+costmap_updater_service_wait_timeout: 2
+costmap_updater_num_trials: 5
+costmap_updater_trial_intervals: 0.5
+
+footprint_topic_name: "swarm_footprint" # subscribed
+plan_request_goal_topic_name: "global_planner/goal" # published
+plan_response_path_topic_name: "global_planner/planner/plan" # subscribed
+
+simple_goal_topic_name: "/move_base_simple/goal" # subscribed
+
+saved_path_file_topic_name: "path_csv_file_name" # subscribed, eg. "home/burak/VINYL_716262_path.csv"
+
+position_feedback_topic_name: "swarm_frame/odom" # subscribed
+
+desired_state_topic_name: "swarm/desired_state" # published
+
+pub_rate_desired_state: 100.0 
+waypoint_update_rate: 50.0 # update rate of the waypoints if they are reached
+
+waypoint_dist_tolerance: 0.05 # meters
+waypoint_ori_tolerance: 3.0 # degrees
+
+# planner_trigger_dist_threshold: Distance difference threshold between the current position and the goal position that triggers the global planner to plan 
+planner_trigger_dist_threshold: 0.15 # meters
+
+wait_for_plan_timeout: 5.0 # seconds
+new_plan_recentness_threshold: 1.0 # seconds
+
+update_costmaps_on_every_footprint: True # Note: updating costmaps takes some time, use False to update costmaps only when there is a plan request
+test_mode: False # If true, planner calculated plans will not be executed, only published for rviz visualizations
+
+

@@ -19,5 +19,18 @@
         <rosparam file="$(find swarm2_launch)/config/main_swarm_cl_vel_controller_sim.yaml"/>
     </node>
 
+    <!-- Launch Swarm Navigation Global Planner -->
+    <include file="$(find swarm_navigation)/launch/swarm_global_planner.launch">
+        <arg name="map_file" value="$(find swarm_navigation)/maps/highbay_map.yaml" />
+
+        <arg name="global_planner_config_file" value="$(find swarm_navigation)/params/global_planner_params.yaml"/>
+        <arg name="global_costmap_config_file" value="$(find swarm_navigation)/params/global_costmap_params.yaml"/>
+    </include>
+
+    <node name="swarm_path_executer" pkg="swarm_navigation" type="swarm_path_executer.py" output="screen">
+        <rosparam file="$(find swarm2_launch)/config/main_swarm_path_executer.yaml"/>
+    </node>
+
+
 </group>
 </launch>

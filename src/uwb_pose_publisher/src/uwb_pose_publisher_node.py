@@ -159,7 +159,7 @@ class UWBPosePublisher():
             # Check the time difference between the last valid uwb readings. They must be "almost" simultanous.
             if abs(self.last_uwb_tag_2_time - self.last_uwb_tag_1_time) < self.uwb_wait_timeout:
                 # Ignore the readings if they are too old.
-                dt =  rospy.Time.now().to_sec()- min(self.last_uwb_tag_1_time, self.last_uwb_tag_2_time) 
+                dt =  rospy.Time.now().to_sec() - min(self.last_uwb_tag_1_time, self.last_uwb_tag_2_time) 
                 if dt > 0.25:
                     rospy.logwarn("UWB timesteps are older than 0.25 s | dt = " + str(dt))
                     return

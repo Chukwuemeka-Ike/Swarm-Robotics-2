@@ -4,12 +4,15 @@ just_swarm_frame_vel_input_topic_name: /ui/just_swarm_vel
 frame_sync_topic_name: /ui/tf_changer
 robot_enable_status_topic_name: /ui/robot_enable_status
 
+footprint_publish_topic_name: "swarm_footprint"
+
 N_robots: 4
 theta_scale: 1.0 # (m/s)/(rad/s)
 
 just_robot_vel_input_topic_name_0: /ui/just_robot_vel_1
 state_publish_topic_name_0: /d1/desired_state
 tf_frame_name_0: tf_robot_1
+footprint_0: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
 vel_lim_x_0: 1.3
 vel_lim_y_0: 1.3
 vel_lim_theta_0: 4.0 
@@ -20,6 +23,7 @@ acc_lim_theta_0: 2.0
 just_robot_vel_input_topic_name_1: /ui/just_robot_vel_2
 state_publish_topic_name_1: /d2/desired_state
 tf_frame_name_1: tf_robot_2
+footprint_1: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
 vel_lim_x_1: 1.3
 vel_lim_y_1: 1.3
 vel_lim_theta_1: 4.0 
@@ -30,6 +34,7 @@ acc_lim_theta_1: 2.0
 just_robot_vel_input_topic_name_2: /ui/just_robot_vel_3
 state_publish_topic_name_2:  /d3/desired_state
 tf_frame_name_2: tf_robot_3
+footprint_2: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
 vel_lim_x_2: 1.3
 vel_lim_y_2: 1.3
 vel_lim_theta_2: 4.0 
@@ -40,10 +45,10 @@ acc_lim_theta_2: 2.0
 just_robot_vel_input_topic_name_3: /ui/just_robot_vel_4
 state_publish_topic_name_3: /d4/desired_state
 tf_frame_name_3: tf_robot_4
+footprint_3: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
 vel_lim_x_3: 1.3
 vel_lim_y_3: 1.3
 vel_lim_theta_3: 4.0 
 acc_lim_x_3: 1.0
 acc_lim_y_3: 1.0
-acc_lim_theta_3: 2.0  
-
+acc_lim_theta_3: 2.0

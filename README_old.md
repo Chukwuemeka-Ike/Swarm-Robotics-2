@@ -32,137 +32,23 @@ Simply run
 ## Install some dependencies of Dingo Gazebo Simulation and Others
 
 ``` bash
-# CUSTOM RELATED
-sudo apt-get install -y sshpass;
-
+sudo apt-get install -y ros-noetic-lms1xx; # ROS driver for the SICK LMS1xx line of LIDARs.
+sudo apt-get install -y ros-noetic-velodyne-simulator; # Metapackage of Velodyne LIDAR simulation component
+sudo apt-get install -y ros-noetic-hector-gazebo-plugins;
+sudo apt-get install -y ros-noetic-ridgeback-gazebo-plugins;
+sudo apt-get install -y ros-noetic-interactive-marker-twist-server;
+sudo apt-get install -y ros-noetic-ridgeback-control;
 sudo apt-get install -y ros-noetic-rqt-ez-publisher;
+
 sudo apt-get install -y spacenavd;
 sudo apt-get install -y ros-noetic-spacenav-node;
+sudo apt-get install -y ros-noetic-twist-mux;
+sudo apt-get install -y ros-noetic-robot-localization;
+sudo apt-get install -y ros-noetic-microstrain-inertial-driver;
+sudo apt-get install -y ros-noetic-microstrain-inertial-rqt;
 sudo apt-get install -y ros-noetic-tf2-sensor-msgs;
 sudo apt-get install -y ros-noetic-imu-tools;
 sudo apt-get install -y ros-noetic-imu-pipeline; # for imu_transformer
-sudo apt-get install -y ros-noetic-navigation; # for navigation stack
-
-# PYTHON RELATED
-sudo apt-get install -y python3-pip;
-pip3 install pyserial;
-pip3 install quadprog;
-pip3 install pandas;
-pip3 install pygame;
-pip3 install scipy;
-pip3 install numpy==1.21; # needed to resolve the issue "AttributeError: module 'numpy' has no attribute 'typeDict'"
-
-# DINGO RELATED
-sudo apt-get install -y ros-noetic-dingo-desktop;
-# Installs:
-# ros-noetic-dingo-msgs 
-# ros-noetic-dingo-viz
-# ros-noetic-dingo-description (duplicate from dingo-desktop)
-# ros-noetic-fath-pivot-mount-description (duplicate from dingo-desktop)
-# ros-noetic-flir-camera-description (duplicate from dingo-desktop)
-# ros-noetic-lms1xx (duplicate from dingo-desktop)
-# ros-noetic-realsense2-description (duplicate from dingo-desktop)
-# ros-noetic-velodyne-description (duplicate from dingo-desktop)
-sudo apt-get install -y ros-noetic-dingo-simulator;
-# Installs:
-# ros-noetic-dingo-control 
-# ros-noetic-dingo-gazebo 
-# ros-noetic-dingo-description (duplicate from dingo-desktop)
-# ros-noetic-fath-pivot-mount-description (duplicate from dingo-desktop)
-# ros-noetic-flir-camera-description (duplicate from dingo-desktop)
-# ros-noetic-lms1xx (duplicate from dingo-desktop)
-# ros-noetic-realsense2-description (duplicate from dingo-desktop)
-# ros-noetic-velodyne-description (duplicate from dingo-desktop)
-# evemu-tools 
-# evtest 
-# joystick 
-# libevemu3 
-# libgeographic-dev 
-# libgeographic19 
-# ros-noetic-geographic-msgs
-# ros-noetic-hector-gazebo-plugins
-# ros-noetic-interactive-marker-twist-server
-# ros-noetic-joy 
-# ros-noetic-ridgeback-control
-# ros-noetic-ridgeback-gazebo-plugins
-# ros-noetic-robot-localization 
-# ros-noetic-teleop-twist-joy
-# ros-noetic-twist-mux
-# ros-noetic-twist-mux-msgs
-# ros-noetic-uuid-msgs
-sudo apt install ros-noetic-dingo-navigation;
-# Installs:
-# ros-noetic-dingo-navigation 
-# ros-noetic-gmapping 
-# ros-noetic-openslam-gmapping
-
-# ONLY ON PHYSICAL ROBOTS, NEED TO INSTALL
-sudo apt-get install -y ros-noetic-roslint; # needed to build dingo_base package
-sudo apt-get install -y ros-noetic-gazebo-msgs;
-sudo apt-get install -y ros-noetic-dingo-robot; # AFTER ADDING CLEARPATH KEYS (see https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo/#installing-from-debian-packages)
-# INSTALLS:
-# can-utils 
-# daemontools 
-# evemu-tools 
-# evtest 
-# joystick 
-# libevemu3 
-# libgeographic-dev 
-# libgeographic19 
-# libpcap0.8-dev
-# net-tools
-# python3-serial
-# ros-noetic-ddynamic-reconfigure 
-# ros-noetic-dingo-base 
-# ros-noetic-dingo-bringup
-# ros-noetic-dingo-control 
-# ros-noetic-dingo-description 
-# ros-noetic-dingo-msgs 
-# ros-noetic-dingo-tests 
-# ros-noetic-fath-pivot-mount-description 
-# ros-noetic-flir-camera-description
-# ros-noetic-geographic-msgs 
-# ros-noetic-image-exposure-msgs 
-# ros-noetic-imu-filter-madgwick
-# ros-noetic-interactive-marker-twist-server 
-# ros-noetic-joy 
-# ros-noetic-laser-proc 
-# ros-noetic-lms1xx 
-# ros-noetic-sick-tim 
-# ros-noetic-mavros-msgs (IMU related)
-# ros-noetic-microstrain-inertial-driver (IMU related)
-# ros-noetic-microstrain-inertial-msgs (IMU related)
-# ros-noetic-nmea-msgs (IMU related)
-# ros-noetic-puma-motor-driver
-# ros-noetic-puma-motor-msgs 
-# ros-noetic-librealsense2
-# ros-noetic-realsense2-camera 
-# ros-noetic-realsense2-description
-# ros-noetic-ridgeback-control 
-# ros-noetic-robot-localization 
-# ros-noetic-robot-upstart
-# ros-noetic-rosserial-msgs 
-# ros-noetic-rosserial-python 
-# ros-noetic-rosserial-server 
-# ros-noetic-serial
-# ros-noetic-socketcan-interface 
-# ros-noetic-spinnaker-camera-driver
-# ros-noetic-statistics-msgs 
-# ros-noetic-teleop-twist-joy 
-# ros-noetic-twist-mux 
-# ros-noetic-twist-mux-msgs
-# ros-noetic-urg-c 
-# ros-noetic-urg-node 
-# ros-noetic-uuid-msgs 
-# ros-noetic-velodyne-description
-# ros-noetic-velodyne-driver 
-# ros-noetic-velodyne-laserscan 
-# ros-noetic-velodyne-msgs
-# ros-noetic-velodyne-pointcloud 
-# ros-noetic-wfov-camera-msgs 
-# socat
-
-
 ```
 
 ## Building Steps
@@ -175,17 +61,30 @@ rm -rf {*,.*};
 
 git clone https://github.com/burakaksoy/Swarm-Robotics-2.git .;
 cd src;
-git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git; # only on DESKTOP
-git clone https://github.com/burakaksoy/RVizMeshVisualizer.git; # only on DESKTOP
-git clone https://github.com/burakaksoy/uwb_gazebo_plugin; # only on DESKTOP
+git clone -b melodic-devel https://github.com/burakaksoy/dingo.git;
+# includes the packages:
+# dingo_control
+# dingo_description
+# dingo_msgs
+# dingo_navigation
+git clone https://github.com/burakaksoy/dingo_simulator.git;
+# includes the packages:
+# dingo_gazebo
+# dingo_simulator
+git clone https://github.com/burakaksoy/dingo_desktop.git;
+# includes the packages:
+# dingo_desktop
+# dingo_viz
+git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git;
+git clone https://github.com/burakaksoy/RVizMeshVisualizer.git;
+git clone https://github.com/burakaksoy/uwb_gazebo_plugin;
 
 cd ..;
-catkin_make -DCATKIN_BLACKLIST_PACKAGES='dingo_base;dingo_customization' -DCMAKE_BUILD_TYPE=Release; # on DESKTOP computer 
-# catkin_make -DCATKIN_BLACKLIST_PACKAGES='swarm_gui' -DCMAKE_BUILD_TYPE=Release; # on Physical Robots
+catkin_make -DCMAKE_BUILD_TYPE=Release;
 source devel/setup.bash;
 ```
 
-### In master computer `~/.bashrc` file, add these
+### In your `~/.bashrc` file, add these:
 
 ``` bash
 source /opt/ros/noetic/setup.bash
@@ -204,19 +103,6 @@ export IGN_FILE_PATH=~/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/lab_g
 # TO KILL GAZEBO CLIENT AND SERVER QUICKLY:
 alias killg='killall gzclient && killall gzserver && killall rosmaster'
 ```
-
-### In Dingo robot computer `~/.bashrc` file, add these
-
-```bash
-# Uncomment this to source the same ROS environment as the robot's `ros` systemd job
-if [ -f /etc/ros/setup.bash ]; then
-  source /etc/ros/setup.bash
-fi
-```
-
-### Initial setup and Customizations for Dingo Robots
-
-Make sure you complete the instruction steps at [Physical Dingo setup](#Physical-Dingo-setup) section.
 
 </details>
 
@@ -270,6 +156,61 @@ and send messages to `\cmd_vel` topic.
     <summary>Click to expand</summary>
 
 Assuming that you already did the dependancy installations and building in [**Setting up the system**](#setting-up-the-system) section.
+
+## Running the simulation in Empty World
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
+
+``` bash
+roslaunch dingo_gazebo empty_world_multi.launch
+```
+
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
+<!-- TODO: ADD image here -->
+![View in empty world](./.imgs/empty_world_multi.png)
+
+## Running the simulation in CII 8th Floor Lab
+This is an example lab environment to visualize the scales of Dingo robots.
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together in CII 8th floor lab.
+
+``` bash
+roslaunch dingo_gazebo empty_lab_multi.launch
+```
+
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but more realistic.
+<!-- TODO: ADD image here -->
+![View in CII 8th Floor Lab](./.imgs/empty_lab_multi.png)
+
+## Running the simulation in Empty World with ground truth
+This command launches the simulation with ground truth reported TF frames to RVIZ. Again, launching the corresponding RVIZ and the rqt_ez_publisher is embedded all together. 
+
+``` bash
+roslaunch dingo_gazebo empty_world_multi_ground_truth.launch
+```
+
+Note that RVIZ TF frames are reported by `message_to_tf` package that uses the _ground truth_ data coming from `gazebo_ros_p3d` plugin, hence it is exact representation of the Gazebo World.
+Therefore, this command does not launch the Gazebo client GUI to save computational power, but could be re-enabled with gui parameter set to true in the launch file.
+<!-- TODO: ADD image here -->
+![Empty World with ground truth](./.imgs/empty_world_multi_ground_truth.png)
+
+## Running the simulation in Demonstration Floor - Highbay
+
+This command launches the corresponding RVIZ and the rqt_ez_publisher all together. 
+
+``` bash
+roslaunch dingo_gazebo empty_highbay_multi.launch
+```
+
+Note that RVIZ TF frames are reported by `robot_localization` package that uses the _odometry_ and _IMU_ information, hence drifts after a while, but it is more realistic in that sense.
+<!-- TODO: ADD image here -->
+![View in Empty Highbay](./.imgs/empty_highbay_multi.png)
+
+For a simulation that includes the representative workstations and the workers run:
+
+``` bash
+roslaunch dingo_gazebo highbay_multi.launch
+```
+
+![View in Highbay](./.imgs/highbay_multi.png)
 
 ## Running the simulation in Demonstration Floor - Highbay with ground truth
 
@@ -498,11 +439,70 @@ This will show all active connections and their IP addresses, including your rob
 network, and the IP address assigned to the robot's computer.
 </details>
 
+## Dingo Setup for Remote Host
 
-## Needed Customizations on a factory fresh Dingo-O robot
-**WARNING: You may want to create a backup of the edited files before begin the process described here.**
-To make the dingo robots work as desired in this repository, there are some customizations needed.  
+Once each robot is connected to the wireless network with static IP addresses (that can be done through the router settings. We set the IP addresses as specified in the table at the top this document), we set each to use the same ROS master. To do
+this do the following on each robot. First, run 
 
-Follow the instructions in `ReadMe.md` file of in `src/dingo_customization/` of this repository.
+```bash
+sudo nano /usr/sbin/ros-start
+```
+
+In the *ros-start* file, change the line `export ROS_MASTER_URI=http://127.0.0.1:11311` to  
+
+```bash
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+export ROS_IP=192.168.1.101 (USE THE CORRECT IP ADRESS HERE)
+```
+
+and comment out the line `export ROS_HOSTNAME=$(hostname)`
+to make sure that the robot uses the host machine as its ROS Master. 
+
+The reason of doing this comes from the fact that the Clearpath has setup the starting of the ROS nodes of the robot as a service that is initated during the boot-up. [For further information about this see this link.](https://roboticsbackend.com/make-ros-launch-start-on-boot-with-robot_upstart/). Clearpath created a `dingo_bringup` package to achieve this service behaviour. The installation file is given [here](https://github.com/dingo-cpr/dingo_robot/blob/noetic-devel/dingo_bringup/scripts/install), and the step of doing this installation on a fresh install from scracth is explained in [here](https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo#installing-dingo-software).
+
+To make sure that ros.service by Clearpath starts after the network is really online, 
+edit `ros.service` file with command
+`sudo nano /lib/systemd/system/ros.service`
+and add the following lines  
+
+```txt
+After=network-online.target
+Wants=network-online.target
+```
+
+in place of the line
+
+```txt
+After=network.target
+```
+
+[For further information about this above see this link.](https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/)
+
+After these changes, also add the following lines in the master computer's `~/.bashrc` file:  
+
+```bash
+export ROS_IP=192.168.1.100
+export ROS_MASTER_URI=http://192.168.1.100:11311/
+```
+
+**Note that these changes on the robots will make the robots to look for the master computer running the `roscore` command while they are booting. If the `roscore` is not running on the master computer during the booting of the robots, the robots will be able to boot correctly and connect to the WiFi. However, the `ros.service` of `systemctl` will fail and therefore the robot will not be able to move (the comms and Wi-Fi indicator LEDs will be off on the robot's HMI interface). If you run the `roscore` command on the master computer after the robots are booted up, you need to manually start the `ros.service` on the robots by ssh'ing into them. This is achieved by running this command on the robot terminals:**  
+
+```bash
+sudo systemctl start ros.service
+```
+
+## Namespacing the Dingo Robots
+
+These directions are for the Ridgeback, but it's the same process for the Dingo robots. The goal is to modify the automatic roslaunch files to do the following:
+
+* Add namespacing to prevent naming conflicts
+* Add e-stop functionality
+* Add scaling for forward and inverse kinematics
+
+Following https://www.clearpathrobotics.com/assets/guides/kinetic/ridgeback/startup.html
+
+In the `/etc/ros/kinetic/ros.d` directory of the Dingo, move the existing files and copy the three files in the TODO [`ridgeback_startup`](https://github.com/rpiRobotics/ARM-20-02-C-15-Swarm-Robotics/tree/main/ridgeback_startup) folder. These new launch files put all the Dingo nodes and topics into the proper namespace, for example `/d1,/d2,/d3,/d4`.
+
+You can run this automatically by running TODO `./ridgeback_namespacing.bash`. This will move all the files currently in `/etc/ros/kinetic/ros.d` to the folder `/home/administrator/backup_ros_d`.
 
 </details>

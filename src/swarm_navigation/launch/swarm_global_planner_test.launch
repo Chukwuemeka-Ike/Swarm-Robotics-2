@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <!-- <node name="static_tf0" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /odom 50"/> -->
+  <node name="static_tf0" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /odom 50"/>
 
   <!-- Run the map server -->
   <arg name="map_file" default="$(find swarm_navigation)/maps/highbay_map.yaml"/>
@@ -18,8 +18,8 @@
   <!-- Global planner -->
   <node name="global_planner" pkg="global_planner" type="planner" output="screen">
     <rosparam file="$(arg global_planner_config_file)" command="load" ns="planner"/>
-    
-    <!-- <remap from="/global_planner/goal" to="/move_base_simple/goal"/> -->
+
+    <remap from="/global_planner/goal" to="/move_base_simple/goal"/>
 
     <rosparam file="$(arg global_costmap_config_file)" command="load" ns="costmap"/>
   </node>

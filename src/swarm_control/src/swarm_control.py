@@ -17,6 +17,9 @@ import numpy as np
 
 import time
 
+import shapely
+import shapely.geometry
+import shapely.affinity
 
 '''
 swarm_control.py
@@ -68,6 +71,7 @@ class Swarm_Control:
         just_robot_vel_input_topic_names = ['']*self.N_robots
         state_publish_topic_names = ['']*self.N_robots
         self.tf_frame_names = ['']*self.N_robots
+        self.footprints = [None]*self.N_robots
         self.vel_pubs = [0]*self.N_robots
         self.enabled_robots=[]
         self.v_max = np.zeros((3, self.N_robots))
@@ -78,6 +82,7 @@ class Swarm_Control:
             just_robot_vel_input_topic_names[i] = rospy.get_param('~just_robot_vel_input_topic_name_' + str(i))
             state_publish_topic_names[i] = rospy.get_param('~state_publish_topic_name_' + str(i))
             self.tf_frame_names[i] = rospy.get_param('~tf_frame_name_' + str(i))
+            self.footprints[i] = np.array(rospy.get_param('~footprint_' + str(i))) # each element in the footprints list has an Nx2 numpy array that represents the footprint coordinates in the robot center where N is the number points in the footprint of the robot.
 
             self.v_max[0, i] = rospy.get_param('~vel_lim_x_' 	 + str(i))
             self.v_max[1, i] = rospy.get_param('~vel_lim_y_' 	 + str(i))
@@ -108,11 +113,19 @@ class Swarm_Control:
         self.last_timestep_requests = {}
         self.v_robots_prev = np.zeros((3,self.N_robots))
 
-        # TF publish loop
-        rate = rospy.Rate(30) # 30hz
-        while not rospy.is_shutdown():
-            self.publish_tf_frames()
-            rate.sleep()
+        # Swarm footprint polygon publisher
+        self.footprint_publish_topic_name = rospy.get_param('~footprint_publish_topic_name', "swarm_footprint")
+        self.footprint_pub = rospy.Publisher(self.footprint_publish_topic_name, geometry_msgs.msg.PolygonStamped, queue_size=1)
+
+
+        # TF publish timer
+        tf_update_rate = 30.0
+        rospy.Timer(rospy.Duration(1.0 / tf_update_rate), self.publish_tf_frames)
+
+        # Footprint publish timer
+        footprint_update_rate = 3.0
+        rospy.Timer(rospy.Duration(1.0 / footprint_update_rate), self.publish_formation_footprint_polygon)
+
 
     def robot_enable_changer(self,data):
         number=data.data
@@ -234,7 +247,7 @@ class Swarm_Control:
             return 0.0
 
     
-    def publish_tf_frames(self):
+    def publish_tf_frames(self,event):
         tf_swarm_frame = xyt2TF(self.swarm_xyt, "map", "swarm_frame")
         self.tf_broadcaster.sendTransform(tf_swarm_frame)
 
@@ -242,6 +255,60 @@ class Swarm_Control:
             if(self.enabled_robots[i]):
                 tf_robot_i = xyt2TF(self.robots_xyt[:,i], "swarm_frame", self.tf_frame_names[i])
                 self.tf_broadcaster.sendTransform(tf_robot_i)
+
+
+    def publish_formation_footprint_polygon(self,event):
+        if sum(self.enabled_robots) == 0:
+            return
+        
+        # Find the points in the active formation
+        coords = []
+        coords.append([0.0,0.0]) # Include the location of the swarm frame to the footprint
+        default_footprint = [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
+        for point in default_footprint:
+            coords.append(point)
+
+        for i in range(self.N_robots):
+            if(self.enabled_robots[i]):
+                xyt = self.robots_xyt[:,i].flatten() # in swarm frame pose
+
+                robot_pts = self.footprints[i] # Nx2
+                # convert to shapely multi point object
+                robot_pts_multi_pt = shapely.geometry.MultiPoint(robot_pts)
+                # rotate
+                robot_pts_multi_pt = shapely.affinity.rotate(robot_pts_multi_pt, xyt[2], origin=(0,0), use_radians=True)
+                # translate
+                robot_pts_multi_pt = shapely.affinity.translate(robot_pts_multi_pt, xoff=xyt[0], yoff=xyt[1])
+
+                for point in robot_pts_multi_pt.geoms:
+                    coords.append(list(point.coords[0]))
+
+        # Find the convex hull of the points with shapely
+        multi_pt = shapely.geometry.MultiPoint(coords)
+        hull = multi_pt.convex_hull
+        
+        # NOTE: convex_hull will return a polygon if your hull contains more than two points. If it only contains two points, you'll get a LineString, and if it only contains one point, you'll get a Point.
+
+        # Convert the hull points to ROS Point32 messages
+        polygon = []
+        if hull.geom_type == 'Polygon':
+            for pt in list(hull.exterior.coords):
+                point32 = geometry_msgs.msg.Point32()
+                point32.x = pt[0]
+                point32.y = pt[1]
+                point32.z = 0  # assuming 2D coordinates
+                polygon.append(point32)
+        else:
+            rospy.loginfo("Not enough points to form a polygon.")
+            return
+        
+        # Prepare the msg and publish
+        msg = geometry_msgs.msg.PolygonStamped()
+        msg.header.stamp = rospy.Time.now()
+        msg.header.frame_id = "swarm_frame"  # replace with appropriate frame
+        msg.polygon.points = polygon
+        self.footprint_pub.publish(msg)
+
             
 def rot_mat_3d(theta):
     c, s = np.cos(theta), np.sin(theta)
