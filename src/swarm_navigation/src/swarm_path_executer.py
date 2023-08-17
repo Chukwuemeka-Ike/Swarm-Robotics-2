@@ -12,6 +12,9 @@ import geometry_msgs.msg
 import nav_msgs.msg
 import std_msgs.msg
 
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
+
 import tf_conversions # quaternion stuff
 
 from costmap_parameter_updater import * # CostmapParameterUpdater class
@@ -62,11 +65,42 @@ class PathExecuter:
 
         self.desired_state_topic_name = rospy.get_param("~desired_state_topic_name", "/swarm/desired_state") # published
 
-        self.test_mode = rospy.get_param("~test_mode", False) 
+        self.execution_disabled = rospy.get_param("~execution_disabled", False) 
 
         self.update_costmaps_on_every_footprint = rospy.get_param("~update_costmaps_on_every_footprint", False) 
 
+        # Service names
+        self.disable_execution_service_name = rospy.get_param("~disable_execution_service_name", "disable_path_execution")
+        self.enable_execution_service_name = rospy.get_param("~enable_execution_service_name", "enable_path_execution")
+        self.cancel_execution_service_name = rospy.get_param("~cancel_execution_service_name", "cancel_path_execution")
+        self.toggle_adjust_path_service_name = rospy.get_param("~toggle_adjust_path_service_name", "toggle_adjust_path") 
+
+        # Service to disable the path executions
+        self.srv_disable_execution = rospy.Service(self.disable_execution_service_name, 
+                                                    Trigger, 
+                                                    self.srv_disable_execution_cb)
         
+        # Service to enable the path executions
+        self.srv_enable_execution = rospy.Service(self.enable_execution_service_name, 
+                                                    Trigger, 
+                                                    self.srv_enable_execution_cb)
+
+        # Service to cancel the path executions
+        self.srv_cancel_execution = rospy.Service(self.cancel_execution_service_name, 
+                                                    Trigger, 
+                                                    self.srv_cancel_execution_cb)
+
+        # Service to toggle the manual path adjustment (enable/disable)
+        self.adjust_path_enabled = False # by default manual path adjusting is disabled
+        self.execution_disabled_last_state = None
+        self.adjusted_pos_start = np.zeros(2)
+        self.adjusted_ori_start = 0.0
+        self.adjusted_pos = np.zeros(2)
+        self.adjusted_ori = 0.0
+        self.srv_toggle_adjust_path = rospy.Service(self.toggle_adjust_path_service_name, 
+                                                    SetBool, 
+                                                    self.srv_toggle_adjust_path_cb)
+
         
         # Create a publisher for the State2D messages
         self.pub_desired_state = rospy.Publisher(self.desired_state_topic_name, State2D, queue_size=1)
@@ -113,7 +147,7 @@ class PathExecuter:
 
 
     def pub_desired_state_cb(self, event):
-        if not self.test_mode:
+        if not self.execution_disabled:
             if self.current_waypoint:
                 x = self.current_waypoint[0]
                 y = self.current_waypoint[1]
@@ -125,7 +159,7 @@ class PathExecuter:
 
 
     def update_waypoint_cb(self, event):
-        if not self.test_mode:
+        if not self.execution_disabled:
             if self.curr_pos is None or self.curr_ori is None:
                 rospy.logwarn("Current position is not yet set..")
                 return
@@ -140,6 +174,12 @@ class PathExecuter:
                     # with self.planner_plan_lock:
                     if self.plan_execute_permit:
                         self.current_waypoint = self.planner_plan.pop()
+
+                        # Update the waypoint with the manual path adjustments
+                        self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
+                        self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
+                        self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
+
                         rospy.loginfo(f'Current Plan length left: {len(self.planner_plan)}')
                         self.waypoint_reached = False
                 else: # if empty, no waypoint left to publish
@@ -166,6 +206,7 @@ class PathExecuter:
             return
         
         self.plan_execute_permit = False 
+        self.reset_path_adjustment()
 
         # Read the waypoints from the csv file
         csv_waypoints = []
@@ -239,11 +280,10 @@ class PathExecuter:
         self.plan_execute_permit = True
 
 
-
-
         
     def simple_goal_cb(self, msg):
         self.plan_execute_permit = False 
+        self.reset_path_adjustment()
 
         if self.curr_pos is None or self.curr_ori is None:
             rospy.logwarn("Current position is not yet set, the goal is ignored.")
@@ -360,6 +400,77 @@ class PathExecuter:
             self.planner_plan.append([x,y,yaw])
 
         self.planner_plan_last_update_time = rospy.Time.now().to_sec()
+
+    def srv_disable_execution_cb(self, req):
+        assert isinstance(req, TriggerRequest)
+        rospy.loginfo("Disabling the path execution if possible")
+        self.execution_disabled = True
+    
+        return TriggerResponse(success=True, message="The path execution is disabled!")
+    
+    def srv_enable_execution_cb(self, req):
+        assert isinstance(req, TriggerRequest)
+        rospy.loginfo("Enabling the path execution if possible")
+        self.execution_disabled = False
+    
+        return TriggerResponse(success=True, message="The path execution is enabled!")
+
+    def srv_cancel_execution_cb(self, req):
+        assert isinstance(req, TriggerRequest)
+        rospy.loginfo("Canceling the path execution if possible")
+        self.plan_execute_permit = False
+        self.reset_path_adjustment()
+        self.planner_plan = []
+        self.plan_execute_permit = True
+
+        return TriggerResponse(success=True, message="The path execution is canceled!")
+
+    def srv_toggle_adjust_path_cb(self,req):
+        assert isinstance(req, SetBoolRequest)
+
+        if self.curr_pos is None or self.curr_ori is None:
+            rospy.logwarn("Current position is not yet set..")
+            SetBoolResponse(False, "The manual path adjusting could not be toggled, because current swarm position is not yet set")
+            return
+
+        if req.data:
+            self.adjust_path_enabled = True
+
+            # Store the last state 
+            self.execution_disabled_last_state = self.execution_disabled
+            # Disable the path execution for the safe adjustments
+            self.execution_disabled = True
+
+            # Get the current pose of the swarm
+            self.adjusted_pos_start = self.curr_pos
+            self.adjusted_ori_start = self.curr_ori
+
+        else:
+            self.adjust_path_enabled = False
+            
+            # Set the adjustment with the updated pose
+            self.adjusted_pos = self.curr_pos - self.adjusted_pos_start
+            self.adjusted_ori = self.curr_ori - self.adjusted_ori_start
+
+            # Update the active waypoint with the manual path adjustments
+            if self.current_waypoint:
+                self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
+                self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
+                self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
+
+            # Re-enable the path execution if the last state was not disabled
+            if not self.execution_disabled_last_state:
+                self.execution_disabled = False
+
+        return SetBoolResponse(True, "The manual path adjusting is now set to: {}".format(self.adjust_path_enabled))
+    
+    def reset_path_adjustment(self):
+        # This function needs to be called everytime when there is a new goal or path request
+        self.adjust_path_enabled = False # by default manual path adjusting is disabled
+        self.adjusted_pos_start = np.zeros(2)
+        self.adjusted_ori_start = 0.0
+        self.adjusted_pos = np.zeros(2)
+        self.adjusted_ori = 0.0
 
 
 

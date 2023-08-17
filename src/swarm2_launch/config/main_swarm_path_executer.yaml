@@ -10,6 +10,12 @@ footprint_topic_name: "swarm_footprint" # subscribed
 plan_request_goal_topic_name: "global_planner/goal" # published
 plan_response_path_topic_name: "global_planner/planner/plan" # subscribed
 
+# Service address names
+disable_execution_service_name: "disable_path_execution"
+enable_execution_service_name: "enable_path_execution"
+cancel_execution_service_name: "cancel_path_execution"
+toggle_adjust_path_service_name: "toggle_adjust_path"
+
 simple_goal_topic_name: "/move_base_simple/goal" # subscribed
 
 saved_path_file_topic_name: "path_csv_file_name" # subscribed, eg. "home/burak/VINYL_716262_path.csv"
@@ -31,6 +37,7 @@ wait_for_plan_timeout: 5.0 # seconds
 new_plan_recentness_threshold: 1.0 # seconds
 
 update_costmaps_on_every_footprint: True # Note: updating costmaps takes some time, use False to update costmaps only when there is a plan request
-test_mode: False # If true, planner calculated plans will not be executed, only published for rviz visualizations
+execution_disabled: False # Sets the initial mode. If true, planner calculated plans will not be executed, only published for rviz visualizations
+
 
 
