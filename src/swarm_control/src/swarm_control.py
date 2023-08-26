@@ -21,6 +21,11 @@ import shapely
 import shapely.geometry
 import shapely.affinity
 
+from arm_msgs.srv import FleetInformation, FleetInformationRequest,\
+        MachineStatus, MachineStatusRequest,\
+        RobotAssignments, RobotAssignmentsRequest,\
+        TicketList, TicketListRequest
+
 '''
 swarm_control.py
 Alex Elias, Burak Aksoy
@@ -53,37 +58,52 @@ Parameters:
 
 # Velocity commands will only be considered if they are spaced closer than MAX_TIMESTEP
 MAX_TIMESTEP = 0.1
+log_tag = "Swarm Controller"
 
 class Swarm_Control:
     def __init__(self):
         rospy.init_node('swarm_controller', anonymous=False)
+        rospy.on_shutdown(self.shutdown)
+        rospy.loginfo(f"{log_tag}: Node started.")
 
-        # Read in all the parameters
-        desired_swarm_vel_topic_name = rospy.get_param('~desired_swarm_vel_topic_name')
-        just_swarm_frame_vel_input_topic_name = rospy.get_param('~just_swarm_frame_vel_input_topic_name')
-        sync_frame_topic_name = rospy.get_param('~frame_sync_topic_name')
-        robot_enable_status_topic_name = rospy.get_param('~robot_enable_status_topic_name')
+        # Team-level parameters. Lists of strings/ints.
+        self.team_command_topics = []
+        self.team_frame_command_topics = []
+        self.team_footprint_topics = []
+        self.tf_changer_topics = []
+        self.team_sizes = []
+        self.robot_ids = []
 
-
-        self.N_robots = rospy.get_param('~N_robots')
+        # Robot enable status and theta scale.
+        robot_enable_status_topic = rospy.get_param('~robot_enable_status_topic')
         self.theta_scale = rospy.get_param('~theta_scale')
 
-        just_robot_vel_input_topic_names = ['']*self.N_robots
-        state_publish_topic_names = ['']*self.N_robots
-        self.tf_frame_names = ['']*self.N_robots
-        self.footprints = [None]*self.N_robots
-        self.vel_pubs = [0]*self.N_robots
-        self.enabled_robots=[]
-        self.v_max = np.zeros((3, self.N_robots))
-        self.a_max = np.zeros((3, self.N_robots))
+        # Parameters for the entire fleet. These do not change with team
+        # changes and only need to be populated once.
+        # Size of the robot fleet.
+        self.fleet_size = 0
 
-        for i in range(self.N_robots):
-            self.enabled_robots.append(True)
-            just_robot_vel_input_topic_names[i] = rospy.get_param('~just_robot_vel_input_topic_name_' + str(i))
-            state_publish_topic_names[i] = rospy.get_param('~state_publish_topic_name_' + str(i))
-            self.tf_frame_names[i] = rospy.get_param('~tf_frame_name_' + str(i))
-            self.footprints[i] = np.array(rospy.get_param('~footprint_' + str(i))) # each element in the footprints list has an Nx2 numpy array that represents the footprint coordinates in the robot center where N is the number points in the footprint of the robot.
+        # These are lists of strings that will change based on current teams.
+        self.robot_frame_command_topics = []
+        self.state_publish_topics = []
+        self.virtual_robot_frame_names = []
 
+        # Request information about the fleet.
+        self.request_fleet_information()
+
+        # Robot footprints
+        self.enabled_robots = []
+        self.footprints = [None]*self.fleet_size
+        self.v_max = np.zeros((3, self.fleet_size))
+        self.a_max = np.zeros((3, self.fleet_size))
+
+        for i in range(self.fleet_size):
+            # Each element in the footprints list has an Nx2 numpy array that
+            # represents the footprint coordinates in the robot center where N
+            # is the number points in the footprint of the robot.
+            self.footprints[i] = np.array(
+                rospy.get_param('~footprint_' + str(i))
+            )
             self.v_max[0, i] = rospy.get_param('~vel_lim_x_' 	 + str(i))
             self.v_max[1, i] = rospy.get_param('~vel_lim_y_' 	 + str(i))
             self.v_max[2, i] = rospy.get_param('~vel_lim_theta_' + str(i))
@@ -91,47 +111,60 @@ class Swarm_Control:
             self.a_max[1, i] = rospy.get_param('~acc_lim_y_'	 + str(i))
             self.a_max[2, i] = rospy.get_param('~acc_lim_theta_' + str(i))
 
-        # Subscribe
-        
+            self.enabled_robots.append(True)
+
+        # Subscriber for the robot enable status.
+        rospy.Subscriber(robot_enable_status_topic, Int32, self.robot_enable_changer, queue_size=5)
+
+        # Subscribers to each robot's frame command topic.
+        self.robot_frame_command_subs = [None]*self.fleet_size
+        for i in range(self.fleet_size):
+            self.robot_frame_command_subs[i] = rospy.Subscriber(
+                self.robot_frame_command_topics[i],
+                Twist,
+                self.just_robot_velocity_callback,
+                i,
+                queue_size=1
+            )
+
+        # Publishers for individual robot desired states.
+        self.robot_command_pubs = [None]*self.fleet_size
+        for i in range(self.fleet_size):
+            self.robot_command_pubs[i] = rospy.Publisher(
+                self.state_publish_topics[i], State2D, queue_size=1
+            )
+
+        # Initialize local variables to keep track of robot frames.
+        self.robots_xyt = np.zeros((3, self.fleet_size))
+        self.robots_last_velocities = np.zeros((3, self.fleet_size))
+        self.v_robots_prev = np.zeros((3, self.fleet_size))
+        self.last_timestep_requests = {}
+
+        self.swarm_xyt = np.zeros((3,1))
         rospy.Subscriber(desired_swarm_vel_topic_name, Twist, self.desired_swarm_velocity_callback, queue_size=1)
         rospy.Subscriber(just_swarm_frame_vel_input_topic_name, Twist, self.just_swarm_frame_velocity_callback, queue_size=1)
         rospy.Subscriber(sync_frame_topic_name, PoseStamped, self.frame_changer_callback, queue_size=20)
-        rospy.Subscriber(robot_enable_status_topic_name, Int32, self.robot_enable_changer, queue_size=5)
-
-        for i in range(self.N_robots):
-            rospy.Subscriber(just_robot_vel_input_topic_names[i], Twist, self.just_robot_velocity_callback, i, queue_size=1)
-
-        # Publish
-        self.tf_broadcaster = tf2_ros.TransformBroadcaster()
-        for i in range(self.N_robots):
-            self.vel_pubs[i] = rospy.Publisher(state_publish_topic_names[i], State2D, queue_size=1)
-
-        # Initialize local variables to keep track of swarm/robot frames
-        self.swarm_xyt = np.zeros((3,1))
-        self.robots_xyt = np.zeros((3, self.N_robots))
-        self.robots_last_velocities = np.zeros((3, self.N_robots))
-        self.last_timestep_requests = {}
-        self.v_robots_prev = np.zeros((3,self.N_robots))
 
         # Swarm footprint polygon publisher
         self.footprint_publish_topic_name = rospy.get_param('~footprint_publish_topic_name', "swarm_footprint")
         self.footprint_pub = rospy.Publisher(self.footprint_publish_topic_name, geometry_msgs.msg.PolygonStamped, queue_size=1)
-
-
-        # TF publish timer
-        tf_update_rate = 30.0
-        rospy.Timer(rospy.Duration(1.0 / tf_update_rate), self.publish_tf_frames)
 
         # Footprint publish timer
         footprint_update_rate = 3.0
         rospy.Timer(rospy.Duration(1.0 / footprint_update_rate), self.publish_formation_footprint_polygon)
 
 
+        # TF Broadcasts are sent at 30Hz.
+        self.tf_broadcaster = tf2_ros.TransformBroadcaster()
+        tf_update_rate = 30.0
+        rospy.Timer(rospy.Duration(1.0 / tf_update_rate), self.publish_tf_frames)
+
+
     def robot_enable_changer(self,data):
         number=data.data
         rospy.logwarn(str(len(self.enabled_robots)))
-        rospy.logwarn(str(self.N_robots))
-        for i in range(self.N_robots-1,-1,-1):
+        rospy.logwarn(str(self.fleet_size))
+        for i in range(self.fleet_size-1,-1,-1):
             if(number>>i==1):
                 number-=pow(2,i)
                 
@@ -193,7 +226,7 @@ class Swarm_Control:
             s.twist.linear.x = v_i_world[0,i]
             s.twist.linear.y = v_i_world[1,i]
             s.twist.angular.z = v_i_world[2,i]
-            self.vel_pubs[i_total].publish(s)
+            self.robot_command_pubs[i_total].publish(s)
 
     def just_swarm_frame_velocity_callback(self, data):
         '''
@@ -251,7 +284,7 @@ class Swarm_Control:
         tf_swarm_frame = xyt2TF(self.swarm_xyt, "map", "swarm_frame")
         self.tf_broadcaster.sendTransform(tf_swarm_frame)
 
-        for i in range(self.N_robots):
+        for i in range(self.fleet_size):
             if(self.enabled_robots[i]):
                 tf_robot_i = xyt2TF(self.robots_xyt[:,i], "swarm_frame", self.tf_frame_names[i])
                 self.tf_broadcaster.sendTransform(tf_robot_i)
@@ -268,7 +301,7 @@ class Swarm_Control:
         for point in default_footprint:
             coords.append(point)
 
-        for i in range(self.N_robots):
+        for i in range(self.fleet_size):
             if(self.enabled_robots[i]):
                 xyt = self.robots_xyt[:,i].flatten() # in swarm frame pose
 
@@ -308,6 +341,91 @@ class Swarm_Control:
         msg.header.frame_id = "swarm_frame"  # replace with appropriate frame
         msg.polygon.points = polygon
         self.footprint_pub.publish(msg)
+
+    def shutdown(self):
+        '''.'''
+        rospy.loginfo(f"{log_tag}: Node shutdown.")
+
+    def request_ticket_list(self):
+        '''Request the current ticket list from the ticket_service.'''
+        rospy.wait_for_service('ticket_service')
+        try:
+            # TicketListRequest() is empty.
+            request = TicketListRequest()
+            ticket_list = rospy.ServiceProxy('ticket_service', TicketList)
+            response = ticket_list(request)
+
+            # self.all_tickets = convert_ticket_list_to_task_dict(response.all_tickets)
+            # self.waiting = response.waiting
+            # self.ready = response.ready
+            self.ongoing = response.ongoing
+            # self.done = response.done
+        except rospy.ServiceException as e:
+            rospy.logerr(f'{log_tag}: Ticket list request failed: {e}.')
+
+    def request_assigned_robot_information(self, ticket_id: int):
+        '''Request the .'''
+        rospy.wait_for_service('robot_assignments_service')
+        try:
+            request = RobotAssignmentsRequest()
+            request.ticket_id = ticket_id
+            robot_assignments = rospy.ServiceProxy(
+                'robot_assignments_service',
+                RobotAssignments
+            )
+            response = robot_assignments(request)
+
+            self.num_robots = response.num_assigned_robots
+            self.robot_ids = response.robot_ids
+            # self.robot_names = response.robot_names
+            # self.robot_frame_command_topics = response.robot_frame_command_topics
+            # self.robot_command_topics = response.robot_command_topics
+            # self.virtual_robot_frame_names = response.virtual_robot_frame_names
+            # self.real_robot_frame_names = response.real_robot_frame_names
+
+            self.team_id = response.team_id
+
+            self.team_command_topic = response.team_command_topic
+            self.team_frame_command_topic = response.team_frame_command_topic
+            self.team_footprint_topic = response.team_footprint_topic
+            self.team_tf_frame = response.team_tf_frame
+            self.tf_changer_topic = response.tf_changer_topic
+
+            if self.tf_changer is not None:
+                self.tf_changer.unregister()
+
+            if len(self.tf_changer_topic) > 0:
+                self.tf_changer = rospy.Publisher(
+                    self.tf_changer_topic, PoseStamped, queue_size=10
+                )
+
+            self.node_names = []
+            for robot in range(self.num_robots):
+                self.node_names.append(response.robot_node_names[robot].string_list)
+        except rospy.ServiceException as e:
+            rospy.logerr(f"{log_tag}: Robot assignment request failed: {e}.")
+
+    def request_fleet_information(self):
+        '''Requests the information about all robots in the fleet.
+
+        The information includes the total number of robots in the fleet,
+        robot names, topics, and frame names.
+        '''
+        rospy.wait_for_service('fleet_information_service')
+        try:
+            request = FleetInformationRequest()
+            fleet_information = rospy.ServiceProxy(
+                "fleet_information_service",
+                FleetInformation
+            )
+            response = fleet_information(request)
+
+            self.robot_frame_command_topics = response.robot_frame_command_topics
+            self.state_publish_topics = response.robot_desired_state_topics
+            self.virtual_robot_frame_names = response.virtual_robot_frame_names
+            self.fleet_size = response.fleet_size
+        except:
+            pass
 
             
 def rot_mat_3d(theta):
