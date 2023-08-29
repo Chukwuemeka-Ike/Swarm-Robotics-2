@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 sleep 1s;
 
 gnome-terminal --tab --title="ROSCORE" --command "bash -c \"source ~/.bashrc; killall gzclient && killall gzserver; roscore; exec bash\"";
@@ -21,9 +21,3 @@ sleep 1s;
 
 gnome-terminal --tab --title="Main Swarm Control" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch main_swarm_control.launch; exec bash\"";
 sleep 1s;
-
-
-
-
-
-
