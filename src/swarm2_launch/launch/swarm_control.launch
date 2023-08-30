@@ -1,0 +1,7 @@
+<launch>
+<group ns="main">
+    <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control.py" output="screen">
+        <rosparam file="$(find swarm2_launch)/config/main_swarm_control.yaml"/>
+    </node>
+</group>
+</launch>

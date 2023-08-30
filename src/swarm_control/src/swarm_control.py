@@ -89,7 +89,7 @@ class Swarm_Control:
         self.theta_scale = rospy.get_param('~theta_scale')
 
         # Enabled robots.
-        self.enabled_robots = []
+        self.robot_enable_status = []
 
         # Robot footprints.
         self.footprints = [None]*self.fleet_size
@@ -110,7 +110,7 @@ class Swarm_Control:
             self.a_max[1, i] = rospy.get_param('~acc_lim_y_'	 + str(i))
             self.a_max[2, i] = rospy.get_param('~acc_lim_theta_' + str(i))
 
-            self.enabled_robots.append(True)
+            self.robot_enable_status.append(True)
 
         # Subscriber for the robot enable status.
         rospy.Subscriber(
@@ -187,44 +187,59 @@ class Swarm_Control:
 
     def robot_enable_changer(self, msg) -> None:
         number=msg.data
-        rospy.logwarn(str(len(self.enabled_robots)))
+        rospy.logwarn(str(len(self.robot_enable_status)))
         rospy.logwarn(str(self.fleet_size))
         for i in range(self.fleet_size-1,-1,-1):
             if(number>>i==1):
                 number-=pow(2,i)
                 
-                self.enabled_robots[i]=False
-                rospy.logwarn("disabled robot: "+str(i+1)+"status: "+str(self.enabled_robots[i]))
+                self.robot_enable_status[i]=False
+                rospy.logwarn("disabled robot: "+str(i+1)+"status: "+str(self.robot_enable_status[i]))
                 self.robots_last_velocities[:,i] = 0
             else:
                 
-                self.enabled_robots[i]=True
-                rospy.logwarn("enabled robot: "+str(i+1)+"status: "+str(self.enabled_robots[i]))
+                self.robot_enable_status[i]=True
+                rospy.logwarn("enabled robot: "+str(i+1)+"status: "+str(self.robot_enable_status[i]))
 
     def robot_frame_command_callback(self, msg: Twist, robot_idx: int) -> None:
-        if(self.enabled_robots[robot_idx]):
+        if(self.robot_enable_status[robot_idx]):
             # Move the position of robot robot_idx in the world frame
             dt = self.get_timestep(self.robot_frame_command_topics[robot_idx])
 
-            qd_world = np.zeros((3,1))
-            qd_world[0, 0] = msg.linear.x
-            qd_world[1, 0] = msg.linear.y
-            qd_world[2, 0] = msg.angular.z
+            # Get which team the robot belongs to.
+            robot_team_id = -1
+            for team_id, team_member_indices in self.assigned_robot_indices.items():
+                if robot_idx in team_member_indices:
+                    robot_team_id = team_id
 
-            # robots_xyt is in the swarm frame
-            qd_swarm = rot_mat_3d(-self.swarm_xyt[2]).dot(qd_world)
-            self.robots_xyt[:,robot_idx] = self.robots_xyt[:,robot_idx] + dt * qd_swarm.flatten()
-            #print(self.robots_xyt)
+            # Only update if we found the correct team ID.
+            if robot_team_id != -1:
+                qd_world = np.zeros((3,1))
+                qd_world[0, 0] = msg.linear.x
+                qd_world[1, 0] = msg.linear.y
+                qd_world[2, 0] = msg.angular.z
+
+                # robots_xyt is in the team frame.
+                qd_swarm = rot_mat_3d(
+                    -self.team_poses[robot_team_id][2]
+                ).dot(qd_world)
+                self.robots_xyt[:,robot_idx] = self.robots_xyt[:, robot_idx] +\
+                        dt * qd_swarm.flatten()
+                print(self.robots_xyt)
 
     def team_command_callback(self, msg: Twist, team_id: int) -> None:
-        '''Moves the physical team with safe velocities for the robots.
+        '''Moves the physical team with safe velocities for the enabled robots.
 
-        Checks 
+        Checks that the max timestep hasn't been exceeded, then calculates
+        safe motion for the enabled robots in that team.
+        Args:
+            msg: Twist message containing the desired motion.
+            team_id: ID of the team being commanded.
         '''
-        enabled_assigned_robots = [
-            self.enabled_robots[id] for id in self.assigned_robot_indices[team_id]
+        assigned_robot_enable_status = [
+            self.robot_enable_status[i] for i in self.assigned_robot_indices[team_id]
         ]
-        if sum(enabled_assigned_robots) == 0:
+        if sum(assigned_robot_enable_status) == 0:
             return
 
         dt = self.get_timestep(self.team_command_topics[team_id])
@@ -232,38 +247,49 @@ class Swarm_Control:
             self.v_robots_prev *= 0.
             return
 
+        # Get the desired team velocity.
         v_desired = np.zeros((3,1))
         v_desired[0, 0] = msg.linear.x
         v_desired[1, 0] = msg.linear.y
         v_desired[2, 0] = msg.angular.z
 
+        # Get the indices of the robots that are both assigned and enabled.
+        enabled_index = np.where(assigned_robot_enable_status)[0]
+        enabled_index = [
+            self.assigned_robot_indices[idx] for idx in enabled_index
+        ]
 
-        enabled_index = np.where(enabled_assigned_robots)[0]
+        # Position and angle of each robot in the team frame.
+        p_i_mat = self.robots_xyt[:2, enabled_index]
+        theta_vec = self.robots_xyt[2, enabled_index]
 
-        p_i_mat = self.robots_xyt[0:1+1,enabled_index]
-        theta_vec = self.robots_xyt[[2],[enabled_index]]
-        
-        v_i_world, v_i_rob, xyt_i, v, xyt_swarm_next = safe_motion_controller(
+        # Calculate safe inputs for the enabled robots in the team.
+        v_i_world, v_i_rob, xyt_i, v, team_next_pose = safe_motion_controller(
             v_desired, self.theta_scale, p_i_mat, theta_vec,
-            self.v_max[:, enabled_index], self.a_max[:, enabled_index], dt, sum(self.enabled_robots),
-            self.v_robots_prev[:, enabled_index], self.swarm_xyt)
+            self.v_max[:, enabled_index], self.a_max[:, enabled_index], dt,
+            sum(self.robot_enable_status),
+            self.v_robots_prev[:, enabled_index], self.team_poses[team_id]
+        )
 
-        # Don't update self.robots_xyt, since that's in the swarm frame
-        self.v_robots_prev[:, enabled_index] = v_i_rob;
-        self.swarm_xyt = xyt_swarm_next;
+        # Don't update self.robots_xyt, since that's in the team frame.
+        self.v_robots_prev[:, enabled_index] = v_i_rob
+        self.team_poses[team_id] = team_next_pose
 
-        # Send desired state to each robot
-        for i in range(sum(self.enabled_robots)):
-            i_total = enabled_index[i]
-            
-            s = State2D();
-            s.pose.x = xyt_i[0,i]
-            s.pose.y = xyt_i[1,i]
-            s.pose.theta = xyt_i[2,i]
-            s.twist.linear.x = v_i_world[0,i]
-            s.twist.linear.y = v_i_world[1,i]
-            s.twist.angular.z = v_i_world[2,i]
-            self.robot_command_pubs[i_total].publish(s)
+        # Send desired state to each enabled robot in the team.
+        for i in range(len(enabled_index)):
+            robot_idx = enabled_index[i]
+
+            s = State2D()
+
+            s.pose.x = xyt_i[0, i]
+            s.pose.y = xyt_i[1, i]
+            s.pose.theta = xyt_i[2, i]
+
+            s.twist.linear.x = v_i_world[0, i]
+            s.twist.linear.y = v_i_world[1, i]
+            s.twist.angular.z = v_i_world[2, i]
+
+            self.robot_command_pubs[robot_idx].publish(s)
 
     def team_frame_command_callback(self, msg: Twist, team_id: int) -> None:
         '''Moves the team frame without moving the robots.
@@ -271,22 +297,31 @@ class Swarm_Control:
         Moves the team frame, and moves the robots w.r.t. the team frame
         in the opposite direction
         '''
-        dt = self.get_timestep("desired_swarm_frame_velocity")
+        dt = self.get_timestep(self.team_command_topics[team_id])
 
+        # 
         qd_world = np.zeros((3,1))
         qd_world[0, 0] = msg.linear.x
         qd_world[1, 0] = msg.linear.y
         qd_world[2, 0] = msg.angular.z
 
-        qd_swarm = rot_mat_3d(-self.swarm_xyt[2, 0]).dot(qd_world)
+        # 
+        qd_team = rot_mat_3d(
+                -self.team_poses[team_id][2, 0]
+            ).dot(qd_world)
 
         q_world_delta = dt * qd_world
-        q_swarm_delta = dt * qd_swarm
+        q_team_delta = dt * qd_team
 
-        self.swarm_xyt = self.swarm_xyt + q_world_delta
+        # Adjust the team's pose w.r.t the world.
+        self.team_poses[team_id] = self.team_poses[team_id] + q_world_delta
 
-        #  np.diag([1., 1., 0.]).
-        self.robots_xyt = rot_mat_3d(-q_swarm_delta[2,0]).dot(self.robots_xyt  - q_swarm_delta )
+        # Adjust the team's individual robot's poses w.r.t the team's pose in
+        # the opposite direction.
+        team_members = self.assigned_robot_indices[team_id]
+        self.robots_xyt[:, team_members] = rot_mat_3d(
+                -q_team_delta[2, 0]
+            ).dot(self.robots_xyt[:, team_members]  - q_team_delta)
 
     def tf_changer_callback(self, msg: PoseStamped) -> None:
         '''Changes the robot's frame to the message values.'''
@@ -331,12 +366,12 @@ class Swarm_Control:
         self.tf_broadcaster.sendTransform(tf_swarm_frame)
 
         for i in range(self.fleet_size):
-            if(self.enabled_robots[i]):
+            if(self.robot_enable_status[i]):
                 tf_robot_i = xyt2TF(self.robots_xyt[:,i], "swarm_frame", self.virtual_robot_frame_names[i])
                 self.tf_broadcaster.sendTransform(tf_robot_i)
 
     def publish_formation_footprint_polygon(self,event):
-        if sum(self.enabled_robots) == 0:
+        if sum(self.robot_enable_status) == 0:
             return
         
         # Find the points in the active formation
@@ -347,7 +382,7 @@ class Swarm_Control:
             coords.append(point)
 
         for i in range(self.fleet_size):
-            if(self.enabled_robots[i]):
+            if(self.robot_enable_status[i]):
                 xyt = self.robots_xyt[:,i].flatten() # in swarm frame pose
 
                 robot_pts = self.footprints[i] # Nx2

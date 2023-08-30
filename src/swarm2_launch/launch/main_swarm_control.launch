@@ -2,12 +2,12 @@
 <group ns="main">
     <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
 
-    <!-- <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control.py" output="screen">
+    <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control.py" output="screen">
         <rosparam file="$(find swarm2_launch)/config/main_swarm_control.yaml"/>
-    </node> -->
-    <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control_1.py" output="screen">
-        <rosparam file="$(find swarm2_launch)/config/main_swarm_control_1.yaml"/>
     </node>
+    <!-- <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control_1.py" output="screen">
+        <rosparam file="$(find swarm2_launch)/config/main_swarm_control_1.yaml"/>
+    </node> -->
 
     <!-- Utility node to publish where the swarm_frame is at as a odom message -->
     <node type="tf_to_odom_node.py" name="tf_to_odom_node" pkg="topic_tf_transformers" output="screen">
