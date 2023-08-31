@@ -54,7 +54,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /ui/visualization_marker
+      Marker Topic: /visualization_marker
       Name: MarkerArray-WorldMesh
       Namespaces:
         "": true

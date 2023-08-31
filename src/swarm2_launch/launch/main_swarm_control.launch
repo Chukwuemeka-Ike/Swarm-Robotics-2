@@ -1,5 +1,5 @@
 <launch>
-<group ns="main">
+<!-- <group ns="main"> -->
     <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
 
     <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control.py" output="screen">
@@ -35,5 +35,5 @@
     </node>
 
 
-</group>
+<!-- </group> -->
 </launch>

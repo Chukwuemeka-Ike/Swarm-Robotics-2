@@ -85,10 +85,10 @@ class SimpleGUI(QWidget):
 
         self.layout = QVBoxLayout()
 
-        self.disable_button = ServiceCallButton("/main/disable_path_execution", "Disable Execution")
-        self.enable_button = ServiceCallButton("/main/enable_path_execution", "Enable Execution")
-        self.cancel_button = ServiceCallButton("/main/cancel_path_execution", "Cancel Execution")
-        self.toggle_adjust_path_button = ToggleServiceButton("/main/toggle_adjust_path", "Adjust Path")
+        self.disable_button = ServiceCallButton("/disable_path_execution", "Disable Execution")
+        self.enable_button = ServiceCallButton("/enable_path_execution", "Enable Execution")
+        self.cancel_button = ServiceCallButton("/cancel_path_execution", "Cancel Execution")
+        self.toggle_adjust_path_button = ToggleServiceButton("/toggle_adjust_path", "Adjust Path")
 
         self.layout.addWidget(self.disable_button)
         self.layout.addWidget(self.enable_button)
