@@ -28,40 +28,36 @@ Parameters:
         acc_lim_theta_0: Acceleration limit in theta for robot 0
 
 '''
-import rospy
-
-# import State2D.msg
-from swarm_msgs.msg import State2D
-from geometry_msgs.msg import Twist, PolygonStamped, PoseStamped
+import time
 from typing import Tuple
-import geometry_msgs.msg
-
-import tf2_ros
-import tf2_msgs.msg
-from std_msgs.msg import Bool, Int32
-import tf_conversions # quaternion stuff
-
-from utilities.safe_swarm_controller import *
 
 import numpy as np
-
-import time
-
+import rospy
+import tf2_ros
+import tf_conversions # quaternion stuff
 import shapely
 import shapely.geometry
 import shapely.affinity
 
+from geometry_msgs.msg import Point32, PolygonStamped, PoseStamped,\
+    TransformStamped, Twist
+
+from arm_msgs.msg import RobotEnableStatus
 from arm_msgs.srv import FleetInformation, FleetInformationRequest,\
         RobotAssignments, RobotAssignmentsRequest,\
         TicketList, TicketListRequest
+from swarm_msgs.msg import State2D
+from utilities.safe_swarm_controller import safe_motion_controller
 
 
-# Velocity commands will only be considered if they are spaced closer than MAX_TIMESTEP
+# Velocity commands will only be considered if they are
+# spaced closer than MAX_TIMESTEP.
 MAX_TIMESTEP = 0.1
 log_tag = "Swarm Controller"
 
 
 class Swarm_Control:
+    '''.'''
     def __init__(self):
         rospy.init_node('swarm_controller', anonymous=False)
         rospy.on_shutdown(self.shutdown)
@@ -114,8 +110,8 @@ class Swarm_Control:
 
         # Subscriber for the robot enable status.
         rospy.Subscriber(
-            self.robot_enable_status_topic, Int32,
-            self.robot_enable_changer, queue_size=5
+            self.robot_enable_status_topic, RobotEnableStatus,
+            self.robot_enable_changer_callback, queue_size=5
         )
         rospy.Subscriber(
             self.tf_changer_topic, PoseStamped,
@@ -164,46 +160,32 @@ class Swarm_Control:
         self.team_footprint_pubs = {}
         self.team_footprint_pub_timers = {}
 
-
-        self.swarm_xyt = np.zeros((3,1))
-        rospy.Subscriber(desired_swarm_vel_topic_name, Twist, self.team_command_callback, queue_size=1)
-        rospy.Subscriber(just_swarm_frame_vel_input_topic_name, Twist, self.team_frame_command_callback, queue_size=1)
-        
-
-        # Swarm footprint polygon publisher
-        self.footprint_publish_topic_name = rospy.get_param('~footprint_publish_topic_name', "swarm_footprint")
-        self.footprint_pub = rospy.Publisher(self.footprint_publish_topic_name, geometry_msgs.msg.PolygonStamped, queue_size=1)
-
-        # Footprint publish timer
+        # Team footprint update rate.
         self.footprint_update_rate = 3.0
-        # rospy.Timer(rospy.Duration(1.0 / self.footprint_update_rate), self.publish_formation_footprint_polygon)
-
 
         # TF Broadcasts are sent at 30Hz.
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
         tf_update_rate = 30.0
         rospy.Timer(rospy.Duration(1.0 / tf_update_rate), self.publish_tf_frames)
 
+        # Timer for updating team information.
+        rospy.Timer(
+            rospy.Duration(1.0 / 2.0),
+            self.update_team_information
+        )
 
-    def robot_enable_changer(self, msg) -> None:
-        number=msg.data
-        rospy.logwarn(str(len(self.robot_enable_status)))
-        rospy.logwarn(str(self.fleet_size))
-        for i in range(self.fleet_size-1,-1,-1):
-            if(number>>i==1):
-                number-=pow(2,i)
-                
-                self.robot_enable_status[i]=False
-                rospy.logwarn("disabled robot: "+str(i+1)+"status: "+str(self.robot_enable_status[i]))
-                self.robots_last_velocities[:,i] = 0
-            else:
-                
-                self.robot_enable_status[i]=True
-                rospy.logwarn("enabled robot: "+str(i+1)+"status: "+str(self.robot_enable_status[i]))
+    def shutdown(self) -> None:
+        '''.'''
+        rospy.loginfo(f"{log_tag}: Node shutdown.")
 
     def robot_frame_command_callback(self, msg: Twist, robot_idx: int) -> None:
+        '''Adjusts the robot's virtual frame w.r.t world frame.
+
+        Args:
+            msg: Twist message containing the desired change.
+            robot_idx: index of the robot in the lists of robot-level info.
+        '''
         if(self.robot_enable_status[robot_idx]):
-            # Move the position of robot robot_idx in the world frame
             dt = self.get_timestep(self.robot_frame_command_topics[robot_idx])
 
             # Get which team the robot belongs to.
@@ -212,7 +194,7 @@ class Swarm_Control:
                 if robot_idx in team_member_indices:
                     robot_team_id = team_id
 
-            # Only update if we found the correct team ID.
+            # Only update if we found the robot in a team.
             if robot_team_id != -1:
                 qd_world = np.zeros((3,1))
                 qd_world[0, 0] = msg.linear.x
@@ -232,9 +214,10 @@ class Swarm_Control:
 
         Checks that the max timestep hasn't been exceeded, then calculates
         safe motion for the enabled robots in that team.
+
         Args:
-            msg: Twist message containing the desired motion.
-            team_id: ID of the team being commanded.
+            msg: Twist message containing the desired change.
+            team_id: ID of the team the message is intended for.
         '''
         assigned_robot_enable_status = [
             self.robot_enable_status[i] for i in self.assigned_robot_indices[team_id]
@@ -254,9 +237,11 @@ class Swarm_Control:
         v_desired[2, 0] = msg.angular.z
 
         # Get the indices of the robots that are both assigned and enabled.
+        # First get the idx of True values in assigned list.
         enabled_index = np.where(assigned_robot_enable_status)[0]
+        # Use the idx from above to get the absolute idx in the robot-level vars.
         enabled_index = [
-            self.assigned_robot_indices[idx] for idx in enabled_index
+            self.assigned_robot_indices[team_id][idx] for idx in enabled_index
         ]
 
         # Position and angle of each robot in the team frame.
@@ -264,19 +249,22 @@ class Swarm_Control:
         theta_vec = self.robots_xyt[2, enabled_index]
 
         # Calculate safe inputs for the enabled robots in the team.
-        v_i_world, v_i_rob, xyt_i, v, team_next_pose = safe_motion_controller(
+        v_i_world, v_i_rob, xyt_i, _, team_next_pose = safe_motion_controller(
             v_desired, self.theta_scale, p_i_mat, theta_vec,
             self.v_max[:, enabled_index], self.a_max[:, enabled_index], dt,
-            sum(self.robot_enable_status),
+            sum(assigned_robot_enable_status),
             self.v_robots_prev[:, enabled_index], self.team_poses[team_id]
         )
 
         # Don't update self.robots_xyt, since that's in the team frame.
+        # Set the new previous velocities.
         self.v_robots_prev[:, enabled_index] = v_i_rob
+        # Update the team pose.
         self.team_poses[team_id] = team_next_pose
 
         # Send desired state to each enabled robot in the team.
         for i in range(len(enabled_index)):
+            # Absolute index for the robot.
             robot_idx = enabled_index[i]
 
             s = State2D()
@@ -295,7 +283,11 @@ class Swarm_Control:
         '''Moves the team frame without moving the robots.
 
         Moves the team frame, and moves the robots w.r.t. the team frame
-        in the opposite direction
+        in the opposite direction.
+
+        Args:
+            msg: Twist message containing the desired change.
+            team_id: ID of the team the message is intended for.
         '''
         dt = self.get_timestep(self.team_command_topics[team_id])
 
@@ -336,7 +328,7 @@ class Swarm_Control:
             _, _, yaw = tf_conversions.transformations.euler_from_quaternion(
                 orientations
             )
-            
+
             # Sanity check.
             rospy.loginfo(f"Changing tf frame {msg.header.frame_id} "
                           f"from {self.robots_xyt[:, idx]} to "
@@ -345,92 +337,144 @@ class Swarm_Control:
             )
 
             # Set the robot's xyt to the message pose.
-            self.robots_xyt[0,idx] = msg.pose.position.x
-            self.robots_xyt[1,idx] = msg.pose.position.y
-            self.robots_xyt[2,idx] = yaw
+            self.robots_xyt[0, idx] = msg.pose.position.x
+            self.robots_xyt[1, idx] = msg.pose.position.y
+            self.robots_xyt[2, idx] = yaw
 
-    def get_timestep(self, integrator_name):
+    def get_timestep(self, topic_name: str) -> None:
+        '''Gets the time-step of the last message on that topic'''
         current_time = time.time()
-        if integrator_name in self.last_timestep_requests:
-            dt = current_time - self.last_timestep_requests[integrator_name]
-            self.last_timestep_requests[integrator_name] = current_time
+        if topic_name in self.last_timestep_requests:
+            dt = current_time - self.last_timestep_requests[topic_name]
+            self.last_timestep_requests[topic_name] = current_time
             if dt > MAX_TIMESTEP:
                 dt = 0.0
             return dt
         else:
-            self.last_timestep_requests[integrator_name] = current_time
+            self.last_timestep_requests[topic_name] = current_time
             return 0.0
 
-    def publish_tf_frames(self,event):
-        tf_swarm_frame = xyt2TF(self.swarm_xyt, "map", "swarm_frame")
-        self.tf_broadcaster.sendTransform(tf_swarm_frame)
+    def publish_tf_frames(self, _: rospy.timer.TimerEvent) -> None:
+        '''Publishes the TF frames for all teams and their enabled members.'''
+        # Publish the transforms for every team wrt map frame.
+        for team_id, team_pose in self.team_poses.items():
+            team_transform = xyt2TF(
+                team_pose, "map", self.team_tf_frame_names[team_id]
+            )
+            self.tf_broadcaster.sendTransform(team_transform)
 
-        for i in range(self.fleet_size):
-            if(self.robot_enable_status[i]):
-                tf_robot_i = xyt2TF(self.robots_xyt[:,i], "swarm_frame", self.virtual_robot_frame_names[i])
-                self.tf_broadcaster.sendTransform(tf_robot_i)
+        # Publish the transforms for every enabled robot wrt their team frame.
+        for team_id, team_member_indices in self.assigned_robot_indices.items():
+            for robot_idx in team_member_indices:
+                if self.robot_enable_status[robot_idx] == True:
+                    robot_transform = xyt2TF(
+                        self.robots_xyt[:, robot_idx],
+                        self.team_tf_frame_names[team_id],
+                        self.virtual_robot_frame_names[robot_idx]
+                    )
+                    self.tf_broadcaster.sendTransform(robot_transform)                
 
-    def publish_formation_footprint_polygon(self,event):
-        if sum(self.robot_enable_status) == 0:
+    def publish_team_footprint(
+            self, team_id: int, _: rospy.timer.TimerEvent
+        ) -> None:
+        '''Publishes the footprint of the enabled robots in a team.
+
+        Args:
+            team_id: the ID of the team.
+            _: rospy timer event.
+        '''
+        # If no robots in the team are enabled, do nothing.
+        assigned_robot_enable_status = [
+            self.robot_enable_status[i] for i in self.assigned_robot_indices[team_id]
+        ]
+        if sum(assigned_robot_enable_status) == 0:
             return
-        
-        # Find the points in the active formation
+
+        # Find the points in the active formation.
         coords = []
-        coords.append([0.0,0.0]) # Include the location of the swarm frame to the footprint
-        default_footprint = [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
+        coords.append([0.0,0.0]) # Include the location of the team frame.
+        default_footprint = [
+            [0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]
+        ]
         for point in default_footprint:
             coords.append(point)
 
-        for i in range(self.fleet_size):
-            if(self.robot_enable_status[i]):
-                xyt = self.robots_xyt[:,i].flatten() # in swarm frame pose
+        for robot_idx in self.assigned_robot_indices[team_id]:
+            if self.robot_enable_status[robot_idx] == True:
+                # Robot pose in team frame.
+                xyt = self.robots_xyt[:, robot_idx].flatten()
 
-                robot_pts = self.footprints[i] # Nx2
-                # convert to shapely multi point object
+                # Get the footprint.
+                robot_pts = self.footprints[robot_idx] # Nx2
+                # Convert to shapely multi point object.
                 robot_pts_multi_pt = shapely.geometry.MultiPoint(robot_pts)
-                # rotate
-                robot_pts_multi_pt = shapely.affinity.rotate(robot_pts_multi_pt, xyt[2], origin=(0,0), use_radians=True)
-                # translate
-                robot_pts_multi_pt = shapely.affinity.translate(robot_pts_multi_pt, xoff=xyt[0], yoff=xyt[1])
-
+                # Rotate.
+                robot_pts_multi_pt = shapely.affinity.rotate(
+                    robot_pts_multi_pt, xyt[2], origin=(0,0), use_radians=True
+                )
+                # Translate.
+                robot_pts_multi_pt = shapely.affinity.translate(
+                    robot_pts_multi_pt, xoff=xyt[0], yoff=xyt[1]
+                )
                 for point in robot_pts_multi_pt.geoms:
                     coords.append(list(point.coords[0]))
 
-        # Find the convex hull of the points with shapely
+        # Find the convex hull of the points with shapely.
+        # NOTE: convex_hull will return a Polygon if your hull contains more
+        # than two points. If it only contains two points, you'll get a
+        # LineString, and if it only contains one point, you'll get a Point.
         multi_pt = shapely.geometry.MultiPoint(coords)
         hull = multi_pt.convex_hull
-        
-        # NOTE: convex_hull will return a polygon if your hull contains more than two points. If it only contains two points, you'll get a LineString, and if it only contains one point, you'll get a Point.
 
-        # Convert the hull points to ROS Point32 messages
+        # Convert the hull points to ROS Point32 messages if it is a Polygon.
         polygon = []
         if hull.geom_type == 'Polygon':
             for pt in list(hull.exterior.coords):
-                point32 = geometry_msgs.msg.Point32()
-                point32.x = pt[0]
-                point32.y = pt[1]
-                point32.z = 0  # assuming 2D coordinates
-                polygon.append(point32)
+                msg = Point32()
+                msg.x = pt[0]
+                msg.y = pt[1]
+                msg.z = 0  # assuming 2D coordinates.
+                polygon.append(msg)
         else:
             rospy.loginfo("Not enough points to form a polygon.")
             return
-        
-        # Prepare the msg and publish
-        msg = geometry_msgs.msg.PolygonStamped()
+
+        # Prepare the msg and publish on that team's publisher.
+        msg = PolygonStamped()
         msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id = "swarm_frame"  # replace with appropriate frame
+        msg.header.frame_id = self.team_tf_frame_names[team_id]
         msg.polygon.points = polygon
-        self.footprint_pub.publish(msg)
+        self.team_footprint_pubs[team_id].publish(msg)
 
+    def robot_enable_changer_callback(self, msg: RobotEnableStatus) -> None:
+        '''Changes the enable status of the robots based on the message.
 
+        Args:
+            msg: RobotEnableStatus containing enabled_ids and disabled_ids.
+                    Each message is team-specific and contains the true
+                    robot IDs.
+        '''
+        enabled_ids = msg.enabled_ids
+        disabled_ids = msg.disabled_ids
 
+        # Set the enabled IDs to True.
+        for robot_id in enabled_ids:
+            # Indices start at 0, but ID's start at 1.
+            robot_idx = robot_id - 1
+            self.robot_enable_status[robot_idx] = True
 
-    def shutdown(self):
-        '''.'''
-        rospy.loginfo(f"{log_tag}: Node shutdown.")
+        # Set the disabled IDs to False.
+        for robot_id in disabled_ids:
+            # Indices start at 0, but ID's start at 1.
+            robot_idx = robot_id - 1
+            self.robot_enable_status[robot_idx] = False
+        
+        rospy.loginfo(f"{log_tag}: Robot enable status: "
+                      f"{self.robot_enable_status}"
+        )
 
-    def request_ticket_list(self):
-        '''Request the current ticket list from the ticket_service.'''
+    def request_ticket_list(self) -> None:
+        '''Requests the current ticket list from the ticket_service.'''
         rospy.wait_for_service('ticket_service')
         try:
             # TicketListRequest() is empty.
@@ -446,7 +490,7 @@ class Swarm_Control:
         except rospy.ServiceException as e:
             rospy.logerr(f'{log_tag}: Ticket list request failed: {e}.')
 
-    def request_fleet_information(self):
+    def request_fleet_information(self) -> None:
         '''Requests the information about all robots in the fleet.
 
         The information includes the total number of robots in the fleet,
@@ -510,7 +554,7 @@ class Swarm_Control:
         except rospy.ServiceException as e:
             rospy.logerr(f"{log_tag}: Robot assignment request failed: {e}.")
 
-    def update_team_information(self):
+    def update_team_information(self, _: rospy.timer.TimerEvent) -> None:
         '''Runs often to check.'''
         self.request_ticket_list()
         current_team_ids = []
@@ -522,17 +566,21 @@ class Swarm_Control:
 
             current_team_ids.append(team_id)
 
+            # Create the team ID and all necessary variables if it doesn't
+            # exist yet.
             if team_id not in self.team_poses:
+                print(f"Adding team {team_id}")
                 self.team_sizes[team_id] = num_assigned_robots
                 self.team_poses[team_id] = np.zeros((3,1))
                 self.assigned_robot_ids[team_id] = assigned_robot_ids
                 self.assigned_robot_indices[team_id] = assigned_robot_indices
+
                 self.team_command_topics[team_id] = team_command_topic
                 self.team_frame_command_topics[team_id] = team_frame_command_topic
                 self.team_footprint_topics[team_id] = team_footprint_topic
                 self.team_tf_frame_names[team_id] = team_tf_frame_name
 
-                # Create subscribers and publisher.
+                # Create team subscribers and publisher.
                 self.team_command_subs[team_id] = rospy.Subscriber(
                     team_command_topic, Twist,
                     self.team_command_callback, team_id,
@@ -549,19 +597,33 @@ class Swarm_Control:
                     queue_size=1
                 )
                 # Set the footprint publish timer.
+                # Lambda used to pass the team ID to the callback.
                 self.team_footprint_pub_timers[team_id] = rospy.Timer(
                     rospy.Duration(1.0/self.footprint_update_rate),
-                    self.publish_formation_footprint_polygon
+                    lambda event: self.publish_team_footprint(
+                        team_id, event
+                    )
                 )
+            # Cross-check existing team IDs for changes. The things that could
+            # change are related to robot membership, so we update those.
+            elif team_id in self.team_poses:
+                self.team_sizes[team_id] = num_assigned_robots
+                self.assigned_robot_ids[team_id] = assigned_robot_ids
+                self.assigned_robot_indices[team_id] = assigned_robot_indices
 
+        print(f"Teams {current_team_ids}.")
         # Go through the team_id's we have saved. If there are any that are
         # no longer current, remove them.
+        remove_ids = []
         for team_id in self.team_poses.keys():
             if team_id not in current_team_ids:
-                self.remove_team(team_id)
+                remove_ids.append(team_id)
+        for team_id in remove_ids:
+            self.remove_team(team_id)
 
     def remove_team(self, team_id: int):
-        '''Removes the team from the data structures.'''
+        '''Removes the team from the team data structures.'''
+        # Delete the team's information.
         if team_id in self.team_command_topics:
             del(self.team_command_topics[team_id])
         if team_id in self.team_frame_command_topics:
@@ -587,6 +649,8 @@ class Swarm_Control:
         if team_id in self.team_footprint_pubs:
             self.team_footprint_pubs[team_id].unregister()
             del(self.team_footprint_pubs[team_id])
+
+        # Shutdown the timer.
         if team_id in self.team_footprint_pub_timers:
             self.team_footprint_pub_timers[team_id].shutdown()
 
@@ -601,16 +665,22 @@ def wrapToPi(a):
     '''
     return ((a+np.pi) % (2*np.pi))-np.pi
 
-def xyt2TF(xyt, header_frame_id, child_frame_id):
-    '''
-    Converts a numpy vector [x; y; theta]
+def xyt2TF(
+        xyt: np.ndarray, header_frame_id: str, child_frame_id: str
+    ) -> TransformStamped:
+    '''Converts a pose to a TF transform message.
+
+    Args: numpy vector [x; y; theta]
     into a tf2_msgs.msg.TFMessage message
+        header_frame_id: name of the 
+    Returns:
+        msg: TF transform message with the frame relationships.
     '''
     xyt = xyt.flatten()
-    t = geometry_msgs.msg.TransformStamped()
+    t = TransformStamped()
 
     t.header.frame_id = header_frame_id
-    #t.header.stamp = ros_time #rospy.Time.now()
+
     t.header.stamp = rospy.Time.now()
     t.child_frame_id = child_frame_id
     t.transform.translation.x = xyt[0]
