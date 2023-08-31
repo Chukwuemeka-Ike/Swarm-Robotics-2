@@ -14,9 +14,9 @@
     <!-- <node type="rviz" name="rviz_2" pkg="rviz" args="-d $(find swarm2_launch)/config/rviz/sim_robots_top_down.rviz" output="screen"/> -->
 
     <!-- RQT EZ publisher -->
-    <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen">
+    <!-- <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen">
         <rosparam command="load" file="$(find swarm2_launch)/config/rqt_ez_publisher/ez_cmd_vel_multi_dingo.yaml" subst_value="true" />
-    </node>
+    </node> -->
 
     <!-- ARDUINO READER -->
     <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
@@ -24,7 +24,7 @@
     </node> -->
 
     <!-- SPACE MOUSE -->
-    <include file="$(find spacenav_node)/launch/classic.launch"/>
+    <!-- <include file="$(find spacenav_node)/launch/classic.launch"/> -->
 
     <!-- TWIST MUX FOR E-STOP -->
     <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
@@ -33,8 +33,8 @@
     </node>
 
     <!-- QT BASED GUI -->
-    <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_gui_params.yaml"/>
-    <node name="swarm_gui" pkg="swarm_gui" type="swarm_gui_user_py3.py" output="screen"/>
+    <!-- <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_gui_params.yaml"/>
+    <node name="swarm_gui" pkg="swarm_gui" type="swarm_gui_user_py3.py" output="screen"/> -->
 
 
 <!-- </group> -->
