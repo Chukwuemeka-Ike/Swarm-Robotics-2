@@ -45,7 +45,7 @@ def safe_motion_controller(v_desired, theta_scale, p_i_mat, theta_vec,
 		index_neg = range(6*i+3,6*i+6) # e.g. [3 4 5]
 		# Max velocity/accel constraints are wrt (stationary) robot frame
 		p_i_world_frame = rot_mat(xyt_swarm[2][0]).dot(p_i_mat[:,[i]])
-		theta_i_world_frame = xyt_swarm[2][0]+theta_vec[0][i]
+		theta_i_world_frame = xyt_swarm[2][0]+theta_vec[i]
 		J = robot_jacobian(p_i_world_frame, theta_i_world_frame)
 		lsq_param_A[index_pos, :] = J
 		lsq_param_A[index_neg, :] = -J
@@ -69,7 +69,7 @@ def safe_motion_controller(v_desired, theta_scale, p_i_mat, theta_vec,
 	v_i_rob= np.zeros((3,N))
 	for i in range(N):
 		p_i_world_frame = rot_mat(xyt_swarm[2][0]).dot(p_i_mat[:,[i]])
-		theta_i_world_frame = xyt_swarm[2][0]+theta_vec[0][i]
+		theta_i_world_frame = xyt_swarm[2][0]+theta_vec[i]
 		J_rob = robot_jacobian(p_i_world_frame, theta_i_world_frame)
 		J_world = robot_jacobian(p_i_world_frame, 0)
 		#v_i_robot = J.dot(v)
@@ -88,8 +88,7 @@ def safe_motion_controller(v_desired, theta_scale, p_i_mat, theta_vec,
 	xyt_i = np.zeros((3,N))
 	for i in range(N):
 		p_i_world_frame = rot_mat(xyt_swarm_next[2][0]).dot(p_i_mat[:,[i]])
-		#theta_i_world_frame = xyt_swarm_next[2][0]+theta_vec[0][i]
-		theta_i_world_frame = theta_vec[0][i]
+		theta_i_world_frame = theta_vec[i]
 		xyt_i_world_frame = np.block([[p_i_world_frame],[theta_i_world_frame]])
 		# print('**********')
 		# print(xyt_i[:,[i]])
