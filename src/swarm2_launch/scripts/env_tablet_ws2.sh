@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export ROS_WS=/home/tablet/catkin_ws_swarm2
+export ROS_WS=/home/tablet-ws2/catkin_ws_swarm2
 export ROS_NOETIC=/opt/ros/noetic
 source $ROS_NOETIC/setup.bash
 source $ROS_WS/devel/setup.bash

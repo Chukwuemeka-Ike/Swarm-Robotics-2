@@ -13,16 +13,18 @@ else
     exit 1
 fi
 
-COMMAND="gnome-terminal"
-
 for i in "${!HOSTS[@]}"; do
     echo "------------"
-    echo "${i}"
     echo "${USERNAMES[i]}"
+
+    # Dynamically construct the reboot command using the password from PASSWORDS array
+    SCRIPT="echo ${PASSWORDS[i]} | sudo -S shutdown -h now;"
+
+    echo "$SCRIPT"
     
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "${HOSTS[i]}"
     
-    COMMAND+=" --tab --title='${USERNAMES[i]}' -e 'sshpass -p ${PASSWORDS[i]} ssh -t -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o ConnectTimeout=2 -l ${USERNAMES[i]} ${HOSTS[i]}'"
+    sshpass -p "${PASSWORDS[i]}" ssh -t -o StrictHostKeyChecking=no -o HostKeyAlgorithms='ssh-rsa' -o ConnectTimeout=2 -l "${USERNAMES[i]}" "${HOSTS[i]}" "$SCRIPT"
 done
 
-eval "$COMMAND"
+# echo 'source ~/catkin_ws/devel/setup.bash' >> ~/.bashrc; 

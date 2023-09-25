@@ -185,7 +185,7 @@ cd src;
 git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git; # only on DESKTOP
 git clone https://github.com/burakaksoy/RVizMeshVisualizer.git; # only on DESKTOP
 git clone https://github.com/burakaksoy/uwb_gazebo_plugin; # only on DESKTOP
-git clone https://github.com/burakaksoy/multiRobotPlanner.git # CK's repo, but cloning my for fork stable testing
+git clone https://github.com/burakaksoy/multiRobotPlanner.git # only on DESKTOP. CK's repo, but cloning my for fork stable testing
 
 cd ..;
 catkin_make -DCATKIN_BLACKLIST_PACKAGES='dingo_base;dingo_customization' -DCMAKE_BUILD_TYPE=Release; # on DESKTOP computer 

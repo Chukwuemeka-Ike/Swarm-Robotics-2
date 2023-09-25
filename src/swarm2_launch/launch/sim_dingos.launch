@@ -1,5 +1,13 @@
 <?xml version="1.0"?>
 <launch>
+    <!-- Argument for helper laptop -->
+    <arg name="helper_laptop" default="false"/>
+
+    <!-- Conditionally include machine tag -->
+    <group if="$(arg helper_laptop)">
+        <machine name="helper_laptop" address="192.168.1.123" env-loader="$(find swarm2_launch)/scripts/env_helper_laptop.sh" user="burak" password="1234" default="true"/>
+    </group>
+
     <!-- DINGO 1 -->
     <include file="$(find swarm2_launch)/launch/test_launch/sim_dingo.launch">
         <!-- Robot Spawn Pose -->

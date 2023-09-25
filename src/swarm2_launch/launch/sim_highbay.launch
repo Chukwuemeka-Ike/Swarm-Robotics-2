@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-<!-- <group ns="sim">    -->
-    <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
+    <!-- Argument for helper laptop -->
+    <arg name="helper_laptop" default="false"/>
+
+    <!-- Conditionally include machine tag -->
+    <group if="$(arg helper_laptop)">
+        <machine name="helper_laptop" address="192.168.1.123" env-loader="$(find swarm2_launch)/scripts/env_helper_laptop.sh" user="burak" password="1234" default="true"/>
+    </group>
 
     <arg name="use_sim_time" default="true" />
     <arg name="gui" default="false" /> <!--make true to see Gazebo interface -->
@@ -18,5 +23,4 @@
         <arg name="world_name" value="$(arg world_name)" />
     </include>
 
-<!-- </group> -->
 </launch>

@@ -6,12 +6,16 @@ sleep 1s;
 # ================================================================================
 # --------------------------------- SIMULATIONS ----------------------------------
 # Launch Gazebo simulation environment
-gnome-terminal --tab --title="Sim Highbay" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch sim_highbay.launch; exec bash\"";
+gnome-terminal --tab --title="Sim Highbay" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch sim_highbay.launch helper_laptop:=true; exec bash\"";
 sleep 5s;
+# NOTE to CK: remove helper_laptop argument when you are testing
+# I use an helper laptop to share the workload of the simulations
 
 # Launches all robots in sim 
-gnome-terminal --tab --title="Sim Dingos" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch sim_dingos.launch; exec bash\"";
+gnome-terminal --tab --title="Sim Dingos" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch sim_dingos.launch helper_laptop:=true; exec bash\"";
 sleep 5s;
+# NOTE to CK: remove helper_laptop argument when you are testing
+# I use an helper laptop to share the workload of the simulations
 
 # gnome-terminal --tab --title="Sim Fabric" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch sim_fabric.launch; exec bash\"";
 sleep 1s;
