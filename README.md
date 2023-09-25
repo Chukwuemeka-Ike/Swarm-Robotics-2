@@ -23,11 +23,6 @@ https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/user_manual_d
 
 # Setting up the system
 
-Simply run
-
-```bash
-./TODO
-```
 
 <details> 
     <summary>Click to expand</summary>
@@ -61,114 +56,15 @@ pip3 install ortools==9.7.2996;
 
 # DINGO RELATED
 sudo apt-get install -y ros-noetic-dingo-desktop;
-# Installs:
-# ros-noetic-dingo-msgs 
-# ros-noetic-dingo-viz
-# ros-noetic-dingo-description (duplicate from dingo-desktop)
-# ros-noetic-fath-pivot-mount-description (duplicate from dingo-desktop)
-# ros-noetic-flir-camera-description (duplicate from dingo-desktop)
-# ros-noetic-lms1xx (duplicate from dingo-desktop)
-# ros-noetic-realsense2-description (duplicate from dingo-desktop)
-# ros-noetic-velodyne-description (duplicate from dingo-desktop)
+
 sudo apt-get install -y ros-noetic-dingo-simulator;
-# Installs:
-# ros-noetic-dingo-control 
-# ros-noetic-dingo-gazebo 
-# ros-noetic-dingo-description (duplicate from dingo-desktop)
-# ros-noetic-fath-pivot-mount-description (duplicate from dingo-desktop)
-# ros-noetic-flir-camera-description (duplicate from dingo-desktop)
-# ros-noetic-lms1xx (duplicate from dingo-desktop)
-# ros-noetic-realsense2-description (duplicate from dingo-desktop)
-# ros-noetic-velodyne-description (duplicate from dingo-desktop)
-# evemu-tools 
-# evtest 
-# joystick 
-# libevemu3 
-# libgeographic-dev 
-# libgeographic19 
-# ros-noetic-geographic-msgs
-# ros-noetic-hector-gazebo-plugins
-# ros-noetic-interactive-marker-twist-server
-# ros-noetic-joy 
-# ros-noetic-ridgeback-control
-# ros-noetic-ridgeback-gazebo-plugins
-# ros-noetic-robot-localization 
-# ros-noetic-teleop-twist-joy
-# ros-noetic-twist-mux
-# ros-noetic-twist-mux-msgs
-# ros-noetic-uuid-msgs
+
 sudo apt install ros-noetic-dingo-navigation;
-# Installs:
-# ros-noetic-dingo-navigation 
-# ros-noetic-gmapping 
-# ros-noetic-openslam-gmapping
 
 # ONLY ON PHYSICAL ROBOTS, NEED TO INSTALL
 sudo apt-get install -y ros-noetic-roslint; # needed to build dingo_base package
 sudo apt-get install -y ros-noetic-gazebo-msgs;
 sudo apt-get install -y ros-noetic-dingo-robot; # AFTER ADDING CLEARPATH KEYS (see https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/tutorials_dingo/#installing-from-debian-packages)
-# INSTALLS:
-# can-utils 
-# daemontools 
-# evemu-tools 
-# evtest 
-# joystick 
-# libevemu3 
-# libgeographic-dev 
-# libgeographic19 
-# libpcap0.8-dev
-# net-tools
-# python3-serial
-# ros-noetic-ddynamic-reconfigure 
-# ros-noetic-dingo-base 
-# ros-noetic-dingo-bringup
-# ros-noetic-dingo-control 
-# ros-noetic-dingo-description 
-# ros-noetic-dingo-msgs 
-# ros-noetic-dingo-tests 
-# ros-noetic-fath-pivot-mount-description 
-# ros-noetic-flir-camera-description
-# ros-noetic-geographic-msgs 
-# ros-noetic-image-exposure-msgs 
-# ros-noetic-imu-filter-madgwick
-# ros-noetic-interactive-marker-twist-server 
-# ros-noetic-joy 
-# ros-noetic-laser-proc 
-# ros-noetic-lms1xx 
-# ros-noetic-sick-tim 
-# ros-noetic-mavros-msgs (IMU related)
-# ros-noetic-microstrain-inertial-driver (IMU related)
-# ros-noetic-microstrain-inertial-msgs (IMU related)
-# ros-noetic-nmea-msgs (IMU related)
-# ros-noetic-puma-motor-driver
-# ros-noetic-puma-motor-msgs 
-# ros-noetic-librealsense2
-# ros-noetic-realsense2-camera 
-# ros-noetic-realsense2-description
-# ros-noetic-ridgeback-control 
-# ros-noetic-robot-localization 
-# ros-noetic-robot-upstart
-# ros-noetic-rosserial-msgs 
-# ros-noetic-rosserial-python 
-# ros-noetic-rosserial-server 
-# ros-noetic-serial
-# ros-noetic-socketcan-interface 
-# ros-noetic-spinnaker-camera-driver
-# ros-noetic-statistics-msgs 
-# ros-noetic-teleop-twist-joy 
-# ros-noetic-twist-mux 
-# ros-noetic-twist-mux-msgs
-# ros-noetic-urg-c 
-# ros-noetic-urg-node 
-# ros-noetic-uuid-msgs 
-# ros-noetic-velodyne-description
-# ros-noetic-velodyne-driver 
-# ros-noetic-velodyne-laserscan 
-# ros-noetic-velodyne-msgs
-# ros-noetic-velodyne-pointcloud 
-# ros-noetic-wfov-camera-msgs 
-# socat
-
 
 ```
 
@@ -189,7 +85,7 @@ git clone https://github.com/burakaksoy/multiRobotPlanner.git # only on DESKTOP.
 
 cd ..;
 catkin_make -DCATKIN_BLACKLIST_PACKAGES='dingo_base;dingo_customization' -DCMAKE_BUILD_TYPE=Release; # on DESKTOP computer 
-# catkin_make -DCATKIN_BLACKLIST_PACKAGES='swarm_gui' -DCMAKE_BUILD_TYPE=Release; # on Physical Robots
+# catkin_make -DCATKIN_BLACKLIST_PACKAGES='swarm_gui;arm_gui;arm_msgs;arm_utils;machine_manager;robot_assigner;task_scheduler;ticket_manager' -DCMAKE_BUILD_TYPE=Release; # on Physical Robots
 source devel/setup.bash;
 ```
 
