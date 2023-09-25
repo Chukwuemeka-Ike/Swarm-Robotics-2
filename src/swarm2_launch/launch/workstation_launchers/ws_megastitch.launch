@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<launch>
+<!-- MEGASTITCH WORKSTATION -->
+<arg name="ws_namespace" default="ws_MS"/>
+<arg name="operator_gui_rviz_file"   default="$(find swarm2_launch)/config/rviz/ws_megastitch.rviz"/>
+
+<arg name="tablet_name"  default="tablet-ws1"/>
+<arg name="tablet_user"  default="tablet-ws1"/>
+<arg name="tablet_ip"    default="192.168.1.96"/>
+<arg name="tablet_pass"  default="1234"/>
+<arg name="tablet_env"   default="$(find swarm2_launch)/scripts/env_tablet_ws1.sh"/>
+
+<!-- Launch its swarm in MAIN machine -->
+<group ns="$(arg ws_namespace)">
+
+    <!-- Launch Main Swarm Control -->
+    <arg name="topic_prefix" value="/$(arg ws_namespace)"/>
+    
+    <group ns="main">
+        <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control.py" output="screen">
+            <rosparam file="$(find swarm2_launch)/config/main_swarm_control.yaml"/>
+
+            <rosparam param="topic_prefix"          subst_value="True">$(arg topic_prefix)</rosparam>
+            <rosparam param="tf_swarm_frame_name"   subst_value="True">$(arg ws_namespace)_team_frame</rosparam>
+        </node>
+
+        <!-- Utility node to publish where the swarm_frame is at as a odom message -->
+        <node type="tf_to_odom_node.py" name="tf_to_odom_node" pkg="topic_tf_transformers" output="screen">
+            <rosparam param="odom_topic_name_out"   subst_value="True">swarm_frame/odom</rosparam>
+            <rosparam param="tf_a_frame_name"       subst_value="True">map</rosparam>
+            <rosparam param="tf_b_frame_name"       subst_value="True">$(arg ws_namespace)_team_frame</rosparam>
+            <rosparam param="pub_rate"              subst_value="True">100.0</rosparam>
+        </node>
+
+        <!-- Closed Loop Velocity Controller for when a desired location is specified for the swarm -->
+        <node name="swarm_cl_vel_controller" pkg="vel_controller" type="vel_controller_swarm.py">
+            <rosparam file="$(find swarm2_launch)/config/main_swarm_cl_vel_controller_sim.yaml"/>
+            
+            <rosparam param="topic_prefix"          subst_value="True">$(arg topic_prefix)</rosparam>
+        </node>
+
+        <!-- Launch Swarm Navigation Global Planner -->
+        <arg name="path_executer_name" value="swarm_path_executer"/>
+        <group ns="$(arg path_executer_name)">
+        <include file="$(find swarm_navigation)/launch/swarm_global_planner.launch">
+            <arg name="map_file" value="$(find swarm_navigation)/maps/highbay_map.yaml" />
+
+            <arg name="global_planner_config_file" value="$(find swarm_navigation)/params/global_planner_params.yaml"/>
+            <arg name="global_costmap_config_file" value="$(find swarm_navigation)/params/global_costmap_params.yaml"/>
+            <arg name="global_costmap_robot_base_frame" value="$(arg ws_namespace)_team_frame"/>
+        </include>
+        </group>
+
+        <node name="$(arg path_executer_name)" pkg="swarm_navigation" type="swarm_path_executer.py" output="screen">
+            <rosparam file="$(find swarm2_launch)/config/main_swarm_path_executer.yaml"/>
+        </node>
+    </group>
+</group>
+
+<!-- Launch Operator GUI -->
+<group ns="$(arg ws_namespace)">
+    <!-- <machine name="$(arg tablet_name)" 
+             address="$(arg tablet_ip)" 
+             env-loader="$(arg tablet_env)" 
+             user="$(arg tablet_user)" 
+             password="$(arg tablet_pass)" 
+             default="true"/> -->
+
+    <!-- Launch Mesh Visualizer for Static Environment World -->
+    <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
+        <rosparam param="frame" subst_value="True">map</rosparam>
+        <rosparam param="visualizer_path" subst_value="True">$(find lab_gazebo)/worlds/highbay_swarm_world/meshes</rosparam>
+    </node>
+
+    <!-- Operator GUI node -->
+    <param name="gui_rviz_path" value="$(arg operator_gui_rviz_file)"/>
+    <node name="operator_gui" pkg="arm_gui" type="operator_gui_node" output="screen">        
+        <remap from="move_base_simple/goal"     to="/$(arg ws_namespace)/main/move_base_simple/goal"/>
+        <remap from="start_ticket"              to="/main/start_ticket"/>
+        <remap from="end_ticket"                to="/main/end_ticket"/>
+        <remap from="bind_machine"              to="/main/bind_machine"/>
+        <remap from="release_machine"           to="/main/release_machine"/>
+
+        <remap from="machine_status_service"    to="/main/machine_status_service"/>
+        <remap from="unbound_machine_service"   to="/main/unbound_machine_service"/>
+        <remap from="ticket_service"            to="/main/ticket_service"/>
+        <remap from="fleet_information_service" to="/main/fleet_information_service"/>
+        <remap from="robot_assignments_service" to="/main/robot_assignments_service"/>
+        <remap from="robot_replacement_service" to="/main/robot_replacement_service"/>
+    </node>
+    <rosparam command="load" file="$(find arm_gui)/config/gui_params.yaml"/>
+    <rosparam param="team_command_topic"       subst_value="true">team_vel</rosparam>
+    <rosparam param="team_frame_command_topic" subst_value="true">team_frame_vel</rosparam>
+    <rosparam param="team_tf_frame_name"       subst_value="true">$(arg ws_namespace)_team_frame</rosparam>
+    
+
+    <!-- RQT EZ Publisher for controlling robots. -->
+    <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen"/>
+
+    <!-- ARDUINO READER -->
+    <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
+        <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
+    </node> -->
+
+    <!-- SPACE MOUSE -->
+    <!-- <include file="$(find spacenav_node)/launch/classic.launch"/> -->
+
+    <!-- TWIST MUX FOR E-STOP -->
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+        <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_twist_mux_disabled.yaml" />
+        <remap from="cmd_vel_out" to="deadman_switch_spacenav_twist"/>
+    </node>
+</group>
+
+</launch>

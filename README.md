@@ -9,14 +9,17 @@ https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/user_manual_d
 
 # The Devices In The Lab:
 
-| Description             | Username      | Hostname (Computer Name) | IP            | Password  | OS           | ROS     |
-| ---                     | ---           | ---                      | ---           | ---       | ---          | ---     |
-| Pendant Tablet          | tablet        | tablet20                 | 192.168.1.99  | 1234      | Ubuntu 20.04 | Noetic  |
-| Main Computer           | razer         | razer20                  | 192.168.1.100 | 1234      | Ubuntu 20.04 | Noetic |
-| Robot 1 (Color)         | administrator | cpr-do100-10000050       | 192.168.1.101 | clearpath | Ubuntu 20.04 | Noetic |
-| Robot 2 (Color)         | administrator | cpr-do100-10000051       | 192.168.1.102 | clearpath | Ubuntu 20.04 | Noetic |
-| Robot 3 (Color)         | administrator | cpr-do100-10000052       | 192.168.1.103 | clearpath | Ubuntu 20.04 | Noetic |
-| Robot 4 (Color)         | administrator | cpr-do100-10000053       | 192.168.1.104 | clearpath | Ubuntu 20.04 | Noetic |
+| Description                               | Username      | Hostname (Computer Name) | MAC Address       | IP            | Password  | OS           | ROS     |
+| ---                                       | ---           | ---                      | ---               | ---           | ---       | ---          | ---     |
+| Workstation 1 Tablet (Mega Stitch)        | tablet-ws1    | tablet20-ws1             | F4:6D:3F:EC:8B:4B | 192.168.1.96  | 1234      | Ubuntu 20.04 | Noetic  |
+| Workstation 2 Tablet (RF Welder)          | tablet-ws2    | tablet20-ws2             | F4:6D:3F:EC:7C:5F | 192.168.1.97  | 1234      | Ubuntu 20.04 | Noetic  |
+| Workstation 3 Tablet (Short Arm Sewing)   | tablet-ws3    | tablet20-ws3             | F4:6D:3F:EC:7B:C4 | 192.168.1.98  | 1234      | Ubuntu 20.04 | Noetic  |
+| Workstation 4 Tablet (Inspection/Loading) | tablet        | tablet20                 | AC:67:5D:5B:0F:86 | 192.168.1.99  | 1234      | Ubuntu 20.04 | Noetic  |
+| Main Computer                             | razer         | razer20                  | 3C:8C:F8:EB:11:86 | 192.168.1.100 | 1234      | Ubuntu 20.04 | Noetic  |
+| Dingo-omni 1                              | administrator | cpr-do100-10000050       | 0C:7A:15:CB:A6:0B | 192.168.1.101 | clearpath | Ubuntu 20.04 | Noetic  |
+| Dingo-omni 2                              | administrator | cpr-do100-10000051       | F0:B6:1E:B7:29:1F | 192.168.1.102 | clearpath | Ubuntu 20.04 | Noetic  |
+| Dingo-omni 3                              | administrator | cpr-do100-10000052       | 8C:1D:96:5B:BB:66 | 192.168.1.103 | clearpath | Ubuntu 20.04 | Noetic  |
+| Dingo-omni 4                              | administrator | cpr-do100-10000053       | 8C:17:59:E5:C8:5B | 192.168.1.104 | clearpath | Ubuntu 20.04 | Noetic  |
 
 # Setting up the system
 
@@ -42,6 +45,7 @@ sudo apt-get install -y ros-noetic-tf2-sensor-msgs;
 sudo apt-get install -y ros-noetic-imu-tools;
 sudo apt-get install -y ros-noetic-imu-pipeline; # for imu_transformer
 sudo apt-get install -y ros-noetic-navigation; # for navigation stack
+sudo apt-get install -y ros-noetic-visualization-tutorials; # rviz python bindings.
 
 # PYTHON RELATED
 sudo apt-get install -y python3-pip;
@@ -52,6 +56,8 @@ pip3 install pygame;
 pip3 install scipy;
 pip3 install numpy==1.21; # needed to resolve the issue "AttributeError: module 'numpy' has no attribute 'typeDict'"
 pip3 install shapely; # needed to calculate the swarm footprint polygon and costmap parameter updater functions
+pip3 install matplotlib==3.7.3;
+pip3 install ortools==9.7.2996;
 
 # DINGO RELATED
 sudo apt-get install -y ros-noetic-dingo-desktop;
@@ -179,6 +185,7 @@ cd src;
 git clone https://github.com/burakaksoy/AssistiveRobot-SimulationFiles.git; # only on DESKTOP
 git clone https://github.com/burakaksoy/RVizMeshVisualizer.git; # only on DESKTOP
 git clone https://github.com/burakaksoy/uwb_gazebo_plugin; # only on DESKTOP
+git clone https://github.com/burakaksoy/multiRobotPlanner.git # CK's repo, but cloning my for fork stable testing
 
 cd ..;
 catkin_make -DCATKIN_BLACKLIST_PACKAGES='dingo_base;dingo_customization' -DCMAKE_BUILD_TYPE=Release; # on DESKTOP computer 

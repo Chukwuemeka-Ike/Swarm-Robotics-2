@@ -41,12 +41,13 @@ Parameters:
 class Controller:
     def __init__(self):
         rospy.init_node('closed_loop_velocity_controller', anonymous=True)
+
+        topic_prefix = rospy.get_param('~topic_prefix', "")
         
         cmd_input_topic_name = rospy.get_param('~cmd_input_topic_name')
-        control_cmd_publish_topic_name = rospy.get_param('~control_cmd_publish_topic_name')
+        control_cmd_publish_topic_name = topic_prefix + rospy.get_param('~control_cmd_publish_topic_name')
         
         position_feedback_topic_name = rospy.get_param('~position_feedback_topic_name')
-
 
         vel_lim_x = rospy.get_param('~vel_lim_x')
         vel_lim_y = rospy.get_param('~vel_lim_y')

@@ -33,8 +33,9 @@
     </node>
 
     <!-- QT BASED GUI -->
-    <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_gui_params.yaml"/>
-    <node name="swarm_gui" pkg="swarm_gui" type="swarm_gui_user_py3.py" output="screen"/>
+    <node name="swarm_gui" pkg="swarm_gui" type="swarm_gui_user_py3.py" output="screen">
+        <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_gui_params.yaml"/>
+    </node>
 
 
 </group>

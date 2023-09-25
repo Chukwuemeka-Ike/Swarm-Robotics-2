@@ -1,5 +1,5 @@
 # Parameters for costmap_parameter_updater object
-costmap_updater_planner_name: "main/global_planner"
+costmap_updater_planner_name: "global_planner"
 costmap_updater_costmap_name: "costmap"
 costmap_updater_inflation_layer_name: "inflater_layer"
 costmap_updater_service_wait_timeout: 2
@@ -7,8 +7,9 @@ costmap_updater_num_trials: 5
 costmap_updater_trial_intervals: 0.5
 
 footprint_topic_name: "swarm_footprint" # subscribed
-plan_request_goal_topic_name: "global_planner/goal" # published
-plan_response_path_topic_name: "global_planner/planner/plan" # subscribed
+
+plan_request_goal_topic_name: "swarm_path_executer/global_planner/goal" # published
+plan_response_path_topic_name: "swarm_path_executer/global_planner/planner/plan" # subscribed
 
 # Service address names
 disable_execution_service_name: "disable_path_execution"
@@ -16,7 +17,7 @@ enable_execution_service_name: "enable_path_execution"
 cancel_execution_service_name: "cancel_path_execution"
 toggle_adjust_path_service_name: "toggle_adjust_path"
 
-simple_goal_topic_name: "/move_base_simple/goal" # subscribed
+simple_goal_topic_name: "move_base_simple/goal" # subscribed
 
 saved_path_file_topic_name: "path_csv_file_name" # subscribed, eg. "home/burak/VINYL_716262_path.csv"
 

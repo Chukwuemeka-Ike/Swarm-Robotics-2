@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+<!-- INSPECTION WORKSTATION -->
+<arg name="ws_namespace" default="ws_I"/>
+<arg name="tablet_name"  default="tablet"/>
+<arg name="tablet_user"  default="tablet"/>
+<arg name="tablet_ip"    default="192.168.1.99"/>
+<arg name="tablet_pass"  default="1234"/>
+<arg name="tablet_env"   default="$(find swarm2_launch)/scripts/env_tablet.sh"/>
+
+<!-- Launch its swarm in MAIN machine -->
+<group ns="$(arg ws_namespace)">
+    <!-- TODO -->
+    
+</group>
+
+<!-- Launch Operator GUI -->
+<group ns="$(arg ws_namespace)">
+    <machine name="$(arg tablet_name)" 
+             address="$(arg tablet_ip)" 
+             env-loader="$(arg tablet_env)" 
+             user="$(arg tablet_user)" 
+             password="$(arg tablet_pass)" 
+             default="true"/>
+
+    
+
+
+</group>
+
+</launch>

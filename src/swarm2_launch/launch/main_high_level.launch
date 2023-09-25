@@ -1,0 +1,13 @@
+<launch>
+
+<arg name="topic_prefix" default=""/>
+
+<group ns="main">
+    <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
+
+    <include file="$(find arm_utils)/launch/high_level.launch">
+        <!-- <arg name="topic_prefix" value="/$(arg ticket_id)"/> -->
+    </include>
+
+</group>
+</launch>

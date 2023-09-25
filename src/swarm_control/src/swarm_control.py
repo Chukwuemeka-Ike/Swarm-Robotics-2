@@ -5,6 +5,7 @@ import rospy
 from swarm_msgs.msg import State2D
 from geometry_msgs.msg import Twist, PoseStamped
 import geometry_msgs.msg
+from arm_msgs.msg import RobotEnableStatus
 
 import tf2_ros
 import tf2_msgs.msg
@@ -53,17 +54,21 @@ Parameters:
 
 # Velocity commands will only be considered if they are spaced closer than MAX_TIMESTEP
 MAX_TIMESTEP = 0.1
+log_tag = "Swarm Controller"
 
 class Swarm_Control:
     def __init__(self):
         rospy.init_node('swarm_controller', anonymous=False)
 
-        # Read in all the parameters
-        desired_swarm_vel_topic_name = rospy.get_param('~desired_swarm_vel_topic_name')
-        just_swarm_frame_vel_input_topic_name = rospy.get_param('~just_swarm_frame_vel_input_topic_name')
-        sync_frame_topic_name = rospy.get_param('~frame_sync_topic_name')
-        robot_enable_status_topic_name = rospy.get_param('~robot_enable_status_topic_name')
+        topic_prefix = rospy.get_param('~topic_prefix', "")
 
+        # Read in all the parameters
+        desired_swarm_vel_topic_name = topic_prefix + rospy.get_param('~desired_swarm_vel_topic_name')
+        just_swarm_frame_vel_input_topic_name = topic_prefix + rospy.get_param('~just_swarm_frame_vel_input_topic_name')
+        sync_frame_topic_name = topic_prefix + rospy.get_param('~frame_sync_topic_name')
+        robot_enable_status_topic_name = topic_prefix + rospy.get_param('~robot_enable_status_topic_name')
+
+        self.tf_swarm_frame_name = rospy.get_param('~tf_swarm_frame_name', 'swarm_frame')
 
         self.N_robots = rospy.get_param('~N_robots')
         self.theta_scale = rospy.get_param('~theta_scale')
@@ -78,7 +83,8 @@ class Swarm_Control:
         self.a_max = np.zeros((3, self.N_robots))
 
         for i in range(self.N_robots):
-            self.enabled_robots.append(True)
+            self.enabled_robots.append(False)
+            # just_robot_vel_input_topic_names[i] = topic_prefix + rospy.get_param('~just_robot_vel_input_topic_name_' + str(i))
             just_robot_vel_input_topic_names[i] = rospy.get_param('~just_robot_vel_input_topic_name_' + str(i))
             state_publish_topic_names[i] = rospy.get_param('~state_publish_topic_name_' + str(i))
             self.tf_frame_names[i] = rospy.get_param('~tf_frame_name_' + str(i))
@@ -96,7 +102,8 @@ class Swarm_Control:
         rospy.Subscriber(desired_swarm_vel_topic_name, Twist, self.desired_swarm_velocity_callback, queue_size=1)
         rospy.Subscriber(just_swarm_frame_vel_input_topic_name, Twist, self.just_swarm_frame_velocity_callback, queue_size=1)
         rospy.Subscriber(sync_frame_topic_name, PoseStamped, self.frame_changer_callback, queue_size=20)
-        rospy.Subscriber(robot_enable_status_topic_name, Int32, self.robot_enable_changer, queue_size=5)
+        # rospy.Subscriber(robot_enable_status_topic_name, Int32, self.robot_enable_changer, queue_size=5)
+        rospy.Subscriber(robot_enable_status_topic_name, RobotEnableStatus, self.robot_enable_changer_callback, queue_size=5)
 
         for i in range(self.N_robots):
             rospy.Subscriber(just_robot_vel_input_topic_names[i], Twist, self.just_robot_velocity_callback, i, queue_size=1)
@@ -127,21 +134,48 @@ class Swarm_Control:
         rospy.Timer(rospy.Duration(1.0 / footprint_update_rate), self.publish_formation_footprint_polygon)
 
 
-    def robot_enable_changer(self,data):
-        number=data.data
-        rospy.logwarn(str(len(self.enabled_robots)))
-        rospy.logwarn(str(self.N_robots))
-        for i in range(self.N_robots-1,-1,-1):
-            if(number>>i==1):
-                number-=pow(2,i)
+    # def robot_enable_changer(self,data):
+    #     number=data.data
+    #     rospy.logwarn(str(len(self.enabled_robots)))
+    #     rospy.logwarn(str(self.N_robots))
+    #     for i in range(self.N_robots-1,-1,-1):
+    #         if(number>>i==1):
+    #             number-=pow(2,i)
                 
-                self.enabled_robots[i]=False
-                rospy.logwarn("disabled robot: "+str(i+1)+"status: "+str(self.enabled_robots[i]))
-                self.robots_last_velocities[:,i] = 0
-            else:
+    #             self.enabled_robots[i]=False
+    #             rospy.logwarn("disabled robot: "+str(i+1)+"status: "+str(self.enabled_robots[i]))
+    #             self.robots_last_velocities[:,i] = 0
+    #         else:
                 
-                self.enabled_robots[i]=True
-                rospy.logwarn("enabled robot: "+str(i+1)+"status: "+str(self.enabled_robots[i]))
+    #             self.enabled_robots[i]=True
+    #             rospy.logwarn("enabled robot: "+str(i+1)+"status: "+str(self.enabled_robots[i]))
+
+    def robot_enable_changer_callback(self, msg: RobotEnableStatus) -> None:
+        '''Changes the enable status of the robots based on the message.
+
+        Args:
+            msg: RobotEnableStatus containing enabled_ids and disabled_ids.
+                    Each message is team-specific and contains the true
+                    robot IDs.
+        '''
+        enabled_ids = msg.enabled_ids
+        disabled_ids = msg.disabled_ids
+
+        # Set the enabled IDs to True.
+        for robot_id in enabled_ids:
+            # Indices start at 0, but ID's start at 1.
+            robot_idx = robot_id - 1
+            self.enabled_robots[robot_idx] = True
+
+        # Set the disabled IDs to False.
+        for robot_id in disabled_ids:
+            # Indices start at 0, but ID's start at 1.
+            robot_idx = robot_id - 1
+            self.enabled_robots[robot_idx] = False
+        
+        rospy.loginfo(f"{log_tag}: Robot enable status: "
+                      f"{self.enabled_robots}"
+        )
 
     def frame_changer_callback(self,data):
         if(data.header.frame_id in self.tf_frame_names):
@@ -248,12 +282,12 @@ class Swarm_Control:
 
     
     def publish_tf_frames(self,event):
-        tf_swarm_frame = xyt2TF(self.swarm_xyt, "map", "swarm_frame")
+        tf_swarm_frame = xyt2TF(self.swarm_xyt, "map", self.tf_swarm_frame_name)
         self.tf_broadcaster.sendTransform(tf_swarm_frame)
 
         for i in range(self.N_robots):
             if(self.enabled_robots[i]):
-                tf_robot_i = xyt2TF(self.robots_xyt[:,i], "swarm_frame", self.tf_frame_names[i])
+                tf_robot_i = xyt2TF(self.robots_xyt[:,i], self.tf_swarm_frame_name, self.tf_frame_names[i])
                 self.tf_broadcaster.sendTransform(tf_robot_i)
 
 
@@ -305,7 +339,7 @@ class Swarm_Control:
         # Prepare the msg and publish
         msg = geometry_msgs.msg.PolygonStamped()
         msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id = "swarm_frame"  # replace with appropriate frame
+        msg.header.frame_id = self.tf_swarm_frame_name  # replace with appropriate frame
         msg.polygon.points = polygon
         self.footprint_pub.publish(msg)
 

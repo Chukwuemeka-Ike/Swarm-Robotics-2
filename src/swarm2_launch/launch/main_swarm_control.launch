@@ -1,14 +1,19 @@
 <launch>
+
+<arg name="topic_prefix" default=""/>
+
 <group ns="main">
     <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
 
     <node name="swarm_safe_vel_calculator" pkg="swarm_control" type="swarm_control.py" output="screen">
         <rosparam file="$(find swarm2_launch)/config/main_swarm_control.yaml"/>
+
+        <rosparam param="topic_prefix"          subst_value="True">$(arg topic_prefix)</rosparam>
     </node>
 
     <!-- Utility node to publish where the swarm_frame is at as a odom message -->
     <node type="tf_to_odom_node.py" name="tf_to_odom_node" pkg="topic_tf_transformers" output="screen">
-        <rosparam param="odom_topic_name_out" subst_value="True">swarm_frame/odom</rosparam>
+        <rosparam param="odom_topic_name_out"   subst_value="True">swarm_frame/odom</rosparam>
         <rosparam param="tf_a_frame_name"       subst_value="True">map</rosparam>
         <rosparam param="tf_b_frame_name"       subst_value="True">swarm_frame</rosparam>
         <rosparam param="pub_rate"              subst_value="True">100.0</rosparam>
@@ -17,17 +22,22 @@
     <!-- Closed Loop Velocity Controller for when a desired location is specified for the swarm -->
     <node name="swarm_cl_vel_controller" pkg="vel_controller" type="vel_controller_swarm.py">
         <rosparam file="$(find swarm2_launch)/config/main_swarm_cl_vel_controller_sim.yaml"/>
+        
+        <rosparam param="topic_prefix"          subst_value="True">$(arg topic_prefix)</rosparam>
     </node>
 
     <!-- Launch Swarm Navigation Global Planner -->
+    <arg name="path_executer_name" value="swarm_path_executer"/>
+    <group ns="$(arg path_executer_name)">
     <include file="$(find swarm_navigation)/launch/swarm_global_planner.launch">
         <arg name="map_file" value="$(find swarm_navigation)/maps/highbay_map.yaml" />
 
         <arg name="global_planner_config_file" value="$(find swarm_navigation)/params/global_planner_params.yaml"/>
         <arg name="global_costmap_config_file" value="$(find swarm_navigation)/params/global_costmap_params.yaml"/>
     </include>
+    </group>
 
-    <node name="swarm_path_executer" pkg="swarm_navigation" type="swarm_path_executer.py" output="screen">
+    <node name="$(arg path_executer_name)" pkg="swarm_navigation" type="swarm_path_executer.py" output="screen">
         <rosparam file="$(find swarm2_launch)/config/main_swarm_path_executer.yaml"/>
     </node>
 

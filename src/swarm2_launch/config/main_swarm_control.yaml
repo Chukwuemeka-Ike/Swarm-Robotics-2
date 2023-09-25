@@ -1,15 +1,19 @@
-desired_swarm_vel_topic_name: /ui/desired_swarm_vel
-just_swarm_frame_vel_input_topic_name: /ui/just_swarm_vel
+topic_prefix: "" # Adds this in front of the "prefixed" topics below
 
-frame_sync_topic_name: /ui/tf_changer
-robot_enable_status_topic_name: /ui/robot_enable_status
+desired_swarm_vel_topic_name: /team_vel # /ui/desired_swarm_vel # prefixed
+just_swarm_frame_vel_input_topic_name: /team_frame_vel #/ui/just_swarm_vel # prefixed
+
+frame_sync_topic_name: /tf_changer # /ui/tf_changer # prefixed
+robot_enable_status_topic_name: /robot_enable_status  # /ui/robot_enable_status # prefixed
 
 footprint_publish_topic_name: "swarm_footprint"
+
+tf_swarm_frame_name: "swarm_frame"
 
 N_robots: 4
 theta_scale: 1.0 # (m/s)/(rad/s)
 
-just_robot_vel_input_topic_name_0: /ui/just_robot_vel_1
+just_robot_vel_input_topic_name_0: /robot_1_frame_vel # /ui/just_robot_vel_1 # prefixed
 state_publish_topic_name_0: /d1/desired_state
 tf_frame_name_0: tf_robot_1
 footprint_0: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
@@ -20,7 +24,7 @@ acc_lim_x_0: 1.0
 acc_lim_y_0: 1.0
 acc_lim_theta_0: 2.0  
 
-just_robot_vel_input_topic_name_1: /ui/just_robot_vel_2
+just_robot_vel_input_topic_name_1: /robot_2_frame_vel # /ui/just_robot_vel_2 # prefixed
 state_publish_topic_name_1: /d2/desired_state
 tf_frame_name_1: tf_robot_2
 footprint_1: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
@@ -31,7 +35,7 @@ acc_lim_x_1: 1.0
 acc_lim_y_1: 1.0
 acc_lim_theta_1: 2.0  
 
-just_robot_vel_input_topic_name_2: /ui/just_robot_vel_3
+just_robot_vel_input_topic_name_2: /robot_3_frame_vel # /ui/just_robot_vel_3 # prefixed
 state_publish_topic_name_2:  /d3/desired_state
 tf_frame_name_2: tf_robot_3
 footprint_2: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]
@@ -42,7 +46,7 @@ acc_lim_x_2: 1.0
 acc_lim_y_2: 1.0
 acc_lim_theta_2: 2.0  
 
-just_robot_vel_input_topic_name_3: /ui/just_robot_vel_4
+just_robot_vel_input_topic_name_3: /robot_4_frame_vel # /ui/just_robot_vel_4 # prefixed
 state_publish_topic_name_3: /d4/desired_state
 tf_frame_name_3: tf_robot_4
 footprint_3: [[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]

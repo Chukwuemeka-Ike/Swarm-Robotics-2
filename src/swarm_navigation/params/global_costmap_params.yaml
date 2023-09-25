@@ -30,7 +30,7 @@ plugins:
 
 #layer definitions
 static_layer:
-   map_topic: /main/map
+   map_topic: map
    subscribe_to_updates: true
 
 inflater_layer:

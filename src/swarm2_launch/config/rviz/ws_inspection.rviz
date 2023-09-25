@@ -68,7 +68,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /ui/visualization_marker
+      Marker Topic: /ws_I/visualization_marker
       Name: MarkerArray-HighBay
       Namespaces:
         "": true
@@ -1087,7 +1087,7 @@ Visualization Manager:
           Value: false
         map:
           Value: false
-        swarm_frame:
+        ws_I_team_frame:
           Value: true
         tf_robot_1:
           Value: false
@@ -1225,7 +1225,7 @@ Visualization Manager:
                 {}
               d4_tf_rear_right_wheel_link:
                 {}
-          swarm_frame:
+          ws_I_team_frame:
             tf_robot_1:
               {}
             tf_robot_2:
@@ -1397,7 +1397,7 @@ Visualization Manager:
           Value: false
         map:
           Value: false
-        swarm_frame:
+        ws_I_team_frame:
           Value: true
         tf_robot_1:
           Value: true
@@ -1535,7 +1535,7 @@ Visualization Manager:
                 {}
               d4_tf_rear_right_wheel_link:
                 {}
-          swarm_frame:
+          ws_I_team_frame:
             tf_robot_1:
               {}
             tf_robot_2:
@@ -1552,7 +1552,7 @@ Visualization Manager:
       Enabled: true
       Name: formation-footprint-Polygon
       Queue Size: 10
-      Topic: /main/swarm_footprint
+      Topic: /ws_I/main/swarm_footprint
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -1561,7 +1561,7 @@ Visualization Manager:
       Enabled: false
       Name: formation-footprint-padded-Polygon
       Queue Size: 10
-      Topic: /main/global_planner/costmap/footprint
+      Topic: /ws_I/main/global_planner/costmap/footprint
       Unreliable: false
       Value: false
     - Alpha: 1
@@ -1585,7 +1585,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /main/swarm_path_executer/global_planner/planner/plan
+      Topic: /ws_I/main/swarm_path_executer/global_planner/planner/plan
       Unreliable: false
       Value: true
     - Alpha: 0.699999988079071
@@ -1594,7 +1594,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /main/swarm_path_executer/global_planner/costmap/costmap
+      Topic: /ws_I/main/swarm_path_executer/global_planner/costmap/costmap
       Unreliable: false
       Use Timestamp: false
       Value: true

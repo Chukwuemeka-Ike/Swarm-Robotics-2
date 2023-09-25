@@ -25,10 +25,10 @@ class CostmapParameterUpdater:
         # print(num_trials)
         # print(trial_intervals)
         
-        self.costmap_client = "/" + planner_name + "/" + costmap_name
+        self.costmap_client = "~" + planner_name + "/" + costmap_name
         self.costmap_service = self.costmap_client + "/set_parameters"
         
-        self.inflation_layer_client = "/" + planner_name + "/" + costmap_name + "/" + inflation_layer_name
+        self.inflation_layer_client = "~" + planner_name + "/" + costmap_name + "/" + inflation_layer_name
         self.inflation_layer_service = self.inflation_layer_client + "/set_parameters"
 
         self.service_wait_timeout = service_wait_timeout # seconds

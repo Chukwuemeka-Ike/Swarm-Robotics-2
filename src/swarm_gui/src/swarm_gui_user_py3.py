@@ -91,7 +91,7 @@ class LEDManager:
         self.nodenames = nodenames
         self.led_objects = led_objects
         self.active_bots = []
-        self.robot_enable_status_topic = rospy.get_param('robot_enable_status_topic') 
+        self.robot_enable_status_topic = rospy.get_param('~robot_enable_status_topic') 
         self.publisher = rospy.Publisher(self.robot_enable_status_topic, Int32, queue_size=10)
         self.send_value = 0
         for i in range(len(led_objects)):
@@ -173,20 +173,20 @@ class SWARMGUI(QtWidgets.QMainWindow):
         #self.number_of_bots=3
         #self.number_of_bots=rospy.get_param('number_of_robots')
         try:
-            self.number_of_bots = rospy.get_param('number_of_robots')
-            self.nodenames = rospy.get_param('robot_node_names')
-            self.open_loop_command_topics = rospy.get_param('open_loop_command_topics')
-            self.close_loop_command_topics = rospy.get_param('closed_loop_command_topics')
-            self.input_command_topic = rospy.get_param('input_command_topic')
-            self.robot_types = rospy.get_param('robot_type_information')
-            self.closed_loop_swarm_command_topic = rospy.get_param('closed_loop_swarm_command_topic')
-            self.open_loop_swarm_command_topic = rospy.get_param('open_loop_swarm_command_topic')
-            #self.sync_topic = rospy.get_param('sync_frames_topic')
-            self.swarm_tf = rospy.get_param('swarm_tf_frame')
-            self.robot_tfs = rospy.get_param('robot_tf_frames')
-            self.real_robot_tfs = rospy.get_param('real_robot_tf_frames')
-            self.resize_swarm_scaling_factor = float(rospy.get_param('resize_scaling_factor'))
-            self.tf_changer_topic = rospy.get_param('tf_changer_topic')
+            self.number_of_bots = rospy.get_param('~number_of_robots')
+            self.nodenames = rospy.get_param('~robot_node_names')
+            self.open_loop_command_topics = rospy.get_param('~open_loop_command_topics')
+            self.close_loop_command_topics = rospy.get_param('~closed_loop_command_topics')
+            self.input_command_topic = rospy.get_param('~input_command_topic')
+            self.robot_types = rospy.get_param('~robot_type_information')
+            self.closed_loop_swarm_command_topic = rospy.get_param('~closed_loop_swarm_command_topic')
+            self.open_loop_swarm_command_topic = rospy.get_param('~open_loop_swarm_command_topic')
+            #self.sync_topic = rospy.get_param('~sync_frames_topic')
+            self.swarm_tf = rospy.get_param('~swarm_tf_frame')
+            self.robot_tfs = rospy.get_param('~robot_tf_frames')
+            self.real_robot_tfs = rospy.get_param('~real_robot_tf_frames')
+            self.resize_swarm_scaling_factor = float(rospy.get_param('~resize_scaling_factor'))
+            self.tf_changer_topic = rospy.get_param('~tf_changer_topic')
         except:
             self.number_of_bots = 3
             self.nodenames = [["/rosout"],["hello"],["hello"]]
