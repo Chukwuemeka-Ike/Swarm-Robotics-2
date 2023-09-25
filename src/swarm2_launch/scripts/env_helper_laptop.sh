@@ -17,7 +17,7 @@ export IGN_FILE_PATH=~/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/lab_g
 # TO KILL GAZEBO CLIENT AND SERVER QUICKLY:
 alias killg='killall gzclient && killall gzserver && killall rosmaster'
 
-echo 1234 | sudo -S chmod 666 /dev/ttyACM*
+# echo 1234 | sudo -S chmod 666 /dev/ttyACM*
 
 export DISPLAY=:0 # For rviz remote launch
 
