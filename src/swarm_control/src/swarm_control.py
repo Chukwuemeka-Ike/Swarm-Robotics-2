@@ -12,6 +12,8 @@ import tf2_msgs.msg
 from std_msgs.msg import Bool, Int32
 import tf_conversions # quaternion stuff
 
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+
 from utilities.safe_swarm_controller import *
 
 import numpy as np
@@ -124,6 +126,13 @@ class Swarm_Control:
         self.footprint_publish_topic_name = rospy.get_param('~footprint_publish_topic_name', "swarm_footprint")
         self.footprint_pub = rospy.Publisher(self.footprint_publish_topic_name, geometry_msgs.msg.PolygonStamped, queue_size=1)
 
+        # Service Names
+        self.send_swarm_frame_to_centroid_service_name = rospy.get_param("~send_swarm_frame_to_centroid_service_name", "send_swarm_frame_to_centroid")
+        # Service to send the swarm frame to the centroid of virtual frames of the enabled robots
+        self.srv_send_swarm_frame_to_centroid = rospy.Service(self.send_swarm_frame_to_centroid_service_name, 
+                                                    Trigger, 
+                                                    self.srv_send_swarm_frame_to_centroid_cb)
+
 
         # TF publish timer
         tf_update_rate = 30.0
@@ -178,6 +187,9 @@ class Swarm_Control:
         )
 
     def frame_changer_callback(self,data):
+        """
+        Synchronizes the virtual robot frame locations to the current real robot locations.
+        """
         if(data.header.frame_id in self.tf_frame_names):
             array_position=self.tf_frame_names.index(data.header.frame_id)
             orientations= [data.pose.orientation.x,data.pose.orientation.y,data.pose.orientation.z,data.pose.orientation.w]
@@ -186,6 +198,33 @@ class Swarm_Control:
             self.robots_xyt[0,array_position]=data.pose.position.x
             self.robots_xyt[1,array_position]=data.pose.position.y
             self.robots_xyt[2,array_position]=yaw
+
+    def srv_send_swarm_frame_to_centroid_cb(self, req):
+        assert isinstance(req, TriggerRequest)
+        rospy.loginfo("Sending the swarm frame to the centroid of the robot frames")
+        
+        """
+        Sends the virtual swarm frame to the centroid of 
+        current locations of virtual frames of the enabled robots in the swarm.
+        (Keeps the previous orientation of the swarm frame the same)
+        """
+        # Check if any robot is enabled
+        if any(self.enabled_robots):
+            # Use numpy's boolean indexing to get coordinates of enabled robots
+            enabled_indices = np.where(self.enabled_robots)[0]
+            coords = self.robots_xyt[:2, enabled_indices].T  # Transposed to get Nx2 array
+
+            # Calculate the centroid of the robots
+            centroid = np.mean(coords, axis=0)
+            centroid_xyt = np.array([centroid[0], centroid[1], 0.0]).reshape((3, 1))  # in swarm frame
+
+            # Send the swarm frame to the centroid in world frame
+            self.swarm_xyt = self.swarm_xyt + rot_mat_3d(self.swarm_xyt[2, 0]).dot(centroid_xyt)
+
+            # Keep the virtual robot frame locations in the world the same, so subtract the centroid
+            self.robots_xyt = self.robots_xyt - centroid_xyt
+
+        return TriggerResponse(success=True, message="The swarm frame is sent to the centroid of the robot frames!")
 
     def desired_swarm_velocity_callback(self, data):
         if sum(self.enabled_robots) == 0:
@@ -214,7 +253,7 @@ class Swarm_Control:
 
         # Don't update self.robots_xyt, since that's in the swarm frame
         self.v_robots_prev[:, enabled_index] = v_i_rob;
-        self.swarm_xyt = xyt_swarm_next;
+        self.swarm_xyt = xyt_swarm_next
 
         # Send desired state to each robot
         for i in range(sum(self.enabled_robots)):
