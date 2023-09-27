@@ -4,16 +4,13 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Status1
-        - /Axes1
         - /d1-Odometry1/Shape1
         - /d2-Odometry1/Shape1
         - /d3-Odometry1/Shape1
         - /d4-Odometry1/Shape1
         - /formation-TF-robots1/Frames1
-      Splitter Ratio: 0.5
-    Tree Height: 676
+      Splitter Ratio: 0.6576980352401733
+    Tree Height: 1662
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -929,8 +926,8 @@ Visualization Manager:
     - Class: rviz/TF
       Enabled: true
       Filter (blacklist): ""
-      Filter (whitelist): ""
-      Frame Timeout: 15
+      Filter (whitelist): ws_L_team_frame
+      Frame Timeout: 5
       Frames:
         All Enabled: false
         d1_tf_base_link:
@@ -1100,9 +1097,9 @@ Visualization Manager:
       Marker Alpha: 1
       Marker Scale: 10
       Name: formation-TF-center
-      Show Arrows: false
+      Show Arrows: true
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
         map:
           d1_tf_base_link:
