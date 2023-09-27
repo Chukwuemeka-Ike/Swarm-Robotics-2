@@ -4,6 +4,7 @@
 <arg name="ws_namespace" default="ws_L"/>
 <arg name="operator_gui_rviz_file"   default="$(find swarm2_launch)/config/rviz/ws_loading.rviz"/>
 
+<arg name="use_tablet"   default="false"/>
 <arg name="tablet_name"  default="tablet"/>
 <arg name="tablet_user"  default="tablet"/>
 <arg name="tablet_ip"    default="192.168.1.99"/>
@@ -53,18 +54,22 @@
 
         <node name="$(arg path_executer_name)" pkg="swarm_navigation" type="swarm_path_executer.py" output="screen">
             <rosparam file="$(find swarm2_launch)/config/main_swarm_path_executer.yaml"/>
+            <rosparam param="saved_path_files_directory"       subst_value="true">$(find swarm_navigation)/paths/</rosparam>
         </node>
     </group>
 </group>
 
 <!-- Launch Operator GUI -->
 <group ns="$(arg ws_namespace)">
-    <!-- <machine name="$(arg tablet_name)" 
+    <!-- Conditionally include machine tag -->
+    <group if="$(arg use_tablet)">
+        <machine name="$(arg tablet_name)" 
              address="$(arg tablet_ip)" 
              env-loader="$(arg tablet_env)" 
              user="$(arg tablet_user)" 
              password="$(arg tablet_pass)" 
-             default="true"/> -->
+             default="true"/> 
+    </group>
 
     <!-- Launch Mesh Visualizer for Static Environment World -->
     <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
@@ -75,18 +80,25 @@
     <!-- Operator GUI node -->
     <param name="gui_rviz_path" value="$(arg operator_gui_rviz_file)"/>
     <node name="operator_gui" pkg="arm_gui" type="operator_gui_node" output="screen">        
-        <remap from="move_base_simple/goal"     to="/$(arg ws_namespace)/main/move_base_simple/goal"/>
-        <remap from="start_ticket"              to="/main/start_ticket"/>
-        <remap from="end_ticket"                to="/main/end_ticket"/>
-        <remap from="bind_machine"              to="/main/bind_machine"/>
-        <remap from="release_machine"           to="/main/release_machine"/>
+        <remap from="move_base_simple/goal"        to="/$(arg ws_namespace)/main/move_base_simple/goal"/>
+        <remap from="path_csv_filename"            to="/$(arg ws_namespace)/main/path_csv_filename"/>
+        <remap from="send_swarm_frame_to_centroid" to="/$(arg ws_namespace)/main/send_swarm_frame_to_centroid"/>
+        <remap from="enable_path_execution"        to="/$(arg ws_namespace)/main/enable_path_execution"/>
+        <remap from="disable_path_execution"       to="/$(arg ws_namespace)/main/disable_path_execution"/>
+        <remap from="cancel_path_execution"        to="/$(arg ws_namespace)/main/cancel_path_execution"/>
+        <remap from="toggle_adjust_path"           to="/$(arg ws_namespace)/main/toggle_adjust_path"/>
 
-        <remap from="machine_status_service"    to="/main/machine_status_service"/>
-        <remap from="unbound_machine_service"   to="/main/unbound_machine_service"/>
-        <remap from="ticket_service"            to="/main/ticket_service"/>
-        <remap from="fleet_information_service" to="/main/fleet_information_service"/>
-        <remap from="robot_assignments_service" to="/main/robot_assignments_service"/>
-        <remap from="robot_replacement_service" to="/main/robot_replacement_service"/>
+        <remap from="start_ticket"                 to="/main/start_ticket"/>
+        <remap from="end_ticket"                   to="/main/end_ticket"/>
+        <remap from="bind_machine"                 to="/main/bind_machine"/>
+        <remap from="release_machine"              to="/main/release_machine"/> 
+
+        <remap from="machine_status_service"       to="/main/machine_status_service"/>
+        <remap from="unbound_machine_service"      to="/main/unbound_machine_service"/>
+        <remap from="ticket_service"               to="/main/ticket_service"/>
+        <remap from="fleet_information_service"    to="/main/fleet_information_service"/>
+        <remap from="robot_assignments_service"    to="/main/robot_assignments_service"/>
+        <remap from="robot_replacement_service"    to="/main/robot_replacement_service"/>
     </node>
     <rosparam command="load" file="$(find arm_gui)/config/gui_params.yaml"/>
     <rosparam param="team_command_topic"       subst_value="true">team_vel</rosparam>
@@ -103,7 +115,7 @@
     </node> -->
 
     <!-- SPACE MOUSE -->
-    <!-- <include file="$(find spacenav_node)/launch/classic.launch"/> -->
+    <include file="$(find spacenav_node)/launch/classic.launch"/>
 
     <!-- TWIST MUX FOR E-STOP -->
     <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">

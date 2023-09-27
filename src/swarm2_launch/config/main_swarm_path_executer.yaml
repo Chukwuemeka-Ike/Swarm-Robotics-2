@@ -19,7 +19,8 @@ toggle_adjust_path_service_name: "toggle_adjust_path"
 
 simple_goal_topic_name: "move_base_simple/goal" # subscribed
 
-saved_path_file_topic_name: "path_csv_file_name" # subscribed, eg. "home/burak/VINYL_716262_path.csv"
+saved_path_files_directory: $(find swarm_navigation)/paths/
+saved_path_file_topic_name: "path_csv_filename" # subscribed
 
 position_feedback_topic_name: "swarm_frame/odom" # subscribed
 

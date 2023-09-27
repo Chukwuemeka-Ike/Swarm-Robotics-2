@@ -6,11 +6,14 @@ import numpy as np
 
 import threading
 import time
+import os
 
 from swarm_msgs.msg import State2D
 import geometry_msgs.msg
 import nav_msgs.msg
 import std_msgs.msg
+
+import arm_msgs.msg # TicketMotionParams
 
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
@@ -48,7 +51,8 @@ class PathExecuter:
 
         self.simple_goal_topic_name = rospy.get_param("~simple_goal_topic_name", "/move_base_simple/goal") # subscribed
 
-        self.saved_path_file_topic_name = rospy.get_param("~saved_path_file_topic_name", "path_csv_file_name") # subscribed
+        self.saved_path_files_directory = rospy.get_param("~saved_path_files_directory", "./") # stores the csv files of the preplanned paths
+        self.saved_path_file_topic_name = rospy.get_param("~saved_path_file_topic_name", "path_csv_filename") # subscribed
 
         self.pub_rate_desired_state = rospy.get_param("~pub_rate_desired_state", 100.0)
         self.waypoint_update_rate = rospy.get_param("~waypoint_update_rate", 50.0)
@@ -133,7 +137,7 @@ class PathExecuter:
         rospy.Subscriber(self.plan_response_path_topic_name, nav_msgs.msg.Path, self.planner_response_cb, queue_size=1)
 
         # Subscribe to the saved path csv file os path string topic
-        rospy.Subscriber(self.saved_path_file_topic_name, std_msgs.msg.String, self.saved_path_file_cb, queue_size=1)
+        rospy.Subscriber(self.saved_path_file_topic_name, arm_msgs.msg.TicketMotionParams, self.saved_path_file_cb, queue_size=1)
 
         # Setup timer for publishing the desired states
         self.waypoint_reached = True
@@ -200,10 +204,20 @@ class PathExecuter:
                     if pose_dist <= self.waypoint_dist_tolerance and pose_ori <= self.waypoint_ori_tolerance:
                         self.waypoint_reached = True
             
-    def saved_path_file_cb(self,data):
+    def saved_path_file_cb(self,msg):
         if self.curr_pos is None or self.curr_ori is None:
             rospy.logwarn("Current position is not yet set, the csv file path is ignored.")
             return
+        
+        # msg.path_csv_filename arrives as: f"ticket_{self.ticket_id}.csv"
+        # Combine the csv file with the path directory
+        csv_file_os_path = os.path.join(self.saved_path_files_directory, msg.path_csv_filename)
+
+        # Check if the file exists
+        if not os.path.exists(csv_file_os_path):
+            rospy.logwarn(f"CSV file {csv_file_os_path} does not exist!")
+            return
+
         
         self.plan_execute_permit = False 
         self.reset_path_adjustment()
@@ -211,7 +225,7 @@ class PathExecuter:
         # Read the waypoints from the csv file
         csv_waypoints = []
         try:
-            df = pd.read_csv(data.data)
+            df = pd.read_csv(csv_file_os_path)
             if {"x", "y", "theta"}.issubset(df.columns):
                 csv_waypoints = df[["x", "y", "theta"]].values.tolist()
                 csv_waypoints.reverse()
@@ -220,18 +234,32 @@ class PathExecuter:
             else:
                 rospy.logerr(f'CSV file does not contain required columns ("x", "y", "theta")')
         except FileNotFoundError:
-            rospy.logerr(f'Could not find the specified CSV file: {data.data}')
+            rospy.logerr(f'Could not find the specified CSV file: {csv_file_os_path}')
         except Exception as e:
             rospy.logerr(f'An error occurred while reading CSV file: {e}')
+
+        # the csv points are planned wrt to the needle frame of the machine
+        # Therefore we need to convert them to the world frame before executing (TODO)
+        
+        # Needle location arrives as: msg.needle_location = float32[] [x,y,theta] from machine_params.yaml
+        # Machine location arrives as: msg.machine_location = float32[] [x,y,theta] from machine_params.yaml
+        # Recall:
+        # self.curr_pos = np.array([ data.pose.pose.position.x, data.pose.pose.position.y])
+        # self.curr_ori = yaw # theta
+
+        for i,wp in enumerate(csv_waypoints):
+            P = np.array(wp[:2]) # vector from needle to waypoint in needle frame
+            
+            P_wn = np.array(msg.needle_location[:2]) # vector from world to needle in world frame
+
+            P = P_wn + rot_mat(msg.needle_location[2]).dot(P) # vector from world to waypoint in world frame
+            csv_waypoints[i] = [P[0],P[1], wrapToPi(wp[2]+msg.needle_location[2])] # [x,y,theta] in world frame
 
         if csv_waypoints: 
             # Check if the initial waypoint is far away and requires the planner to calculate path to go there
             initial_goal = csv_waypoints.pop()
             goal_ori = initial_goal[2]
             goal_pos = np.array([initial_goal[0],initial_goal[1]])
-
-            # with self.planner_plan_csv_reader_lock:
-            # with self.planner_plan_lock:
             
             if np.linalg.norm(self.curr_pos-goal_pos) > self.planner_trigger_dist_threshold:
                 
@@ -472,8 +500,17 @@ class PathExecuter:
         self.adjusted_pos = np.zeros(2)
         self.adjusted_ori = 0.0
 
+    
+def rot_mat(theta):
+    c, s = np.cos(theta), np.sin(theta)
+    return np.array([[c, -s], [s, c]])
 
 
+def wrapToPi(a):
+    '''
+    Wraps angle to [-pi,pi)
+    '''
+    return ((a+np.pi) % (2*np.pi))-np.pi
 
 if __name__ == '__main__':
     node = PathExecuter()
