@@ -2,7 +2,6 @@
 <launch>
 <!-- MEGASTITCH WORKSTATION -->
 <arg name="ws_namespace" default="ws_MS"/>
-<arg name="operator_gui_rviz_file"   default="$(find swarm2_launch)/config/rviz/ws_megastitch.rviz"/>
 
 <arg name="use_tablet"   default="false"/>
 <arg name="tablet_name"  default="tablet-ws1"/>
@@ -10,6 +9,7 @@
 <arg name="tablet_ip"    default="192.168.1.96"/>
 <arg name="tablet_pass"  default="1234"/>
 <arg name="tablet_env"   default="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/scripts/env_tablet_ws1.sh"/>
+<arg name="operator_gui_rviz_file"   default="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/config/rviz/ws_megastitch.rviz"/>
 
 <!-- Launch its swarm in MAIN machine -->
 <group ns="$(arg ws_namespace)">

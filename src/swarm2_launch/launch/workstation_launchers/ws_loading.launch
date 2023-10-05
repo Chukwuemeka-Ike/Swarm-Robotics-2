@@ -2,7 +2,6 @@
 <launch>
 <!-- LOADING WORKSTATION -->
 <arg name="ws_namespace" default="ws_L"/>
-<arg name="operator_gui_rviz_file"   default="$(find swarm2_launch)/config/rviz/ws_loading.rviz"/>
 
 <arg name="use_tablet"   default="false"/>
 <arg name="tablet_name"  default="tablet"/>
@@ -10,6 +9,7 @@
 <arg name="tablet_ip"    default="192.168.1.99"/>
 <arg name="tablet_pass"  default="1234"/>
 <arg name="tablet_env"   default="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/scripts/env_tablet.sh"/>
+<arg name="operator_gui_rviz_file"   default="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/config/rviz/ws_loading.rviz"/>
 
 <!-- Launch its swarm in MAIN machine -->
 <group ns="$(arg ws_namespace)">
