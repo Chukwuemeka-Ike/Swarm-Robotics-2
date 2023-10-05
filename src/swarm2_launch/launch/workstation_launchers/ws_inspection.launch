@@ -72,10 +72,10 @@
     </group>
 
     <!-- Launch Mesh Visualizer for Static Environment World -->
-    <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
+    <!-- <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
         <rosparam param="frame" subst_value="True">map</rosparam>
         <rosparam param="visualizer_path" subst_value="True">$(find lab_gazebo)/worlds/highbay_swarm_world/meshes</rosparam>
-    </node>
+    </node> -->
 
     <!-- Operator GUI node -->
     <param name="gui_rviz_path" value="$(arg operator_gui_rviz_file)"/>
