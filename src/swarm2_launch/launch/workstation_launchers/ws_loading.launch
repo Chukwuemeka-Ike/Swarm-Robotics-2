@@ -108,9 +108,9 @@
 
     <group if="$(arg use_tablet)">
         <!-- ARDUINO READER -->
-        <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
+        <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
             <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
-        </node>
+        </node> -->
 
         <!-- SPACE MOUSE -->
         <include file="$(find spacenav_node)/launch/classic.launch"/>

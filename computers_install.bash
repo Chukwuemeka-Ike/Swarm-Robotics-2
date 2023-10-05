@@ -10,6 +10,7 @@ fi
 echo $MY_PASSWORD | sudo -S apt-get install -y sshpass;
 
 echo $MY_PASSWORD | sudo -S apt-get install -y ros-noetic-rqt-ez-publisher;
+echo $MY_PASSWORD | sudo -S apt-get install -y ros-noetic-twist-mux;
 echo $MY_PASSWORD | sudo -S apt-get install -y spacenavd;
 echo $MY_PASSWORD | sudo -S apt-get install -y ros-noetic-spacenav-node;
 echo $MY_PASSWORD | sudo -S apt-get install -y ros-noetic-tf2-sensor-msgs;
