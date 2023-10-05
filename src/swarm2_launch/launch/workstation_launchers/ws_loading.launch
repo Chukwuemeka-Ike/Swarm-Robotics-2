@@ -73,7 +73,7 @@
         <!-- Launch Mesh Visualizer for Static Environment World -->
         <node name="RVizMeshVisualizer" pkg="object_visualizer" type="object_visualizer.py" output="screen">
             <rosparam param="frame" subst_value="True">map</rosparam>
-            <rosparam param="visualizer_path" subst_value="True">$(find lab_gazebo)/worlds/highbay_swarm_world/meshes</rosparam>
+            <rosparam param="visualizer_path" subst_value="True">/home/$(arg tablet_user)/catkin_ws_swarm2/src/AssistiveRobot-SimulationFiles/lab_gazebo/worlds/highbay_swarm_world/meshes</rosparam>
         </node>
 
         <!-- Operator GUI node -->
