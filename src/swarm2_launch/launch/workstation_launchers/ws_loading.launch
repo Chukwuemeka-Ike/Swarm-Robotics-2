@@ -9,7 +9,7 @@
 <arg name="tablet_ip"    default="192.168.1.99"/>
 <arg name="tablet_pass"  default="1234"/>
 <arg name="tablet_env"   default="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/scripts/env_tablet.sh"/>
-<arg name="operator_gui_rviz_file"   default="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/config/rviz/ws_loading.rviz"/>
+<arg name="operator_gui_rviz_file"   default="ws_loading.rviz"/>
 
 <!-- Launch its swarm in MAIN machine -->
 <group ns="$(arg ws_namespace)">
@@ -77,7 +77,7 @@
         </node>
 
         <!-- Operator GUI node -->
-        <param name="gui_rviz_path" value="$(arg operator_gui_rviz_file)"/>
+        <param name="gui_rviz_path" value="$(find swarm2_launch)/config/rviz/$(arg operator_gui_rviz_file)"/>
         <node name="operator_gui" pkg="arm_gui" type="operator_gui_node" output="screen">        
             <remap from="move_base_simple/goal"        to="/$(arg ws_namespace)/main/move_base_simple/goal"/>
             <remap from="path_csv_filename"            to="/$(arg ws_namespace)/main/path_csv_filename"/>
@@ -128,7 +128,7 @@
         </node>
 
         <!-- Operator GUI node -->
-        <param name="gui_rviz_path" value="$(arg operator_gui_rviz_file)"/>
+        <param name="gui_rviz_path" value="$(find swarm2_launch)/config/rviz/$(arg operator_gui_rviz_file)"/>
         <node name="operator_gui" pkg="arm_gui" type="operator_gui_node" output="screen">        
             <remap from="move_base_simple/goal"        to="/$(arg ws_namespace)/main/move_base_simple/goal"/>
             <remap from="path_csv_filename"            to="/$(arg ws_namespace)/main/path_csv_filename"/>
