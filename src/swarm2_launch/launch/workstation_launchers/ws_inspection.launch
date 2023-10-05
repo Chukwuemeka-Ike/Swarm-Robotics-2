@@ -9,7 +9,7 @@
 <arg name="tablet_user"  default="tablet-ws4"/>
 <arg name="tablet_ip"    default="192.168.1.95"/>
 <arg name="tablet_pass"  default="1234"/>
-<arg name="tablet_env"   default="$(find swarm2_launch)/scripts/env_tablet_ws4.sh"/>
+<arg name="tablet_env"   default="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/scripts/env_tablet_ws4.sh"/>
 
 <!-- Launch its swarm in MAIN machine -->
 <group ns="$(arg ws_namespace)">
