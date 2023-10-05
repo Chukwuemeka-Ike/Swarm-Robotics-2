@@ -106,16 +106,19 @@
     <rosparam param="team_tf_frame_name"       subst_value="true">$(arg ws_namespace)_team_frame</rosparam>
     
 
-    <!-- RQT EZ Publisher for controlling robots. -->
-    <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen"/>
+    <group if="$(arg use_tablet)">
+        <!-- ARDUINO READER -->
+        <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
+            <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
+        </node> -->
 
-    <!-- ARDUINO READER -->
-    <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
-        <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
-    </node> -->
-
-    <!-- SPACE MOUSE -->
-    <include file="$(find spacenav_node)/launch/classic.launch"/>
+        <!-- SPACE MOUSE -->
+        <include file="$(find spacenav_node)/launch/classic.launch"/>
+    </group>
+    <group unless="$(arg use_tablet)">
+        <!-- RQT EZ Publisher for controlling robots. -->
+        <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen"/>  
+    </group>
 
     <!-- TWIST MUX FOR E-STOP -->
     <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">

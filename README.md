@@ -11,10 +11,11 @@ https://docs.clearpathrobotics.com/docs/robots/indoor_robots/dingo/user_manual_d
 
 | Description                               | Username      | Hostname (Computer Name) | MAC Address       | IP            | Password  | OS           | ROS     |
 | ---                                       | ---           | ---                      | ---               | ---           | ---       | ---          | ---     |
+| Workstation 0 Tablet (Loading)            | tablet        | tablet20                 | AC:67:5D:5B:0F:86 | 192.168.1.99  | 1234      | Ubuntu 20.04 | Noetic  |
 | Workstation 1 Tablet (Mega Stitch)        | tablet-ws1    | tablet20-ws1             | F4:6D:3F:EC:8B:4B | 192.168.1.96  | 1234      | Ubuntu 20.04 | Noetic  |
 | Workstation 2 Tablet (RF Welder)          | tablet-ws2    | tablet20-ws2             | F4:6D:3F:EC:7C:5F | 192.168.1.97  | 1234      | Ubuntu 20.04 | Noetic  |
 | Workstation 3 Tablet (Short Arm Sewing)   | tablet-ws3    | tablet20-ws3             | F4:6D:3F:EC:7B:C4 | 192.168.1.98  | 1234      | Ubuntu 20.04 | Noetic  |
-| Workstation 4 Tablet (Inspection/Loading) | tablet        | tablet20                 | AC:67:5D:5B:0F:86 | 192.168.1.99  | 1234      | Ubuntu 20.04 | Noetic  |
+| Workstation 4 Tablet (Inspection)         | tablet-ws4    | tablet20-ws4             | AC:67:5D:57:30:50 | 192.168.1.95  | 1234      | Ubuntu 20.04 | Noetic  |
 | Main Computer                             | razer         | razer20                  | 3C:8C:F8:EB:11:86 | 192.168.1.100 | 1234      | Ubuntu 20.04 | Noetic  |
 | Dingo-omni 1                              | administrator | cpr-do100-10000050       | 0C:7A:15:CB:A6:0B | 192.168.1.101 | clearpath | Ubuntu 20.04 | Noetic  |
 | Dingo-omni 2                              | administrator | cpr-do100-10000051       | F0:B6:1E:B7:29:1F | 192.168.1.102 | clearpath | Ubuntu 20.04 | Noetic  |

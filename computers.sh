@@ -1,5 +1,6 @@
 # computers.sh
 HOSTS+=(
+    "192.168.1.95"
     "192.168.1.96" 
     "192.168.1.97" 
     "192.168.1.98" 
@@ -7,6 +8,7 @@ HOSTS+=(
     "192.168.1.100" 
     "192.168.1.123")
 USERNAMES+=(
+    "tablet-ws4" 
     "tablet-ws1" 
     "tablet-ws2" 
     "tablet-ws3" 
@@ -14,6 +16,7 @@ USERNAMES+=(
     "razer" 
     "burak")
 PASSWORDS+=(
+    "1234" 
     "1234" 
     "1234" 
     "1234" 

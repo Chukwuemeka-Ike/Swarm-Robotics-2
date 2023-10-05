@@ -51,10 +51,10 @@
     <!-- DINGO 3 -->
     <include file="$(find swarm2_launch)/launch/test_launch/sim_dingo.launch">
         <!-- Robot Spawn Pose -->
-        <!-- <arg name="x"     value="-1.0"/> -->
-        <!-- <arg name="y"     value="-1.0"/> -->
-        <arg name="x"     value="-0.24"/>
-        <arg name="y"     value="0.25"/>
+        <arg name="x"     value="3.0"/>
+        <arg name="y"     value="3.0"/>
+        <!-- <arg name="x"     value="-0.24"/> -->
+        <!-- <arg name="y"     value="0.25"/> -->
 
         <arg name="z"     value="0.0"/>
         <arg name="yaw"   value="0"/>
@@ -71,10 +71,10 @@
     <!-- DINGO 4 -->
     <include file="$(find swarm2_launch)/launch/test_launch/sim_dingo.launch">
         <!-- Robot Spawn Pose -->
-        <!-- <arg name="x"     value="1.0"/> -->
-        <!-- <arg name="y"     value="-1.0"/> -->
-        <arg name="x"     value="-0.99"/>
-        <arg name="y"     value="-0.11"/>
+        <arg name="x"     value="4.0"/>
+        <arg name="y"     value="3.0"/>
+        <!-- <arg name="x"     value="-0.99"/> -->
+        <!-- <arg name="y"     value="-0.11"/> -->
 
         <arg name="z"     value="0.0"/>
         <arg name="yaw"   value="0"/>

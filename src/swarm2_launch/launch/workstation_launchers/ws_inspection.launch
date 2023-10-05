@@ -5,11 +5,11 @@
 <arg name="operator_gui_rviz_file"   default="$(find swarm2_launch)/config/rviz/ws_inspection.rviz"/>
 
 <arg name="use_tablet"   default="false"/>
-<arg name="tablet_name"  default="tablet"/>
-<arg name="tablet_user"  default="tablet"/>
-<arg name="tablet_ip"    default="192.168.1.99"/>
+<arg name="tablet_name"  default="tablet-ws4"/>
+<arg name="tablet_user"  default="tablet-ws4"/>
+<arg name="tablet_ip"    default="192.168.1.95"/>
 <arg name="tablet_pass"  default="1234"/>
-<arg name="tablet_env"   default="$(find swarm2_launch)/scripts/env_tablet.sh"/>
+<arg name="tablet_env"   default="$(find swarm2_launch)/scripts/env_tablet_ws4.sh"/>
 
 <!-- Launch its swarm in MAIN machine -->
 <group ns="$(arg ws_namespace)">
@@ -105,23 +105,25 @@
     <rosparam param="team_frame_command_topic" subst_value="true">team_frame_vel</rosparam>
     <rosparam param="team_tf_frame_name"       subst_value="true">$(arg ws_namespace)_team_frame</rosparam>
     
+    <group if="$(arg use_tablet)">
+        <!-- ARDUINO READER -->
+        <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
+            <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
+        </node>
 
-    <!-- RQT EZ Publisher for controlling robots. -->
-    <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen"/>
-
-    <!-- ARDUINO READER -->
-    <!-- <node name="arduino_reader" pkg="arduino_talker" type="arduino_read.py" output="screen">
-        <rosparam file="$(find swarm2_launch)/config/ui_tablet_arduino_params.yaml"/>
-    </node> -->
-
-    <!-- SPACE MOUSE -->
-    <!-- <include file="$(find spacenav_node)/launch/classic.launch"/> -->
-
+        <!-- SPACE MOUSE -->
+        <include file="$(find spacenav_node)/launch/classic.launch"/>
+    </group>
+    <group unless="$(arg use_tablet)">
+        <!-- RQT EZ Publisher for controlling robots. -->
+        <node type="rqt_ez_publisher" name="rqt_ez_publisher" pkg="rqt_ez_publisher" output="screen"/>  
+    </group>
+    
     <!-- TWIST MUX FOR E-STOP -->
-    <!-- <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
         <rosparam command="load" file="$(find swarm2_launch)/config/ui_tablet_twist_mux_disabled.yaml" />
         <remap from="cmd_vel_out" to="deadman_switch_spacenav_twist"/>
-    </node> -->
+    </node>
 </group>
 
 </launch>
