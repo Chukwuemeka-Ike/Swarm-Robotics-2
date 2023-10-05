@@ -77,7 +77,7 @@
         </node>
 
         <!-- Operator GUI node -->
-        <param name="gui_rviz_path" value="$(find swarm2_launch)/config/rviz/$(arg operator_gui_rviz_file)"/>
+        <param name="gui_rviz_path" value="/home/$(arg tablet_user)/catkin_ws_swarm2/src/swarm2_launch/config/rviz/$(arg operator_gui_rviz_file)"/>
         <node name="operator_gui" pkg="arm_gui" type="operator_gui_node" output="screen">        
             <remap from="move_base_simple/goal"        to="/$(arg ws_namespace)/main/move_base_simple/goal"/>
             <remap from="path_csv_filename"            to="/$(arg ws_namespace)/main/path_csv_filename"/>
@@ -165,6 +165,8 @@
             <remap from="cmd_vel_out" to="deadman_switch_spacenav_twist"/>
         </node>
     </group>
+
+
 
 </group>
 
