@@ -57,3 +57,5 @@ source /opt/ros/noetic/setup.bash;
 catkin_make -DCATKIN_BLACKLIST_PACKAGES='dingo_base;dingo_customization' -DCMAKE_BUILD_TYPE=Release; # on DESKTOP computer 
 # catkin_make -DCATKIN_BLACKLIST_PACKAGES='swarm_gui;arm_gui;arm_msgs;arm_utils;machine_manager;robot_assigner;task_scheduler;ticket_manager' -DCMAKE_BUILD_TYPE=Release; # on Physical Robots
 source devel/setup.bash;
+
+grep -qxF 'source ~/catkin_ws_swarm2/devel/setup.bash' ~/.bashrc || echo 'source ~/catkin_ws_swarm2/devel/setup.bash' >> ~/.bashrc;
