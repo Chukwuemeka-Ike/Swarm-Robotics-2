@@ -45,22 +45,22 @@ gnome-terminal --tab --title="Loading WS" --command "bash -c \"source ~/.bashrc;
 sleep 3s;
 
 # Launch "Mega Stitch" Workstation (Operator GUI - in tablet,  Corresponding Swarm - in main computer)
-# gnome-terminal --tab --title="MegaStitch WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_megastitch.launch use_tablet:=true; exec bash\"";
+gnome-terminal --tab --title="MegaStitch WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_megastitch.launch use_tablet:=true; exec bash\"";
 # gnome-terminal --tab --title="MegaStitch WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_megastitch.launch use_tablet:=false; exec bash\"";
 sleep 3s;
 
 # Launch "RF Welder"   Workstation (Operator GUI - in tablet,  Corresponding Swarm - in main computer)
-# gnome-terminal --tab --title="RF Welder WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_rf.launch use_tablet:=true; exec bash\"";
+gnome-terminal --tab --title="RF Welder WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_rf.launch use_tablet:=true; exec bash\"";
 # gnome-terminal --tab --title="RF Welder WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_rf.launch use_tablet:=false; exec bash\"";
 sleep 3s;
 
 # Launch "Perimeter"   Workstation (Operator GUI - in tablet,  Corresponding Swarm - in main computer)
-# gnome-terminal --tab --title="Perimeter WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_perimeter.launch use_tablet:=true; exec bash\"";
+gnome-terminal --tab --title="Perimeter WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_perimeter.launch use_tablet:=true; exec bash\"";
 # gnome-terminal --tab --title="Perimeter WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_perimeter.launch use_tablet:=false; exec bash\"";
 sleep 3s;
 
 # Launch "Inspection"  Workstation (Operator GUI - in tablet,  Corresponding Swarm - in main computer)
-# gnome-terminal --tab --title="Inspection WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_inspection.launch use_tablet:=true; exec bash\"";
+gnome-terminal --tab --title="Inspection WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_inspection.launch use_tablet:=true; exec bash\"";
 # gnome-terminal --tab --title="Inspection WS" --command "bash -c \"source ~/.bashrc; roslaunch swarm2_launch ws_inspection.launch use_tablet:=false; exec bash\"";
 sleep 3s;
 
