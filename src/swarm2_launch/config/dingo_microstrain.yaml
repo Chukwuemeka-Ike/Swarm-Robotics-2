@@ -32,7 +32,7 @@ imu_frame_id          : $(optenv DINGO_IMU_MICROSTRAIN_LINK microstrain_link)
 # gnss1_frame_id        : "gnss1_antenna_wgs84"
 # gnss2_frame_id        : "gnss2_antenna_wgs84"
 filter_frame_id       : $(optenv DINGO_IMU_MICROSTRAIN_PARENT imu_link) # "sensor_wgs84"
-filter_child_frame_id : $(optenv DINGO_IMU_MICROSTRAIN_LINK microstrain_link) # "sensor"
+filter_child_frame_id : $(optenv DINGO_IMU_MICROSTRAIN_LINK microstrain_link)_child # "sensor"
 nmea_frame_id         : "nmea"
 
 # Waits for a configurable amount of time until the device exists
