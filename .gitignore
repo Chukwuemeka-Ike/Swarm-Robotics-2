@@ -63,3 +63,4 @@ src/dlo_simulator_stiff_rods
 src/fabric_simulator
 src/dingo_robot
 src/multiRobotPlanner
+src/geometry2
