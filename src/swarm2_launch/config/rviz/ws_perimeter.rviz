@@ -9,7 +9,7 @@ Panels:
         - /d3-Odometry1/Shape1
         - /d4-Odometry1/Shape1
         - /formation-TF-robots1/Frames1
-      Splitter Ratio: 0.9041916131973267
+      Splitter Ratio: 0.8343313336372375
     Tree Height: 1522
   - Class: rviz/Selection
     Name: Selection
@@ -238,6 +238,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        d1_tf_fabric_mount_cylinder_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         d1_tf_fabric_mount_link:
           Alpha: 1
           Show Axes: false
@@ -352,6 +357,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         d2_tf_chassis_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        d2_tf_fabric_mount_cylinder_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -474,6 +484,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        d3_tf_fabric_mount_cylinder_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         d3_tf_fabric_mount_link:
           Alpha: 1
           Show Axes: false
@@ -588,6 +603,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         d4_tf_chassis_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        d4_tf_fabric_mount_cylinder_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -1014,18 +1034,33 @@ Visualization Manager:
     - Class: rviz/TF
       Enabled: true
       Filter (blacklist): ""
-      Filter (whitelist): d1_tf_base_link,d2_tf_base_link,d3_tf_base_link,d4_tf_base_link
+      Filter (whitelist): d1_tf_base_link|d2_tf_base_link|d3_tf_base_link|d4_tf_base_link
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        d1_tf_base_link:
+          Value: true
+        d2_tf_base_link:
+          Value: true
+        d3_tf_base_link:
+          Value: true
+        d4_tf_base_link:
+          Value: true
       Marker Alpha: 1
-      Marker Scale: 5
+      Marker Scale: 2.5
       Name: formation-TF-robots
       Show Arrows: false
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
-        {}
+        d1_tf_base_link:
+          {}
+        d2_tf_base_link:
+          {}
+        d3_tf_base_link:
+          {}
+        d4_tf_base_link:
+          {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1108,7 +1143,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10.56855297088623
+      Distance: 5.577362537384033
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1116,17 +1151,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.49714604020118713
-        Y: 0.07523509860038757
-        Z: 0.5193567872047424
+        X: 1.054457426071167
+        Y: -0.13598643243312836
+        Z: 0.9702516198158264
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8497976064682007
+      Pitch: 0.6297978758811951
       Target Frame: <Fixed Frame>
-      Yaw: 3.7885591983795166
+      Yaw: 4.108550071716309
     Saved: ~
 Window Geometry:
   Displays:
