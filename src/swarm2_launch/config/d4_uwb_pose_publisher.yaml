@@ -9,13 +9,13 @@ uwb_tag_1_id: '1337' # '6'
 uwb_tag_2_id: 'C702' # '7'
 
 # If you update the x y z positions below, also update /etc/ros/setup.bash of the physical robot for correct description update.
-tag_1_x: -0.008
-tag_1_y: -0.22
+tag_1_x: 0.016 # -0.008
+tag_1_y: -0.258 # -0.22
 
-tag_2_x: 0.008
-tag_2_y: 0.22
+tag_2_x: -0.016 # 0.008
+tag_2_y: 0.258 # 0.22
 
-tag_z_height: 0.314
+tag_z_height: 0.624 # 0.314
 
 uwb_meas_std: [0.5, 0.5, 1.0] # comes from uwb sensor readings data # [x,y,rotz]
 expected_uwb_rate: 10.0
