@@ -5,8 +5,14 @@
 <group ns="main">
     <!-- <machine name="tablet" address="192.168.1.99" env-loader="/home/tablet/catkin_ws/scripts/env_tablet.sh" user="tablet" password="1234" default="true"/> -->
 
+    <!-- SUPERVISOR GUI -->
     <param name="gui_rviz_path" value="$(find swarm2_launch)/config/rviz/supervisor.rviz"/>
-    <node name="supervisor_gui" pkg="arm_gui" type="supervisor_gui_node" output="screen"/>
+    <node name="supervisor_gui" pkg="arm_gui" type="supervisor_gui_node" output="screen">
+        <remap from="/main/deadman_switch_spacenav_twist"       to="/main/spacenav/twist"/>
+    </node>
+
+    <!-- SPACE MOUSE -->
+    <include file="$(find spacenav_node)/launch/classic.launch"/>
 
 </group>
 </launch>
