@@ -54,7 +54,7 @@ cd src;
 # git clone https://github.com/burakaksoy/RVizMeshVisualizer.git; # only on DESKTOP
 # git clone https://github.com/burakaksoy/uwb_gazebo_plugin; # only on DESKTOP
 # git clone https://github.com/burakaksoy/multiRobotPlanner.git # only on DESKTOP. CK's repo, but cloning my for fork stable testing
-git clone --branch throttle-tf-repeated-data-error https://github.com/BadgerTechnologies/geometry2.git; # to fix tf repeating data warning flooding
+git clone --branch throttle-tf-repeated-data-error https://github.com/burakaksoy/geometry2.git; # to fix tf repeating data warning flooding
 
 cd ..;
 source /opt/ros/noetic/setup.bash;

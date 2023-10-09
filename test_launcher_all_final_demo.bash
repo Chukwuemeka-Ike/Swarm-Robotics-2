@@ -5,7 +5,7 @@ gnome-terminal --tab --title="ROSCORE" --command "bash -c \"source ~/.bashrc; ki
 sleep 1s;
 # ================================================================================
 # --------------------------------- RESTART ROBOT SERVICES ----------------------------------
-# Launch Gazebo simulation environment
+# Restart Robot Services
 gnome-terminal --tab --title="Restart ROS on robots" --command "bash -c \"source ~/.bashrc; ./all_robots_restart_ros_service.bash; exec bash\"";
 sleep 10s;
 
