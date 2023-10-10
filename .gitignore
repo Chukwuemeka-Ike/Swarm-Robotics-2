@@ -57,6 +57,7 @@ src/dingo_desktop
 src/dingo_simulator
 src/AssistiveRobot-SimulationFiles
 src/RVizMeshVisualizer
+src/gazebo_ros_2d_map_plugin
 src/uwb_gazebo_plugin
 src/dlo_simulator_paobcr
 src/dlo_simulator_stiff_rods
