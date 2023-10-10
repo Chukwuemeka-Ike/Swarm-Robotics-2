@@ -206,6 +206,10 @@ class PathExecuter:
             
     def saved_path_file_cb(self,msg):
         rospy.loginfo("Saved Path File Callback is called. ")
+        if self.adjust_path_enabled:
+            rospy.logwarn("Adjusting waypoint is enabled, Saved Path File Callback is ignored.")
+            return
+
         if self.curr_pos is None or self.curr_ori is None:
             rospy.logwarn("Current position is not yet set, the csv file path is ignored.")
             return
@@ -311,13 +315,19 @@ class PathExecuter:
 
         
     def simple_goal_cb(self, msg):
-        self.plan_execute_permit = False 
-        self.reset_path_adjustment()
+        rospy.loginfo("Simple Goal Callback is called. ")
+
+        if self.adjust_path_enabled:
+            rospy.logwarn("Adjusting waypoint is enabled, Saved Path File Callback is ignored.")
+            return
 
         if self.curr_pos is None or self.curr_ori is None:
             rospy.logwarn("Current position is not yet set, the goal is ignored.")
             return
-        
+
+        self.plan_execute_permit = False 
+        self.reset_path_adjustment()
+
         orientations = [msg.pose.orientation.x, 
                         msg.pose.orientation.y,
                         msg.pose.orientation.z,
@@ -433,20 +443,33 @@ class PathExecuter:
     def srv_disable_execution_cb(self, req):
         assert isinstance(req, TriggerRequest)
         rospy.loginfo("Disabling the path execution if possible")
+
+        if self.adjust_path_enabled:
+            rospy.logwarn("Adjusting waypoint is enabled, Request to disable path execution is ignored.")
+            return TriggerResponse(success=False, message="The path execution could not be disabled due to Adjusting waypoint is enabled!")
+        
         self.execution_disabled = True
-    
         return TriggerResponse(success=True, message="The path execution is disabled!")
     
     def srv_enable_execution_cb(self, req):
         assert isinstance(req, TriggerRequest)
         rospy.loginfo("Enabling the path execution if possible")
+
+        if self.adjust_path_enabled:
+            rospy.logwarn("Adjusting waypoint is enabled, Request to enable path execution is ignored.")
+            return TriggerResponse(success=False, message="The path execution could not be enabled due to Adjusting waypoint is enabled!")
+        
         self.execution_disabled = False
-    
         return TriggerResponse(success=True, message="The path execution is enabled!")
 
     def srv_cancel_execution_cb(self, req):
         assert isinstance(req, TriggerRequest)
         rospy.loginfo("Canceling the path execution if possible")
+
+        if self.adjust_path_enabled:
+            rospy.logwarn("Adjusting waypoint is enabled, Request to cancel path execution is ignored.")
+            return TriggerResponse(success=False, message="The path execution could not be cancelled due to Adjusting waypoint is enabled!")
+
         self.plan_execute_permit = False
         self.reset_path_adjustment()
         self.planner_plan = []
@@ -463,6 +486,7 @@ class PathExecuter:
             return
 
         if req.data:
+            rospy.loginfo("Attempt to ENABLE Adjust Path")
             self.adjust_path_enabled = True
 
             # Store the last state 
@@ -475,6 +499,7 @@ class PathExecuter:
             self.adjusted_ori_start = self.curr_ori
 
         else:
+            rospy.loginfo("Attempt to DISABLE Adjust Path")
             self.adjust_path_enabled = False
             
             # Set the adjustment with the updated pose
@@ -491,6 +516,7 @@ class PathExecuter:
             if not self.execution_disabled_last_state:
                 self.execution_disabled = False
 
+        rospy.loginfo("The manual path adjusting is now set to: {}".format(self.adjust_path_enabled))
         return SetBoolResponse(True, "The manual path adjusting is now set to: {}".format(self.adjust_path_enabled))
     
     def reset_path_adjustment(self):
