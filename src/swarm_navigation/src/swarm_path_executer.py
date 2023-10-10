@@ -188,6 +188,7 @@ class PathExecuter:
                         self.waypoint_reached = False
                 else: # if empty, no waypoint left to publish
                     self.current_waypoint = []
+                    self.reset_path_adjustment()
             else:
                 if self.current_waypoint:
                     # keep checking whether the waypoint is reached
@@ -503,8 +504,8 @@ class PathExecuter:
             self.adjust_path_enabled = False
             
             # Set the adjustment with the updated pose
-            self.adjusted_pos = self.curr_pos - self.adjusted_pos_start
-            self.adjusted_ori = self.curr_ori - self.adjusted_ori_start
+            self.adjusted_pos += self.curr_pos - self.adjusted_pos_start
+            self.adjusted_ori += self.curr_ori - self.adjusted_ori_start
 
             # Update the active waypoint with the manual path adjustments
             if self.current_waypoint:
