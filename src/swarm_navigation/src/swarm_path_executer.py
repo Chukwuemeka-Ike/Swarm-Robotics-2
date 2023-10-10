@@ -205,6 +205,7 @@ class PathExecuter:
                         self.waypoint_reached = True
             
     def saved_path_file_cb(self,msg):
+        rospy.loginfo("Saved Path File Callback is called. ")
         if self.curr_pos is None or self.curr_ori is None:
             rospy.logwarn("Current position is not yet set, the csv file path is ignored.")
             return
@@ -455,7 +456,7 @@ class PathExecuter:
 
     def srv_toggle_adjust_path_cb(self,req):
         assert isinstance(req, SetBoolRequest)
-
+        rospy.loginfo("Toggling Adjust Path functionality if possible")
         if self.curr_pos is None or self.curr_ori is None:
             rospy.logwarn("Current position is not yet set..")
             SetBoolResponse(False, "The manual path adjusting could not be toggled, because current swarm position is not yet set")
