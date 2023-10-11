@@ -153,9 +153,9 @@ class PathExecuter:
     def pub_desired_state_cb(self, event):
         if not self.execution_disabled:
             if self.current_waypoint:
-                x =  self.current_waypoint[0] + self.adjusted_pos[0] # x
-                y =  self.current_waypoint[1] + self.adjusted_pos[1] # y
-                th = self.current_waypoint[2] + self.adjusted_ori    # th
+                x = self.current_waypoint[0]
+                y = self.current_waypoint[1]
+                th = self.current_waypoint[2]
 
                 state2d = State2D()
                 state2d.pose = geometry_msgs.msg.Pose2D(x,y,th)
@@ -179,10 +179,10 @@ class PathExecuter:
                     if self.plan_execute_permit:
                         self.current_waypoint = self.planner_plan.pop()
 
-                        # # Update the waypoint with the manual path adjustments
-                        # self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
-                        # self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
-                        # self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
+                        # Update the waypoint with the manual path adjustments
+                        self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
+                        self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
+                        self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
 
                         rospy.loginfo(f'Current Plan length left: {len(self.planner_plan)}')
                         self.waypoint_reached = False
@@ -507,11 +507,11 @@ class PathExecuter:
             self.adjusted_pos += self.curr_pos - self.adjusted_pos_start
             self.adjusted_ori += self.curr_ori - self.adjusted_ori_start
 
-            # # Update the active waypoint with the manual path adjustments
-            # if self.current_waypoint:
-            #     self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
-            #     self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
-            #     self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
+            # Update the active waypoint with the manual path adjustments
+            if self.current_waypoint:
+                self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
+                self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
+                self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
 
             # Re-enable the path execution if the last state was not disabled
             if not self.execution_disabled_last_state:
