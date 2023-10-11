@@ -492,6 +492,10 @@ class PathExecuter:
             # Disable the path execution for the safe adjustments
             self.execution_disabled = True
 
+            if self.current_waypoint:
+                self.planner_plan.append(self.current_waypoint) # Re append the existing waypoint to the plan.
+                self.current_waypoint = [] # Clear the waypoint for path adjustment
+
             rospy.loginfo("Attempt to ENABLE Adjust Path")
             self.adjust_path_enabled = True
 
@@ -511,7 +515,7 @@ class PathExecuter:
             # if self.current_waypoint:
             #     self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
             #     self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
-            #     self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
+            #     self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th                 
 
             # Re-enable the path execution if the last state was not disabled
             if not self.execution_disabled_last_state:
