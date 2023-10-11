@@ -494,7 +494,7 @@ class PathExecuter:
 
             if self.current_waypoint:
                 self.planner_plan.append(self.current_waypoint) # Re append the existing waypoint to the plan.
-                self.current_waypoint = [] # Clear the waypoint for path adjustment
+                self.waypoint_reached = True # And assume that the current waypoint is reached 
 
             rospy.loginfo("Attempt to ENABLE Adjust Path")
             self.adjust_path_enabled = True
