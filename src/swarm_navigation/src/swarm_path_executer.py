@@ -507,11 +507,11 @@ class PathExecuter:
             self.adjusted_pos += self.curr_pos - self.adjusted_pos_start
             self.adjusted_ori += self.curr_ori - self.adjusted_ori_start
 
-            # Update the active waypoint with the manual path adjustments
-            if self.current_waypoint:
-                self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
-                self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
-                self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
+            # # Update the active waypoint with the manual path adjustments
+            # if self.current_waypoint:
+            #     self.current_waypoint[0] = self.current_waypoint[0] + self.adjusted_pos[0] # x
+            #     self.current_waypoint[1] = self.current_waypoint[1] + self.adjusted_pos[1] # y
+            #     self.current_waypoint[2] = self.current_waypoint[2] + self.adjusted_ori # th
 
             # Re-enable the path execution if the last state was not disabled
             if not self.execution_disabled_last_state:
