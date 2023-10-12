@@ -190,6 +190,8 @@ class PathExecuter:
                     self.current_waypoint = []
                     self.reset_path_adjustment()
             else:
+                # pose_dist = 10000
+                # pose_ori = 10000
                 if self.current_waypoint:
                     # keep checking whether the waypoint is reached
                     x = self.current_waypoint[0]
@@ -200,10 +202,13 @@ class PathExecuter:
                     wayp_ori = th
 
                     pose_dist = np.linalg.norm(self.curr_pos - wayp_pos)
-                    pose_ori = abs(self.curr_ori - wayp_ori)
+                    pose_ori = abs( wrapToPi(    wrapToPi(self.curr_ori) - wrapToPi(wayp_ori) ) )
 
                     if pose_dist <= self.waypoint_dist_tolerance and pose_ori <= self.waypoint_ori_tolerance:
                         self.waypoint_reached = True
+                    # else:
+                        # rospy.loginfo("pose err: " + str(pose_dist) + ", orient. err: " + str(pose_ori))
+                        # rospy.loginfo("Waypoint is not reached!!")
             
     def saved_path_file_cb(self,msg):
         rospy.loginfo("Saved Path File Callback is called. ")
