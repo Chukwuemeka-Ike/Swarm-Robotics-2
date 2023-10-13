@@ -66,7 +66,7 @@ def safe_motion_controller(v_desired, theta_scale, p_i_mat, theta_vec,
 
 	# Find the velocity of each robot
 	v_i_world = np.zeros((3,N))
-	v_i_rob= np.zeros((3,N))
+	v_i_rob = np.zeros((3,N))
 	for i in range(N):
 		p_i_world_frame = rot_mat(xyt_swarm[2][0]).dot(p_i_mat[:,[i]])
 		theta_i_world_frame = xyt_swarm[2][0]+theta_vec[0][i]
@@ -78,8 +78,13 @@ def safe_motion_controller(v_desired, theta_scale, p_i_mat, theta_vec,
 		#v_i_world[1:2+1] = rot_mat(theta_i_world_frame).dot(v_i_robot[1:2+1])
 
 		#v_i[:,[i]] = #v_i_world	
-		v_i_world[:,[i]] = J_world.dot(v)
-		v_i_rob[:,[i]] = J_rob.dot(v)
+		if v is not None:
+			v_i_world[:,[i]] = J_world.dot(v)
+			v_i_rob[:,[i]] = J_rob.dot(v)
+		else:
+			rospy.logwarn("Safe velocity for swarm could not be calculated, will use zero-vector instead.")
+			v = np.zeros((3,1))
+
 
 	# Find the position of the swarm and each robot
 	# Careful to find robot postion with forward kinematics, NOT integration

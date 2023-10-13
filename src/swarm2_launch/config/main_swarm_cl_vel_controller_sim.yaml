@@ -1,7 +1,7 @@
 topic_prefix: "" # Adds this in front of the "prefixed" topics below
 
-feedback_gain_xy: 1.0
-feedback_gain_theta: 2.0
+feedback_gain_xy: 4.0 # 1.0
+feedback_gain_theta: 2.0 # 2.0
 
 cmd_input_topic_name: 'swarm/desired_state' # desired robot pose and velocity
 
