@@ -43,9 +43,16 @@ def write_to_csv(waypoints, filename="waypoints.csv"):
             writer.writerow({'x': x, 'y': y, 'theta': theta})
 
 if __name__ == '__main__':
-    start_point = (-1.8, 0.9, 0.0)
-    end_point = (1.8, 0.9, 0.0)
+    # start_point = (-1.8, 0.9, 0.0)
+    # end_point = (1.8, 0.9, 0.0)
+    # num_points = 100
+
+    # waypoints = interpolate_waypoints(start_point, end_point, num_points)
+    # write_to_csv(waypoints, filename="MESH CIRCULAR_1_pt_straight_line.csv")
+
+    start_point = (-1.0, 1.2, 0.0)
+    end_point = (1.8, 1.2, 0.0)
     num_points = 100
 
     waypoints = interpolate_waypoints(start_point, end_point, num_points)
-    write_to_csv(waypoints, filename="MESH CIRCULAR_1_pt_straight_line.csv")
+    write_to_csv(waypoints, filename="VINYL L_SHAPE_1_pt_straight_line.csv")

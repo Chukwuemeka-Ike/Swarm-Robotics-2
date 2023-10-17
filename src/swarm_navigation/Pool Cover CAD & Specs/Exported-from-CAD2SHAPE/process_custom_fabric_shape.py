@@ -56,10 +56,11 @@ class ProcessCustomFabric():
         # self.path_to_fabric_csv = "./VINYL 717405_1_pt.csv"
         # self.path_to_fabric_csv = "./MESH 717167_1_pt.csv"
         # self.path_to_fabric_csv = "./MESH 717651_1_pt.csv"
-        self.path_to_fabric_csv = "./MESH CIRCULAR_1_pt.csv"
+        # self.path_to_fabric_csv = "./MESH CIRCULAR_1_pt.csv"
+        self.path_to_fabric_csv = "./VINYL L_SHAPE_1_pt.csv"
 
         # Get desired AB distance from the user for our custom scale 
-        self.desired_fabric_AB_dist = 3.6576 # in meters # if set to 0 or less, original size of the fabric in the csv files will be used.
+        self.desired_fabric_AB_dist = 5.4864 # in meters # if set to 0 or less, original size of the fabric in the csv files will be used.
         
         # Get workstation operator depth (defines the amount of fabric draping outside robots)
         self.ws_op_depth = 0.2 # meters
@@ -94,7 +95,8 @@ class ProcessCustomFabric():
         self.fabric_coords = self.df_fabric[['_X','_Y']].values.tolist()
 
         # Sort the polygon coordinates for counter clockwise order
-        self.fabric_coords = self.sort_polygon_points(self.fabric_coords)
+        # self.fabric_coords = self.sort_polygon_points(self.fabric_coords)
+        # NOTE: May not work always! Check results by plotting the coordinates in order as done below.
         
         # print(np.array(self.fabric_coords))
         # print(self.fabric_coords)
@@ -102,6 +104,8 @@ class ProcessCustomFabric():
         # Create shapely polygon from the coordinates
         r = shapely.geometry.LinearRing(self.fabric_coords)
         r = shapely.geometry.Polygon(r)
+
+        # self.PlotPolygonsWithMatplotlib([r])
 
         # Get A and B point coordinates that defines the scale and alignment
         fabric_AB = self.df.loc[(self.df["LAYER"]=="ALIGNMENT_LINE") & 
@@ -129,7 +133,7 @@ class ProcessCustomFabric():
         
         # Calculate the needed scale to achieve the desired size.
         scale_fact = self.desired_fabric_AB_dist / fabric_AB_dist
-        # print("Scale that will be applied to the fabric to match with the desired size = ", scale_fact)
+        print("Scale that will be applied to the fabric in inches to match with the desired size in meters = ", scale_fact)
 
         # Scale(by scale_fact=xfact=yfact zfact=1.)
         r = shapely.affinity.scale(r, xfact=scale_fact, yfact=scale_fact, origin='centroid') 
@@ -213,7 +217,7 @@ class ProcessCustomFabric():
 
         # --- Create mesh with triangles from the original fabric ----
         # Create an equally spaced vertices version of the original polygon for mesh creation
-        d = 0.3 # meter, space between vertices
+        d = 0.2 # meter, space between vertices
         self.fabric_polygon_eq_dist = self.equal_distance_vertices_polygon(self.fabric_polygon, n_waypoints=1/d, k=1)
         
         # Show the difference between the original polygon and the equally spaced vertices polygons with matplotlib
@@ -490,6 +494,7 @@ class ProcessCustomFabric():
         operation_offset = 0.0 # meter
         min_distance_btw = -1 # parameter initialization for min distance between the inner robot path polygon and original polygon.
 
+        # i = 0
         while True:
             # shrink the fabric polygon with some offset 
             offset_polygon = self.shrink_polygon(polygon, operation_offset)
@@ -506,8 +511,12 @@ class ProcessCustomFabric():
                 min_distance_btw = robot_path_polygon.boundary.distance(polygon.boundary)
                 if (min_distance_btw >= user_offset):
                     break
+                # else:
+                    # print("Current min distance: " + str(min_distance_btw))
             # else increase the shrinking amount
             operation_offset += 0.01 # meter
+            # i = i + 1
+            # print(i)
 
         return offset_polygon, robot_path_polygon, operation_offset, min_distance_btw
 
