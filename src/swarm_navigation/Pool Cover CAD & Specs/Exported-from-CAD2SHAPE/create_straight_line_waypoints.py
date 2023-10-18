@@ -50,9 +50,9 @@ if __name__ == '__main__':
     # waypoints = interpolate_waypoints(start_point, end_point, num_points)
     # write_to_csv(waypoints, filename="MESH CIRCULAR_1_pt_straight_line.csv")
 
-    start_point = (-1.0, 1.2, 0.0)
-    end_point = (1.8, 1.2, 0.0)
-    num_points = 100
+    start_point = (-1.2, 0.5, 0.0)
+    end_point = (1.4, 0.5, 0.0)
+    num_points = 300
 
     waypoints = interpolate_waypoints(start_point, end_point, num_points)
     write_to_csv(waypoints, filename="VINYL L_SHAPE_1_pt_straight_line.csv")
