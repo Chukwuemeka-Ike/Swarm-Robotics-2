@@ -7,6 +7,7 @@ for i in "${!HOSTS[@]}"; do
 
     # Dynamically construct the reboot command using the password from PASSWORDS array
     SCRIPT="echo ${PASSWORDS[i]} | sudo -S systemctl restart ros.service;"
+    # echo clearpath | sudo -S systemctl restart ros.service
 
     echo "$SCRIPT"
     
